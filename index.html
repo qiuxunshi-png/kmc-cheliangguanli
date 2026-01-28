@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#09090b">
+    <title>KMC Vehicle Manager</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        kmc: {
+                            bg: '#09090b', card: '#18181b', border: '#27272a',
+                            primary: '#3b82f6', success: '#10b981', danger: '#ef4444',
+                            warning: '#f59e0b', text: '#e4e4e7', muted: '#a1a1aa'
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
+                    keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #09090b; color: #e4e4e7; font-feature-settings: "cv11", "ss01"; touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 99px; }
+        .glass-panel { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
+        .kmc-input { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #27272a; color: #e4e4e7; width: 100%; padding: 10px 14px; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
+        .kmc-input:focus { border-color: #3b82f6; outline: none; background-color: rgba(0, 0, 0, 0.5); }
+        .kmc-input:disabled { opacity: 0.6; cursor: not-allowed; background-color: rgba(255, 255, 255, 0.05); color: #71717a; }
+        .kmc-btn { font-weight: 600; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .kmc-btn:active { transform: scale(0.98); }
+        .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
+        .action-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
+        .action-badge:hover { background: rgba(59, 130, 246, 0.25); border-color: rgba(59, 130, 246, 0.4); }
+        .toggle-checkbox:checked { right: 0; border-color: #10b981; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
+        .kmc-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; transition: all 0.2s; }
+        .kmc-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
+        
+        /* Photo Grid */
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #3f3f46; cursor: zoom-in; }
+        .photo-add-btn { aspect-ratio: 1/1; border: 2px dashed #3f3f46; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #71717a; cursor: pointer; position: relative; transition: all 0.2s; }
+        .photo-add-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.05); }
+        .photo-del-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; }
+
+        /* Signature Pad */
+        .sig-wrapper { position: relative; width: 100%; height: 180px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46; }
+        .sig-canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; position: relative; z-index: 2; }
+        .sig-watermark { position: absolute; bottom: 30px; left: 20px; right: 20px; border-bottom: 2px dashed #cbd5e1; color: #cbd5e1; font-size: 20px; font-weight: bold; font-family: 'Times New Roman', serif; z-index: 1; pointer-events: none; user-select: none; }
+        .sig-tools { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+        .tool-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #64748b; border: 1px solid transparent; }
+        .tool-btn:hover { background: #f1f5f9; color: #0f172a; }
+        .tool-btn.active { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
+        
+        .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
+    </style>
+</head>
+<body class="antialiased selection:bg-kmc-primary/30 text-sm">
+
+<div id="app" class="h-screen flex flex-col overflow-hidden text-kmc-text">
+
+    <div v-if="!currentUser" class="flex-1 flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80')] bg-cover bg-center relative">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
+        <div class="w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl relative z-10 mx-4">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20"><i class="fa-solid fa-truck-shield text-3xl text-white"></i></div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Manager</h1>
+                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">V27.10 HYBRID AI</p>
+            </div>
+            <form @submit.prevent="handleLogin" class="space-y-5">
+                <div>
+                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Name / 姓名</label>
+                    <input v-model="loginForm.name" type="text" class="kmc-input bg-[#18181b]" placeholder="admin">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Password / 密码</label>
+                    <input v-model="loginForm.password" type="password" class="kmc-input" placeholder="666666">
+                </div>
+                <button type="submit" class="kmc-btn bg-kmc-primary hover:bg-blue-600 text-white w-full py-3.5 text-sm shadow-lg">Login System / 登录系统</button>
+            </form>
+            <div class="mt-4 text-center">
+                <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-2 rounded border border-red-500/20 mb-3" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div v-else class="flex h-full">
+        <aside :class="['border-r border-kmc-border flex flex-col transition-all duration-300 z-40 bg-kmc-card', isMobileMenuOpen ? 'fixed inset-0 w-full z-50 bg-kmc-card' : 'hidden md:flex w-64']">
+            <div class="p-6 border-b border-kmc-border">
+                <div class="flex items-center justify-between mb-1 md:hidden"><span class="text-xs font-bold text-kmc-muted">MENU</span><button @click="isMobileMenuOpen=false" class="text-white"><i class="fa-solid fa-times text-lg"></i></button></div>
+                <div class="flex items-center gap-3 cursor-pointer group" @click="openProfileModal">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/5">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
+                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
+                </div>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                <div class="px-3 mb-2 mt-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Operations / 运营操作</div>
+                <a @click="navigate('dashboard')" :class="navClass('dashboard')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard / 仪表盘</a>
+                
+                <template v-if="currentUser.role.startsWith('03')">
+                    <a @click="navigate('my_tasks')" :class="navClass('my_tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-clipboard-check w-5 text-center"></i> My Tasks / 我的任务</a>
+                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
+                </template>
+                <template v-else>
+                    <a @click="navigate('vehicles')" :class="navClass('vehicles')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-car w-5 text-center"></i> Fleet / 车辆档案</a>
+                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
+                    <a @click="navigate('tasks')" :class="navClass('tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-list-check w-5 text-center"></i> Config / 任务配置</a>
+                    <a @click="navigate('reports')" :class="navClass('reports')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-file-signature w-5 text-center"></i> Reviews / 评审</a>
+                    
+                    <div class="px-3 mb-2 mt-6 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Admin / 管理</div>
+                    <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-blue-400"></i> Stats / 统计报表</a>
+                    <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
+                    <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
+                </template>
+                
+                <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
+                    <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System / 系统</div>
+                    <a @click="handleExport" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-download w-5 text-center"></i> Backup / 备份</a>
+                    <div class="relative">
+                        <input type="file" accept=".json" @change="handleImport" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-upload w-5 text-center"></i> Restore / 恢复</a>
+                    </div>
+                    <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Reset / 重置</a>
+                    <a @click="showApiKeyModal=true" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-robot w-5 text-center"></i> AI Key / AI配置</a>
+                </div>
+            </nav>
+            <div class="p-4 border-t border-kmc-border bg-black/20"><button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button></div>
+        </aside>
+
+        <main class="flex-1 flex flex-col h-full bg-kmc-bg relative overflow-hidden">
+            <header class="h-16 border-b border-kmc-border bg-kmc-card/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
+                <div class="flex items-center gap-4">
+                    <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10"><i class="fa-solid fa-bars text-lg"></i></button>
+                    <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> {{ getPageTitle() }}</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span v-if="syncStatus === 'syncing'" class="text-[10px] text-blue-400 font-mono flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> Syncing...</span>
+                    <span v-else-if="syncStatus === 'saved'" class="text-[10px] text-green-400 font-mono flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Saved</span>
+                    <span v-else-if="syncStatus === 'error'" class="text-[10px] text-red-400 font-mono flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Sync Error</span>
+                    <span class="text-[10px] text-green-500 font-mono border border-green-900 bg-green-900/10 px-2 py-1 rounded">Storage / 存储: {{ storageUsage }}%</span>
+                </div>
+            </header>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
+                <component :is="currentViewComponent"></component>
+            </div>
+        </main>
+    </div>
+
+    <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-kmc-card border border-kmc-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+            <div class="p-5 border-b border-[#27272a] flex justify-between items-center sticky top-0 bg-kmc-card z-10">
+                <h3 class="text-lg font-bold text-white uppercase tracking-wide flex items-center gap-2"><span class="w-1 h-5 bg-blue-500 rounded-full"></span> {{ modalTitle }}</h3>
+                <button @click="showModal=false" class="text-kmc-muted hover:text-white"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <div v-if="modalType === 'task_exec'" class="space-y-5">
+                    <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl space-y-3">
+                        <div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
+                        <div v-if="taskContext.remarks"><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 mt-3">Note / 备注</div><div class="text-sm text-gray-300">{{ taskContext.remarks }}</div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报 (Translate)</label><div class="action-badge" @click="translate('content')"><i v-if="translating==='content'" class="fa-solid fa-spinner fa-spin"></i><span v-else><i class="fa-solid fa-language mr-1"></i> AI Translate</span></div></div>
+                        <div class="input-group"><textarea v-model="formData.content" class="kmc-input h-32 resize-none" placeholder="Enter details... / 输入详情"></textarea></div>
+                    </div>
+                    <div v-if="taskContext.req_photo">
+                        <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Photos / 现场照片 (Required)</label>
+                        <div class="photo-grid"><div v-for="(p, idx) in formData.photos" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto('photos', idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn"><input type="file" accept="image/*" capture="environment" @change="(e)=>handleCam(e, 'photos')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div>
+                    </div>
+                    <div v-if="taskContext.req_signature">
+                        <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Signature / 签字 (Required)</label>
+                        <div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature('signature')"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig('signature')"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData.signature" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData.signature" class="h-3/4 object-contain"></div></div>
+                        <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
+                    </div>
+                </div>
+
+                <div v-else v-for="(field, key) in modalFields" :key="key">
+                    <div v-if="!field.showIf || field.showIf(formData)">
+                        <div class="flex justify-between items-end mb-1.5 ml-1">
+                            <label class="block text-[10px] font-bold text-kmc-muted uppercase">{{ field.label }}</label>
+                            <div v-if="!field.locked && (field.translate || field.type==='textarea' || ['name','model','route','station','remark','reason','feedback','title_en'].some(k=>key.toLowerCase().includes(k)) && field.translate!==false)" class="action-badge" @click="translate(key)">
+                                <i v-if="translating===key" class="fa-solid fa-spinner fa-spin"></i>
+                                <span v-else><i class="fa-solid fa-language mr-1"></i> AI Translate</span>
+                            </div>
+                        </div>
+                        <div v-if="['text','textarea','editable_select','number','date'].includes(field.type)" class="input-group relative"><div v-if="!field.alwaysLocked && field.locked !== undefined" class="input-lock-btn" :class="{ 'unlocked': !field.locked }" @click="toggleFieldLock(key)"><i class="fa-solid" :class="field.locked ? 'fa-pen-to-square' : 'fa-unlock'"></i></div><template v-if="field.type === 'editable_select'"><input v-model="formData[key]" :list="'list-'+key" class="kmc-input pr-9" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'"><datalist :id="'list-'+key"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></datalist></template><template v-else-if="field.type === 'textarea'"><textarea v-model="formData[key]" class="kmc-input h-24 pr-9 resize-none" :disabled="field.locked" :placeholder="field.ph || 'Enter details / 输入详情'"></textarea></template><template v-else><input v-model="formData[key]" :type="field.type" class="kmc-input pr-9" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'"></template></div>
+                        <div v-else-if="field.type === 'checkbox'" class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData[key] = !formData[key]"><span class="text-sm font-medium text-gray-300">{{ field.label }}</span><div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData[key]" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData[key] ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div></div>
+                        <select v-else-if="field.type === 'select'" v-model="formData[key]" class="kmc-input" :disabled="field.disabled"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></select>
+                        <input v-else-if="['time','datetime-local'].includes(field.type)" :type="field.type" v-model="formData[key]" class="kmc-input">
+                        <div v-else-if="field.type === 'camera'"><div class="text-[10px] text-orange-400 mb-2 font-bold" v-if="field.note"><i class="fa-solid fa-circle-info mr-1"></i> {{ field.note }}</div><div class="photo-grid"><div v-for="(p, idx) in formData[key]" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto(key, idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn"><input type="file" accept="image/*" capture="environment" @change="(e)=>handleCam(e, key)" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div></div>
+                        <div v-else-if="field.type === 'signature_pad'"><div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature(key)"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig(key)"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData[key]" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData[key]" class="h-3/4 object-contain"></div></div><button v-if="!formData[key]" @click="saveSignature(key)" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature(key)" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3"><button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button><button @click="submitForm" :disabled="isSaveLocked.locked" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg"><i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i>{{ isSaveLocked.msg }}</button></div>
+        </div>
+    </div>
+
+    <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-blue-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear / 清除</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel / 取消</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-blue-600 text-white rounded text-sm font-bold shadow">Done / 完成</button></div></div><div class="fs-canvas-area"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
+    
+    <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
+        <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl">
+        <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close / 点击任意处关闭</div>
+    </div>
+
+    <div v-if="showApiKeyModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm"><div class="bg-[#18181b] border border-[#3f3f46] p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">AI Configuration / AI配置</h3><input v-model="tempApiKey" class="kmc-input mb-4" placeholder="Gemini API Key (Leave empty to use system default)"><div class="flex gap-3"><button @click="showApiKeyModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Close / 关闭</button><button @click="saveApiKey" class="kmc-btn bg-green-600 text-white flex-1 py-2 text-xs">Save / 保存</button></div></div></div>
+    
+    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm"><div class="bg-[#18181b] border border-[#3f3f46] p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
+
+    // --- Components ---
+    const Dashboard = { template: `
+        <div class="space-y-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="!isStaff">
+                <div class="kmc-card p-4 hover:border-blue-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Fleet Size / 车队规模 <i class="fa-solid fa-truck text-blue-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.vehicles.length }}</div></div>
+                <div class="kmc-card p-4 hover:border-green-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Active Staff / 在岗人员 <i class="fa-solid fa-users text-green-500"></i></div><div class="text-3xl font-bold text-white">{{ $root.users.filter(u=>u.role.startsWith('03')).length }}</div></div>
+                <div class="kmc-card p-4 hover:border-orange-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Total Fuel (L) / 总油耗 <i class="fa-solid fa-gas-pump text-orange-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.globalFuel.liters }}</div></div>
+                <div class="kmc-card p-4 hover:border-red-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Pending Reviews / 待审 <i class="fa-solid fa-clock text-red-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.pendingReviews }}</div></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" v-if="!isStaff">
+                <button @click="$root.openForm('shift_temp')" class="p-4 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-500/30 hover:border-blue-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-paper-plane"></i></div><div class="font-bold text-white text-sm">Dispatch / 调度</div><div class="text-[10px] text-kmc-muted">Quick Task</div></button>
+                <button @click="$root.openForm('fuel')" class="p-4 rounded-xl bg-gradient-to-br from-orange-600/20 to-orange-800/20 border border-orange-500/30 hover:border-orange-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-gas-pump"></i></div><div class="font-bold text-white text-sm">Log Fuel / 加油</div><div class="text-[10px] text-kmc-muted">Add Entry</div></button>
+                <button @click="$root.openForm('vehicle')" class="p-4 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-500/30 hover:border-purple-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-bus"></i></div><div class="font-bold text-white text-sm">Add Vehicle / 加车</div><div class="text-[10px] text-kmc-muted">New Fleet</div></button>
+                <button @click="$root.openForm('staff')" class="p-4 rounded-xl bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/30 hover:border-green-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-user-plus"></i></div><div class="font-bold text-white text-sm">Add Staff / 加人</div><div class="text-[10px] text-kmc-muted">New Driver</div></button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" v-if="!isStaff">
+                <div class="lg:col-span-2 kmc-card p-6 min-h-[300px]">
+                    <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-tower-broadcast text-blue-500"></i> Live Activity Feed / 实时动态</h3>
+                    <div class="space-y-4">
+                        <div v-for="log in $root.recentLogs" :key="log.timestamp" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0">
+                            <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-blue-500'"></div>
+                            <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> ($<b>{{ log.price }}</b>) - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
+                        </div>
+                        <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10">No recent activities / 暂无动态</div>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="kmc-card p-5 border-l-4 border-l-red-500 bg-red-900/10">
+                        <div class="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Attention Needed / 需关注</div>
+                        <div v-if="$root.pendingReviews > 0" class="flex justify-between items-center mb-2"><span class="text-white text-sm">Pending Reviews / 待评审</span><span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.pendingReviews }}</span></div>
+                        <div v-if="$root.maintenanceVehicles.length > 0" class="flex justify-between items-center"><span class="text-white text-sm">Vehicles in Maint / 维修中</span><span class="bg-orange-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.maintenanceVehicles.length }}</span></div>
+                        <div v-if="$root.pendingReviews === 0 && $root.maintenanceVehicles.length === 0" class="text-green-400 text-sm flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> All Systems Good / 系统正常</div>
+                    </div>
+                    <div class="kmc-card p-5"><div class="text-xs font-bold text-kmc-muted uppercase tracking-widest mb-3">Today's Shifts / 今日排班</div><div v-if="$root.todaysShifts.length === 0" class="text-xs text-gray-500 italic">No shifts for today / 无排班</div><div v-else class="space-y-2"><div v-for="s in $root.todaysShifts.slice(0,3)" :key="s.id" class="flex justify-between text-xs"><span class="text-white">{{ s.start_time }}</span><span class="text-gray-400 truncate w-32">{{ s.driver }}</span></div></div></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4" v-if="isStaff">
+                <div class="kmc-card p-5 text-center"><div class="text-[10px] text-kmc-muted uppercase font-bold">Tasks Done / 完成任务</div><div class="text-4xl font-bold text-white mt-2">{{ $root.myStats.total }}</div></div>
+                <div class="kmc-card p-5 text-center border-green-900/30"><div class="text-[10px] text-green-500 uppercase font-bold">Excellence Rate / 优秀率</div><div class="text-4xl font-bold text-green-400 mt-2">{{ $root.myStats.rate }}%</div></div>
+            </div>
+            <div v-if="isStaff" class="kmc-card p-6 border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-900/10 to-transparent"><h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-blue-400"></i> Next Day Tasks / 明日任务</h3><div v-if="$root.myNextTasks.length === 0" class="text-sm text-kmc-muted italic py-4">No tasks scheduled for tomorrow / 明日无任务</div><div v-for="t in $root.myNextTasks" :key="t.id" class="bg-black/20 border border-white/5 p-4 rounded-lg mb-2 flex justify-between items-center hover:bg-black/30 transition"><div><div class="font-bold text-white text-sm">{{ t.title_en }}</div><div class="text-xs text-kmc-muted">{{ t.content }}</div></div><span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20">PENDING</span></div></div>
+        </div>`, computed: { isStaff() { return this.$root.currentUser.role.startsWith('03') } } };
+
+    const Vehicles = { template: `<div><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4"><h2 class="text-xl font-bold text-white">Fleet Management / 车辆管理</h2><div class="flex gap-2 w-full sm:w-auto"><div class="relative flex-1 sm:w-64"><i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500"></i><input v-model="$root.searchQuery" class="kmc-input pl-9 py-2" placeholder="Search Plate or Model / 搜索..."></div><button v-if="!$root.isStaff" @click="$root.openForm('vehicle')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg shadow-green-900/20 shrink-0"><i class="fa-solid fa-plus mr-2"></i> Add / 新增</button></div></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><div v-for="v in $root.filteredVehicles" :key="v.id" class="kmc-card overflow-hidden group relative"><div class="h-40 bg-black/40 relative flex items-center justify-center overflow-hidden cursor-pointer" @click="$root.openPreview(v.archive_photos && v.archive_photos[0] ? v.archive_photos[0] : (v.photos && v.photos[0] ? v.photos[0] : null))"><img v-if="v.archive_photos && v.archive_photos[0]" :src="v.archive_photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110"><img v-else-if="v.photos && v.photos[0]" :src="v.photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110"><i v-else class="fa-solid fa-car text-5xl text-[#27272a] group-hover:text-[#3f3f46] transition"></i><div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1.5" :class="v.status === 'Active' ? 'text-green-400' : 'text-red-400'"><span class="w-1.5 h-1.5 rounded-full" :class="v.status === 'Active' ? 'bg-green-400 shadow-[0_0_8px_#4ade80]' : 'bg-red-400'"></span>{{ v.status === 'Active' ? 'Active / 运营' : (v.status === 'Maintenance' ? 'Maintenance / 维修' : 'Scrapped / 报废') }}</div></div><div class="p-5"><h3 class="font-bold text-white text-lg tracking-tight">{{ v.plate }}</h3><p class="text-xs text-kmc-muted uppercase tracking-wider mb-2">{{ v.model }} • {{ v.mileage }} KM</p><p class="text-[10px] text-gray-500 mb-4" v-if="v.responsible"><i class="fa-solid fa-user-shield mr-1"></i> {{v.responsible}}</p><div class="flex gap-2"><button @click="$root.openForm('vehicle', v)" class="flex-1 py-2 rounded bg-white/5 text-xs font-bold hover:bg-blue-500/10 hover:text-blue-400 transition border border-white/5">{{ $root.isStaff ? 'View Details / 查看详情' : 'Manage Archive / 管理档案' }}</button><button v-if="!$root.isStaff" @click="$root.deleteItem('vehicles', v.id)" class="px-3 py-2 rounded bg-white/5 text-xs hover:bg-red-500/10 hover:text-red-400 transition border border-white/5"><i class="fa-solid fa-trash"></i></button></div></div></div></div></div>` };
+
+    const Staff = { template: `<div><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-white">Staff Management / 人员管理</h2><button v-if="$root.currentUser.role!=='03'" @click="$root.openForm('staff')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg">Add User / 新增</button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div v-for="u in $root.users" :key="u.id" class="kmc-card p-4 flex items-center justify-between group"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-bold text-sm text-kmc-muted">{{ u.name[0] }}</div><div><div class="font-bold text-white">{{ u.name }}</div><div class="text-xs text-kmc-muted uppercase">Role: {{ u.role }}</div></div></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition" v-if="$root.currentUser.role==='01' || ($root.currentUser.role==='02' && u.role.startsWith('03'))"><button @click="$root.openForm('staff', u)" class="text-blue-400 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button @click="$root.deleteItem('users', u.id)" class="text-red-500 hover:scale-110 transition"><i class="fa-solid fa-trash"></i></button></div></div></div></div>` };
+
+    const Fuel = { template: `
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Fuel Logs / 加油记录</h2>
+            <button @click="$root.openForm('fuel')" class="kmc-btn bg-orange-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-gas-pump mr-2"></i> Add Entry / 登记</button>
+        </div>
+        <div class="grid grid-cols-2 gap-4" v-if="!$root.isStaff">
+            <div class="bg-orange-900/20 border border-orange-500/30 p-4 rounded-xl">
+                <div class="text-[10px] text-orange-400 font-bold uppercase">Total Liters / 总油量</div>
+                <div class="text-2xl font-bold text-white">{{ $root.globalFuel.liters }} L</div>
+            </div>
+            <div class="bg-green-900/20 border border-green-500/30 p-4 rounded-xl">
+                <div class="text-[10px] text-green-400 font-bold uppercase">Total Cost / 总费用</div>
+                <div class="text-2xl font-bold text-white">$ {{ $root.logs.filter(l=>l.category==='fuel').reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div>
+            </div>
+        </div>
+        <div class="space-y-3">
+            <div v-for="log in ($root.isStaff ? $root.logs.filter(l => l.category === 'fuel' && l.user_name === $root.currentUser.name) : $root.logs.filter(l => l.category === 'fuel'))" :key="log.id" class="kmc-card p-4 flex justify-between items-center group">
+                <div class="flex gap-4 items-center">
+                    <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500"><i class="fa-solid fa-gas-pump"></i></div>
+                    <div>
+                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.station" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.station }}</span></div>
+                        <div class="text-xs text-kmc-muted">{{ new Date(log.timestamp).toLocaleString() }} • {{ log.user_name }}</div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="font-bold text-white">{{ log.liters }} L</div>
+                    <div class="text-xs text-green-400 font-mono" v-if="log.price && !$root.isStaff">$ {{ log.price }}</div>
+                </div>
+            </div>
+            <div v-if="($root.isStaff ? $root.logs.filter(l => l.category === 'fuel' && l.user_name === $root.currentUser.name) : $root.logs.filter(l => l.category === 'fuel')).length === 0" class="text-center text-gray-500 py-8">No records found / 暂无记录</div>
+        </div>
+    </div>
+    `};
+
+    const Tasks = { template: `
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Task Config / 任务配置</h2>
+            <button v-if="!$root.isStaff" @click="$root.openForm('task_config')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-plus mr-2"></i> New Task / 新建</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-for="t in $root.tasks" :key="t.id" class="kmc-card p-5 relative group hover:border-blue-500/50 transition">
+                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition" v-if="!$root.isStaff">
+                    <button @click="$root.openForm('task_config', t)" class="w-8 h-8 rounded bg-white/5 hover:bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                    <button @click="$root.deleteItem('tasks', t.id)" class="w-8 h-8 rounded bg-white/5 hover:bg-red-500/20 text-red-400 flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div class="mb-3">
+                    <div class="font-bold text-lg text-white">{{ t.title_en }}</div>
+                    <div class="text-xs text-blue-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ t.assigned_to }}</div>
+                </div>
+                <div class="text-sm text-gray-400 line-clamp-2 mb-3">{{ t.content }}</div>
+                <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600">
+                    <span v-if="t.req_photo" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-camera mr-1"></i> Photo</span>
+                    <span v-if="t.req_signature" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-signature mr-1"></i> Sign</span>
+                </div>
+            </div>
+            <div v-if="$root.tasks.length === 0" class="col-span-2 text-center text-gray-500 py-10 bg-white/5 rounded-xl border border-dashed border-white/10">
+                <i class="fa-solid fa-clipboard-list text-4xl mb-3 opacity-50"></i><br>No tasks configured / 暂无任务配置
+            </div>
+        </div>
+    </div>
+    `};
+
+    const Reports = {
+        setup() {
+            const activeTab = ref('pending');
+            const showRejectModal = ref(false);
+            const targetLog = ref(null);
+            const reason = ref('');
+            
+            const openReject = (log) => { targetLog.value = log; reason.value = ''; showRejectModal.value = true; };
+            const confirmReject = (root) => { 
+                if(targetLog.value) {
+                    root.rejectLog(targetLog.value, reason.value);
+                    showRejectModal.value = false;
+                }
+            };
+            return { activeTab, showRejectModal, targetLog, reason, openReject, confirmReject };
+        },
+        template: `
+        <div class="space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Task Reviews / 任务评审</h2>
+                <div class="flex bg-black/40 rounded-lg p-1">
+                    <button @click="activeTab='pending'" :class="activeTab==='pending'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">Pending / 待审 <span v-if="$root.pendingReviews>0" class="ml-1 px-1.5 rounded-full bg-white text-blue-600 text-[9px]">{{$root.pendingReviews}}</span></button>
+                    <button @click="activeTab='history'" :class="activeTab==='history'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">History / 历史</button>
+                </div>
+            </div>
+            
+            <div v-for="log in (activeTab==='pending' ? $root.logs.filter(l=>l.category==='task_exec' && !l.rating) : $root.logs.filter(l=>l.category==='task_exec' && l.rating))" :key="log.id" class="kmc-card overflow-hidden animate-fade-in">
+                <div class="p-4 border-b border-white/5 flex justify-between items-start bg-black/20">
+                    <div>
+                        <div class="font-bold text-white text-base">{{ log.title_en }}</div>
+                        <div class="text-xs text-kmc-muted mt-0.5"><i class="fa-regular fa-clock mr-1"></i> {{ new Date(log.timestamp).toLocaleString() }} • <span class="text-blue-400 font-bold">{{ log.user_name }}</span></div>
+                    </div>
+                    <div v-if="log.rating" :class="log.rating==='green'?'bg-green-500/20 text-green-400 border-green-500/30': 'bg-red-500/20 text-red-400 border-red-500/30'" class="px-3 py-1 rounded text-xs font-bold uppercase border">
+                        {{ log.rating === 'green' ? 'Approved / 通过' : 'Rejected / 驳回' }}
+                    </div>
+                    <div v-else class="px-3 py-1 rounded text-xs font-bold uppercase bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse">Pending / 待审</div>
+                </div>
+                <div class="p-4 space-y-4">
+                    <div class="text-sm text-gray-300 bg-white/5 p-3 rounded border border-white/5">{{ log.content }}</div>
+                    
+                    <div v-if="log.rating === 'red' && log.feedback" class="bg-red-500/10 border border-red-500/20 p-3 rounded text-xs text-red-300">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Manager Feedback:</b> {{ log.feedback }}
+                    </div>
+
+                    <div v-if="log.photos && log.photos.length" class="flex gap-2 overflow-x-auto pb-2">
+                        <div v-for="(p, idx) in log.photos" :key="idx" class="w-20 h-20 shrink-0 rounded overflow-hidden border border-white/10 cursor-zoom-in" @click="$root.openPreview(p)">
+                            <img :src="p" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                    <div v-if="log.signature" class="border border-white/10 bg-white rounded p-2 max-w-[200px]">
+                        <img :src="log.signature" class="w-full h-16 object-contain filter invert">
+                    </div>
+                    <div v-if="!log.rating && !$root.isStaff" class="flex gap-3 pt-2 border-t border-white/5">
+                        <button @click="$root.approveLog(log)" class="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-bold transition"><i class="fa-solid fa-check mr-1"></i> Approve / 通过</button>
+                        <button @click="openReject(log)" class="flex-1 py-2 bg-red-900/50 hover:bg-red-900 border border-red-500/30 text-red-300 rounded text-xs font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Reject / 驳回</button>
+                    </div>
+                    <div v-else-if="log.rating && !$root.isStaff" class="pt-2 border-t border-white/5 text-right">
+                         <button @click="$root.undoLog(log)" class="text-xs text-kmc-muted hover:text-white underline"><i class="fa-solid fa-rotate-left mr-1"></i>Re-evaluate / 重新判定</button>
+                    </div>
+                </div>
+            </div>
+            <div v-if="$root.logs.filter(l => l.category === 'task_exec').length === 0" class="text-center text-gray-500 italic py-10">No records found / 暂无记录</div>
+
+            <div v-if="showRejectModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <div class="bg-kmc-card border border-kmc-border p-5 rounded-xl w-full max-w-sm shadow-2xl animate-fade-in">
+                    <h3 class="font-bold text-white mb-2">Rejection Reason / 驳回理由</h3>
+                    <textarea v-model="reason" class="kmc-input h-24 mb-4 resize-none" placeholder="Why is this rejected? (Optional) / 请输入理由..."></textarea>
+                    <div class="flex gap-2">
+                        <button @click="showRejectModal=false" class="flex-1 py-2 bg-transparent border border-white/10 text-kmc-muted hover:text-white rounded text-xs">Cancel / 取消</button>
+                        <button @click="confirmReject($root)" class="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold">Confirm / 确认</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `
+    };
+
+    const Stats = { 
+        setup() {
+            const showReportModal = ref(false);
+            const isGenerating = ref(false);
+            const openReport = () => { showReportModal.value = true; };
+            const downloadPDF = () => {
+                isGenerating.value = true;
+                const element = document.getElementById('report-content');
+                const opt = { margin: 5, filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' } };
+                html2pdf().set(opt).from(element).save().then(() => { isGenerating.value = false; });
+            };
+            return { showReportModal, openReport, downloadPDF, isGenerating };
+        },
+        template: `
+        <div class="space-y-6 h-full flex flex-col">
+            <div class="flex flex-col gap-4 bg-kmc-card p-4 rounded-xl border border-kmc-border sticky top-0 z-10 shadow-xl">
+                <div class="flex flex-wrap justify-between gap-4">
+                    <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit">
+                        <button @click="$root.statsTab='fuel'" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel Analysis / 油耗</button>
+                        <button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                         <button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset / 重置</button>
+                         <button @click="openReport" class="kmc-btn bg-green-600 text-white shadow-lg shadow-green-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview / 预览</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-white/5 pt-3">
+                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Start Date / 开始</label><input type="date" v-model="$root.statsFilters.start" class="kmc-input py-1.5 text-xs"></div>
+                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">End Date / 结束</label><input type="date" v-model="$root.statsFilters.end" class="kmc-input py-1.5 text-xs"></div>
+                    <div v-if="$root.statsTab==='fuel'"><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Vehicle / 车辆</label><select v-model="$root.statsFilters.vehicle_id" class="kmc-input py-1.5 text-xs"><option value="">All Vehicles / 全部</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option></select></div>
+                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Driver / 司机</label><select v-model="$root.statsFilters.driver" class="kmc-input py-1.5 text-xs"><option value="">All Drivers / 全部</option><option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option></select></div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-hidden relative min-h-[400px]">
+                <div v-if="$root.statsTab==='fuel'" class="space-y-4 animate-fade-in h-full overflow-y-auto pb-20">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl"><div class="text-[10px] text-orange-400 font-bold uppercase">Total Volume / 总升数</div><div class="text-2xl font-bold text-white">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
+                        <div class="bg-green-500/10 border border-green-500/20 p-4 rounded-xl"><div class="text-[10px] text-green-400 font-bold uppercase">Total Cost / 总费用</div><div class="text-2xl font-bold text-white">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
+                    </div>
+                    <div class="kmc-card overflow-hidden"><table class="w-full text-left border-collapse"><thead class="text-[10px] uppercase text-kmc-muted border-b border-white/10 bg-white/5"><tr><th class="p-4">Date / 日期</th><th class="p-4">Vehicle / 车辆</th><th class="p-4">Driver / 司机</th><th class="p-4 text-right">Liters / 升数</th><th class="p-4 text-right">Cost / 金额</th></tr></thead><tbody class="text-sm"><tr v-for="log in filteredFuelLogs" :key="log.id" class="border-b border-white/5 hover:bg-white/5 transition"><td class="p-4 text-xs font-mono">{{ log.timestamp.split('T')[0] }}</td><td class="p-4 font-bold text-white">{{ $root.getPlate(log.entity_id) }}</td><td class="p-4">{{ log.user_name }}</td><td class="p-4 text-right text-orange-400 font-bold">{{ log.liters }}</td><td class="p-4 text-right text-green-400">$ {{ log.price }}</td></tr></tbody></table></div>
+                </div>
+                <div v-if="$root.statsTab==='performance'" class="space-y-4 animate-fade-in h-full overflow-y-auto pb-20">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                         <div v-for="d in driverPerformanceStats" :key="d.name" class="kmc-card p-4 border-l-4" :class="d.rate>=90?'border-green-500':'border-yellow-500'"><div class="flex justify-between items-center mb-2"><div class="font-bold text-white">{{ d.name }}</div><div class="text-xl font-bold" :class="d.rate>=90?'text-green-400':'text-yellow-400'">{{ d.rate }}%</div></div><div class="flex justify-between text-xs text-kmc-muted"><span>Total: {{d.total}}</span><span>Approved: {{d.approved}}</span><span>Rejected: {{d.rejected}}</span></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="showReportModal" class="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="bg-[#525252] w-full max-w-5xl h-[90vh] rounded-xl flex flex-col shadow-2xl overflow-hidden">
+                    <div class="bg-[#333] p-4 flex justify-between items-center border-b border-white/10 shrink-0">
+                        <h3 class="text-white font-bold flex items-center gap-2"><i class="fa-solid fa-file-pdf text-red-500"></i> Print Preview Mode</h3>
+                        <div class="flex gap-3"><button @click="showReportModal=false" class="px-4 py-2 rounded text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition">Close / 关闭</button><button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-download"></i> Download PDF / 下载报表</button></div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto bg-[#525252] p-8 flex justify-center">
+                        <div id="report-content" class="bg-white text-black w-[297mm] min-h-[210mm] shadow-[0_0_50px_rgba(0,0,0,0.5)] p-[15mm] flex flex-col relative">
+                            <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
+                                <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-gray-600 mt-1 uppercase tracking-widest">{{ $root.statsTab }} REPORT / 统计报表</div></div>
+                                <div class="text-right text-xs text-gray-500"><div>Generated: {{ new Date().toLocaleString() }}</div><div>By: {{ $root.currentUser.name }}</div><div>Filter: {{ $root.statsFilters.start || 'All' }} to {{ $root.statsFilters.end || 'Now' }}</div></div>
+                            </div>
+                            <div v-if="$root.statsTab==='fuel'" class="space-y-6">
+                                <div class="grid grid-cols-4 gap-4 mb-6">
+                                    <div class="p-3 border border-gray-200 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records / 记录数</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
+                                    <div class="p-3 border border-gray-200 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Total Volume / 总升数</div><div class="text-xl font-bold">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
+                                    <div class="p-3 border border-gray-200 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Total Cost / 总费用</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
+                                    <div class="p-3 border border-gray-200 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg $/L / 平均单价</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : 0 }}</div></div>
+                                </div>
+                                <table class="w-full text-left border border-gray-300 text-xs">
+                                    <thead class="bg-gray-100 text-gray-700 uppercase font-bold"><tr><th class="p-2 border border-gray-300">Date / 日期</th><th class="p-2 border border-gray-300">Vehicle / 车辆</th><th class="p-2 border border-gray-300">Driver / 司机</th><th class="p-2 border border-gray-300">Station / 油站</th><th class="p-2 border border-gray-300 text-right">Liters / 升数</th><th class="p-2 border border-gray-300 text-right">Cost / 金额</th><th class="p-2 border border-gray-300 text-center w-24">Proof / 凭证</th></tr></thead>
+                                    <tbody><tr v-for="log in filteredFuelLogs" :key="log.id" class="border-b border-gray-200 text-gray-800"><td class="p-2 border-r border-gray-200 font-mono">{{ log.timestamp.split('T')[0] }}<br><span class="text-[10px] text-gray-500">{{ log.timestamp.split('T')[1].substr(0,5) }}</span></td><td class="p-2 border-r border-gray-200 font-bold">{{ $root.getPlate(log.entity_id) }}</td><td class="p-2 border-r border-gray-200">{{ log.user_name }}</td><td class="p-2 border-r border-gray-200 truncate max-w-[100px]">{{ log.station || '-' }}</td><td class="p-2 border-r border-gray-200 text-right font-bold">{{ log.liters }}</td><td class="p-2 border-r border-gray-200 text-right">{{ log.price }}</td><td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-16 h-12 object-cover border border-gray-300 mx-auto block"><span v-else class="text-gray-400">-</span></td></tr></tbody>
+                                </table>
+                            </div>
+                            <div v-if="$root.statsTab==='performance'" class="space-y-8">
+                                 <div>
+                                    <h3 class="font-bold border-b border-gray-300 mb-3 pb-1 uppercase text-sm">Summary By Driver / 司机汇总</h3>
+                                    <table class="w-full text-left border border-gray-300 text-xs"><thead class="bg-gray-100"><tr><th class="p-2 border border-gray-300">Rank / 排名</th><th class="p-2 border border-gray-300">Driver / 司机</th><th class="p-2 border border-gray-300 text-center">Total Tasks / 总任务</th><th class="p-2 border border-gray-300 text-center">Approved / 通过</th><th class="p-2 border border-gray-300 text-center">Rejected / 驳回</th><th class="p-2 border border-gray-300 text-right">Success Rate / 通过率</th></tr></thead><tbody><tr v-for="(d, idx) in driverPerformanceStats" :key="d.id" class="border-b border-gray-200"><td class="p-2 border-r border-gray-200 font-bold text-center w-12">{{ idx + 1 }}</td><td class="p-2 border-r border-gray-200 font-bold">{{ d.name }}</td><td class="p-2 border-r border-gray-200 text-center">{{ d.total }}</td><td class="p-2 border-r border-gray-200 text-center text-green-700 font-bold">{{ d.approved }}</td><td class="p-2 border-r border-gray-200 text-center text-red-600">{{ d.rejected }}</td><td class="p-2 text-right font-bold">{{ d.rate }}%</td></tr></tbody></table>
+                                 </div>
+                                 <div>
+                                    <h3 class="font-bold border-b border-gray-300 mb-3 pb-1 uppercase text-sm">Task Execution Log / 任务流水</h3>
+                                    <div class="grid grid-cols-2 gap-4"><div v-for="t in filteredTaskLogs" :key="t.id" class="border border-gray-300 p-3 rounded text-xs break-inside-avoid"><div class="flex justify-between mb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div><div class="text-gray-600 mb-2">Driver: <b>{{ t.user_name }}</b></div><div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" class="w-12 h-12 object-cover border border-gray-200"></div><div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500 italic">Result:</span><span class="font-bold uppercase" :class="t.rating==='green'?'text-green-700':(t.rating==='red'?'text-red-700':'text-yellow-600')">{{ t.rating==='green'?'PASSED':(t.rating==='red'?'REJECTED':'PENDING') }}</span></div></div></div>
+                                 </div>
+                            </div>
+                            <div class="mt-auto pt-10 border-t-2 border-gray-200 flex justify-between text-xs text-gray-500"><div>Signature: __________________________</div><div>Date: __________________________</div><div>Page 1 of 1</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `,
+        computed: {
+            filteredFuelLogs() {
+                const f = this.$root.statsFilters;
+                let logs = this.$root.logs.filter(l => l.category === 'fuel');
+                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
+                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
+                if (f.vehicle_id) logs = logs.filter(l => l.entity_id === f.vehicle_id);
+                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
+                return logs;
+            },
+            filteredTaskLogs() {
+                const f = this.$root.statsFilters;
+                let logs = this.$root.logs.filter(l => l.category === 'task_exec');
+                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
+                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
+                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
+                return logs;
+            },
+            driverPerformanceStats() {
+                const logs = this.filteredTaskLogs;
+                let drivers = this.$root.users.filter(u => u.role.startsWith('03'));
+                if (this.$root.statsFilters.driver) drivers = drivers.filter(u => u.name === this.$root.statsFilters.driver);
+                return drivers.map(d => {
+                    const dl = logs.filter(l => l.user_name === d.name);
+                    const total = dl.length;
+                    const approved = dl.filter(l => l.rating === 'green').length;
+                    const rejected = dl.filter(l => l.rating === 'red').length;
+                    return { id: d.id, name: d.name, total, approved, rejected, rate: total > 0 ? Math.round((approved / total) * 100) : 0 };
+                }).sort((a,b) => b.rate - a.rate);
+            }
+        }
+    };
+    
+    const Shifts = { template: `
+    <div class="space-y-6">
+        <div class="flex justify-between items-center">
+            <h2 class="text-xl font-bold text-white">Shift Management / 排班</h2>
+            <button @click="$root.openForm('shift_fixed')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg">New Shift / 新班次</button>
+        </div>
+        <div class="space-y-3">
+             <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
+                <div>
+                    <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
+                </div>
+                 <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+             </div>
+             <div v-if="$root.shifts.length === 0" class="text-center text-gray-500">No shifts configured / 暂无排班</div>
+        </div>
+    </div>` 
+    };
+
+    createApp({
+        components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts },
+        setup() {
+            // Keys
+            const K_U = 'kmc_opt_u'; const K_V = 'kmc_opt_v'; const K_T = 'kmc_opt_t'; const K_L = 'kmc_opt_l'; const K_S = 'kmc_opt_s';
+            // !!! PASTE YOUR KEY HERE !!!
+            const DEFAULT_GEMINI_KEY = ''; 
+            // !!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            const load = (k, d) => { const s=localStorage.getItem(k); return s?JSON.parse(s):d; };
+
+            // Supabase Config
+            const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
+            const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            const syncStatus = ref('saved'); // 'syncing', 'saved', 'error'
+            
+            // Debounced Save for performance + Supabase Sync
+            let saveTimeout;
+            const debouncedSave = () => {
+                syncStatus.value = 'syncing';
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(async () => {
+                    // 1. Local Save
+                    localStorage.setItem(K_U, JSON.stringify(users.value));
+                    localStorage.setItem(K_V, JSON.stringify(vehicles.value));
+                    localStorage.setItem(K_T, JSON.stringify(tasks.value));
+                    localStorage.setItem(K_L, JSON.stringify(logs.value));
+                    localStorage.setItem(K_S, JSON.stringify(shifts.value));
+                    checkStorageUsage();
+
+                    // 2. Cloud Save (Supabase Upsert)
+                    try {
+                        const { error } = await supabase.from('kmc_storage').upsert([
+                            { key: K_U, value: users.value },
+                            { key: K_V, value: vehicles.value },
+                            { key: K_T, value: tasks.value },
+                            { key: K_L, value: logs.value },
+                            { key: K_S, value: shifts.value }
+                        ]);
+                        if (error) throw error;
+                        syncStatus.value = 'saved';
+                    } catch (err) {
+                        console.error('Cloud Sync Error:', err);
+                        syncStatus.value = 'error';
+                    }
+                }, 2000); // 2 seconds debounce for cloud save
+            };
+
+            // Init Data
+            const users = ref(load(K_U, []));
+            if(users.value.length === 0) users.value.push({id:1, name:'admin', password:'666666', role:'01'});
+            const vehicles = ref(load(K_V, []));
+            const tasks = ref(load(K_T, []));
+            const logs = ref(load(K_L, []));
+            const shifts = ref(load(K_S, []));
+
+            // UI State
+            const currentUser = ref(null);
+            const loginForm = ref({name:'', password:''});
+            const loginError = ref('');
+            const currentView = ref('dashboard');
+            const isMobileMenuOpen = ref(false);
+            const storageUsage = ref(0);
+            
+            // Modal & Forms
+            const showModal = ref(false);
+            const modalTitle = ref(''); const modalType = ref(''); const modalFields = ref({}); const formData = ref({}); const translating = ref(null);
+            const showProfileModal = ref(false); const profileForm = ref({});
+            const showApiKeyModal = ref(false); const tempApiKey = ref(''); const apiKey = ref(localStorage.getItem('k_key')||'');
+
+            // Stats Logic
+            const statsTab = ref('fuel');
+            const statsFilters = ref({ start:'', end:'', vehicle_id:'', driver:'', status:'' });
+            const resetStatsFilters = () => {
+                const today = new Date().toISOString().split('T')[0];
+                const lastMonth = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                statsFilters.value = { start: lastMonth, end: today, vehicle_id: '', driver: '', status: '' };
+            };
+
+            const reportFilter = ref({ driver: '', start: '', end: '' });
+            const reportData = ref(null);
+            const activeShiftTab = ref('fixed');
+            const isTaskTranslated = ref(false); const taskContext = ref({});
+            const translatedFields = ref(new Set());
+            const searchQuery = ref(''); const previewImage = ref(null);
+
+            // Signature
+            const sigCanvas = ref(null);
+            const fullSigCanvas = ref(null); const isSigFullScreen = ref(false); const fullScreenSigKey = ref(null); const sigPenColor = ref('#000');
+            let isDrawing = false;
+            let ctx = null; let lastX = 0; let lastY = 0;
+
+            const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
+
+            const checkStorageUsage = () => {
+                let total = 0;
+                for(let key in localStorage) {
+                    if(localStorage.hasOwnProperty(key)) total += (localStorage[key].length * 2);
+                }
+                storageUsage.value = ((total / 1024 / 1024) / 5 * 100).toFixed(1); // Assuming 5MB limit
+            };
+
+            // Cloud Fetch
+            const fetchCloudData = async () => {
+                syncStatus.value = 'syncing';
+                const { data, error } = await supabase.from('kmc_storage').select('*');
+                if (!error && data) {
+                    data.forEach(item => {
+                        if (item.key === K_U && item.value) users.value = item.value;
+                        if (item.key === K_V && item.value) vehicles.value = item.value;
+                        if (item.key === K_T && item.value) tasks.value = item.value;
+                        if (item.key === K_L && item.value) logs.value = item.value;
+                        if (item.key === K_S && item.value) shifts.value = item.value;
+                    });
+                    syncStatus.value = 'saved';
+                } else {
+                    syncStatus.value = 'error';
+                }
+            };
+
+            onMounted(() => { 
+                checkStorageUsage(); 
+                resetStatsFilters();
+                fetchCloudData(); // Fetch cloud data on start
+            });
+            
+            watch([users, vehicles, tasks, logs, shifts], () => { debouncedSave(); }, {deep:true});
+
+            // Canvas Logic
+            const initCanvas = (targetCanvas) => {
+                if (!targetCanvas) return;
+                const dpr = window.devicePixelRatio || 1;
+                const rect = targetCanvas.getBoundingClientRect();
+                if(rect.width === 0) return;
+                targetCanvas.width = rect.width * dpr;
+                targetCanvas.height = rect.height * dpr;
+                ctx = targetCanvas.getContext('2d');
+                ctx.scale(dpr, dpr);
+                ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 2.5;
+                ctx.strokeStyle = sigPenColor.value;
+            };
+
+            watch(() => showModal.value, (val) => { 
+                if (val && (modalType.value === 'vehicle' || modalType.value === 'task_exec' || modalFields.value.signature)) { 
+                    setTimeout(() => nextTick(() => { if(sigCanvas.value) initCanvas(sigCanvas.value); }), 100); 
+                } 
+            });
+
+            // Signature Events
+            const getPos = (e, canvas) => { const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return { x: clientX - rect.left, y: clientY - rect.top }; };
+            const startSign = (e) => { isDrawing = true; const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value;
+                if(!ctx || ctx.canvas !== canvas) initCanvas(canvas); const pos = getPos(e, canvas); lastX = pos.x; lastY = pos.y; ctx.beginPath(); ctx.moveTo(lastX, lastY);
+            };
+            const drawSign = (e) => { if(!isDrawing || !ctx) return; e.preventDefault(); const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value;
+                const pos = getPos(e, canvas); const endX = (lastX + pos.x) / 2;
+                const endY = (lastY + pos.y) / 2; ctx.quadraticCurveTo(lastX, lastY, endX, endY); ctx.stroke(); ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(pos.x, pos.y);
+                lastX = pos.x; lastY = pos.y; };
+            const endSign = () => { isDrawing = false; };
+            const clearSignature = (key) => { formData.value[key] = null; if(ctx && sigCanvas.value) initCanvas(sigCanvas.value); };
+            const saveSignature = (key) => { if(sigCanvas.value) formData.value[key] = sigCanvas.value.toDataURL('image/png'); };
+            const openFullScreenSig = (key) => { fullScreenSigKey.value = key;
+                isSigFullScreen.value = true; setTimeout(() => nextTick(() => { if(fullSigCanvas.value) initCanvas(fullSigCanvas.value); }), 100); };
+            const clearFullScreenSig = () => { if(fullSigCanvas.value) initCanvas(fullSigCanvas.value); };
+            const saveFullScreenSig = () => { if(fullSigCanvas.value && fullScreenSigKey.value) { formData.value[fullScreenSigKey.value] = fullSigCanvas.value.toDataURL('image/png');
+                isSigFullScreen.value = false; } };
+            const toggleFieldLock = (key) => { if (modalFields.value[key]) { modalFields.value[key].locked = !modalFields.value[key].locked; } };
+
+            // Logic Protection
+            const isSaveLocked = computed(() => {
+                if (modalType.value === 'shift_fixed' && formData.value.standards && !isTaskTranslated.value) return {locked:true, msg:'Translate First / 请先翻译'};
+                if (modalType.value === 'fuel' && (!formData.value.photos || formData.value.photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
+                if (modalType.value === 'vehicle' && (!formData.value.archive_photos || formData.value.archive_photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
+                return {locked:false, msg:'Save Changes / 保存更改'};
+            });
+
+            // COMPRESSED Camera Handler
+            const handleCam = (e, k) => { 
+                const f=e.target.files[0];
+                if(!f)return; 
+                const r=new FileReader(); 
+                r.onload=(evt)=>{ 
+                    const img=new Image();
+                    img.onload=()=>{ 
+                        const maxWidth = 600;
+                        let w = img.width;
+                        let h = img.height;
+                        if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; }
+                        const c=document.createElement('canvas');
+                        const ctx=c.getContext('2d'); 
+                        c.width=w; c.height=h; 
+                        ctx.drawImage(img,0,0,w,h); 
+                        // Watermark
+                        ctx.fillStyle="rgba(0,0,0,0.5)";
+                        ctx.fillRect(0,c.height-30,c.width,30); 
+                        ctx.fillStyle="white"; ctx.font="12px monospace"; 
+                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10);
+                        if(!formData.value[k]) formData.value[k] = [];
+                        try { formData.value[k].push(c.toDataURL('image/jpeg', 0.5)); } catch(err) { alert("Storage Full! / 空间不足"); }
+                    };
+                    img.src=evt.target.result; 
+                }; 
+                r.readAsDataURL(f); 
+            };
+
+            // Basic Helpers
+            const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
+            const handleLogin = () => { const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
+                if(u) currentUser.value = u; else loginError.value = 'Invalid Credentials / 密码或账号错误'; };
+            const handleLogout = () => currentUser.value = null;
+            const factoryReset = () => { if(confirm("Reset All Data? / 重置所有数据?")) { localStorage.clear(); location.reload(); }};
+            const navigate = (v) => { currentView.value = v; isMobileMenuOpen.value = false; };
+            const navClass = (v) => currentView.value === v ? 'bg-blue-500/10 text-blue-400 font-bold' : 'text-kmc-muted hover:text-white';
+            const getPageTitle = () => currentView.value.replace('_', ' ').toUpperCase();
+            
+            // Views
+            const getPlate = (id) => vehicles.value.find(v=>v.id===id)?.plate || 'Unknown';
+            const openPreview = (src) => { if(src) previewImage.value = src; };
+            const filteredVehicles = computed(() => {
+                if(!searchQuery.value) return vehicles.value;
+                const q = searchQuery.value.toLowerCase();
+                return vehicles.value.filter(v => v.plate.toLowerCase().includes(q) || (v.model && v.model.toLowerCase().includes(q)));
+            });
+
+            // Modal Logic
+            const openForm = (type, data = null) => {
+                modalType.value = type;
+                formData.value = data ? JSON.parse(JSON.stringify(data)) : {}; isTaskTranslated.value = false; translatedFields.value.clear();
+                if(data && (data.content||data.standards)) isTaskTranslated.value = true;
+                if (type === 'staff') {
+                    modalTitle.value = data ? 'Edit Staff / 编辑人员' : 'Add Staff / 新增人员';
+                    modalFields.value = {
+                        name: {label:'Full Name / 姓名 (ID)', type:'text', disabled: data && data.role === '01'}, 
+                        password: {label:'Password / 密码', type:'text'},
+                        role: {label:'Role / 角色', type:'select', options:[{val:'01',label:'01 - Director / 总监'},{val:'02',label:'02 - Manager / 经理'},{val:'03',label:'03 - Staff / 员工'}], disabled: data && data.role === '01'}
+                    };
+                    if(!data) formData.value = {id:Date.now(), role:'03', password:'666666'};
+                }
+                else if (type === 'vehicle') {
+                    modalTitle.value = data ? 'Edit Vehicle / 编辑车辆' : 'Add Vehicle / 新增车辆';
+                    const locked = isStaff.value;
+                    modalFields.value = {
+                        plate: {label:'Plate / 车牌', type:'text', locked: true},
+                        model: {label:'Model / 车型', type:'editable_select', options:[...new Set(vehicles.value.map(v=>v.model))].map(m=>({val:m,label:m})), locked: true},
+                        status: {label:'Status / 状态', type:'select', options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}], disabled: locked},
+                        mileage: {label:'Current Mileage / 当前里程', type:'number', locked: true},
+                        responsible: {label:'Person in Charge / 责任人', type:'text', locked: true},
+                        archive_photos: {label:'Archive Photos / 档案照片 (Required)', type:'camera', note: 'Front, Side, Rear / 前、侧、后'},
+                    };
+                    if(!data) formData.value = { id:Date.now(), status:'Active', mileage:0, archive_photos:[] };
+                    if(!formData.value.archive_photos) formData.value.archive_photos = [];
+                }
+                else if (type === 'fuel') {
+                    modalTitle.value = 'FUEL ENTRY / 加油录入';
+                    modalFields.value = {
+                        entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))},
+                        is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' },
+                        station: {label:'Station / 加油站', type:'text'},
+                        price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, 
+                        liters: {label:'Liters / 加油量', type:'number'},
+                        mileage: {label:'Current Odo / 当前里程', type:'number'},
+                        photos: {label:'Evidence / 凭证 (Required)', type:'camera', note:'Odometer, Receipt / 里程表、收据'}
+                    };
+                    formData.value = {id:Date.now(), user_name:currentUser.value.name, photos:[], is_internal: false};
+                }
+                else if (type === 'task_config') {
+                    modalTitle.value = 'TASK CONFIG / 任务配置';
+                    const myRole = currentUser.value.role;
+                    let targetRoles = [];
+                    if(myRole === '01') targetRoles = ['02', '03'];
+                    else if(myRole === '02') targetRoles = ['03'];
+                    
+                    const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
+                    modalFields.value = {
+                        title_en: {label:'Task Name / 任务名', type:'text'}, 
+                        content: {label:'Content / 内容 (Text)', type:'textarea'},
+                        standards: {label:'Standards / 标准 (Text)', type:'textarea'},
+                        remarks: {label:'Remarks / 备注', type:'textarea'}, 
+                        req_photo: {label:'Require Photo / 需拍照', type:'checkbox'},
+                        req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
+                        assigned_to: {label:'Assign To / 指派给', type:'select', options: assignOptions}
+                    };
+                    if(!data) formData.value = {id:Date.now()};
+                }
+                else if (type === 'shift_fixed' || type === 'shift_temp') { 
+                    modalTitle.value = type==='shift_fixed' ? 'FIXED SCHEDULE / 固定班次' : 'TEMP DISPATCH / 临时调度';
+                    if (type === 'shift_temp') {
+                        modalFields.value = {
+                            task_name: {label:'Task Name / 任务名', type:'text'},
+                            driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))},
+                            start_datetime: {label:'Start Time / 开始时间', type:'datetime-local'},
+                            end_datetime: {label:'End Time / 结束时间', type:'datetime-local'},
+                            route: {label:'Destination / 目的地', type:'text'},
+                            notes: {label:'Notes / 备注', type:'textarea'}
+                        };
+                        if(!data) formData.value = {id:Date.now(), type:'temp'};
+                    } else {
+                        modalFields.value = {
+                            vehicle_type: { label:'Bus Type / 车型', type:'editable_select', ph: 'Select...', options: [{val:'Big Bus', label:'Big Bus'}, {val:'Medium Bus', label:'Medium Bus'}] },
+                            route: { label:'Route / 路线', type:'editable_select', ph: 'Select...', options: [{val:'Morning Commute', label:'Morning Commute'}] },
+                            driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))},
+                            start_time: {label:'Start Time / 开始', type:'time'}, end_time: {label:'End Time / 结束', type:'time'},
+                            standards: {label:'Rules / 规则', type:'textarea', locked:true},
+                        };
+                        if(!data) formData.value = {id:Date.now(), type:'fixed'};
+                    }
+                }
+                showModal.value = true;
+            };
+
+            const submitForm = () => {
+                try {
+                    if (modalType.value === 'staff') { const idx = users.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) users.value[idx] = {...formData.value}; else users.value.push({...formData.value}); }
+                    else if (modalType.value === 'vehicle') { const idx = vehicles.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) vehicles.value[idx] = {...formData.value}; else vehicles.value.push({...formData.value}); }
+                    else if (modalType.value === 'task_config') { const idx = tasks.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); }
+                    else if (modalType.value.startsWith('shift')) { 
+                        if (modalType.value === 'shift_temp' && formData.value.start_datetime) {
+                            formData.value.date = formData.value.start_datetime.split('T')[0];
+                            formData.value.start_time = formData.value.start_datetime.split('T')[1];
+                        }
+                        const idx = shifts.value.findIndex(s => s.id === formData.value.id);
+                        if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); 
+                    }
+                    else if (modalType.value === 'fuel') { 
+                        const v = vehicles.value.find(x => x.id === formData.value.entity_id);
+                        if(formData.value.mileage <= v.mileage) { alert("Mileage Error: Must be > current / 里程错误: 必须大于当前里程"); return; } 
+                        v.mileage = formData.value.mileage;
+                        logs.value.unshift({...formData.value, category:'fuel', timestamp: new Date().toISOString()}); 
+                    }
+                    else if (modalType.value === 'task_exec') { logs.value.unshift({...formData.value, timestamp: new Date().toISOString()}); }
+                    
+                    showModal.value = false;
+                } catch(e) {
+                    alert("Error saving data. Storage might be full. / 保存失败，存储空间可能已满。");
+                }
+            };
+
+            const deleteItem = (t, id) => { if(confirm("Delete this item? / 确认删除?")) { if(t==='users') users.value=users.value.filter(x=>x.id!==id);
+                else if(t==='vehicles') vehicles.value=vehicles.value.filter(x=>x.id!==id); else if(t==='tasks') tasks.value=tasks.value.filter(x=>x.id!==id); else if(t==='shifts') shifts.value=shifts.value.filter(x=>x.id!==id); } };
+            
+            const approveLog = (log) => { log.rating = 'green'; log.feedback = null; debouncedSave(); };
+            const rejectLog = (log, reason) => { log.rating = 'red'; log.feedback = reason || 'No reason provided'; debouncedSave(); };
+            const undoLog = (log) => { log.rating = null; log.feedback = null; debouncedSave(); };
+
+            const translate = async (k) => { 
+                translating.value=k;
+                const finalKey = apiKey.value || DEFAULT_GEMINI_KEY;
+
+                if(!finalKey){ 
+                    setTimeout(()=>{ 
+                        formData.value[k]+=" (No Key)"; 
+                        translating.value=null;
+                        alert("Please configure AI Key in System Settings or add DEFAULT_GEMINI_KEY in code."); 
+                    }, 500); 
+                    return; 
+                } 
+                try{ 
+                    // Updated Model to gemini-1.5-flash for stability
+                    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`Translate to English/Chinese (if English -> Chinese, if Chinese -> English): ${formData.value[k]}`}]}]})});
+                    const d=await res.json(); 
+                    if(d.candidates && d.candidates[0] && d.candidates[0].content){
+                         formData.value[k]=d.candidates[0].content.parts[0].text.trim();
+                         if(['content', 'standards', 'remarks'].includes(k)) isTaskTranslated.value = true;
+                    } else {
+                        throw new Error("API Error");
+                    }
+                } catch(e){
+                    console.error(e);
+                    formData.value[k]+=" (Err)";
+                } 
+                translating.value=null;
+            };
+
+            const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en;
+                formData.value = {id:Date.now(), title_en:t.title_en, user_name:currentUser.value.name, category:'task_exec', photos:[], signature: null}; showModal.value = true; };
+            
+            const updateProfile = () => { const idx=users.value.findIndex(u=>u.id===currentUser.value.id); if(profileForm.value.password) users.value[idx].password=profileForm.value.password; if(profileForm.value.name) users.value[idx].name=profileForm.value.name; currentUser.value=users.value[idx]; showProfileModal.value=false; alert("Profile Updated / 资料已更新"); };
+
+            // Computed Helpers
+            const recentLogs = computed(() => (logs.value || []).slice(0, 10));
+            const maintenanceVehicles = computed(() => (vehicles.value || []).filter(v => v.status !== 'Active'));
+            const todaysShifts = computed(() => { const today = new Date().toISOString().split('T')[0]; return (shifts.value || []).filter(s => s.date === today || s.type === 'fixed'); });
+            const pendingReviews = computed(() => (logs.value||[]).filter(l => l.category === 'task_exec' && !l.rating).length);
+            const globalFuel = computed(() => { const f = (logs.value||[]).filter(l => l.category === 'fuel'); return { liters: f.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) } });
+            const myStats = computed(() => { const l=(logs.value||[]).filter(x=>x.user_name===currentUser.value?.name); const g=l.filter(x=>x.rating==='green').length; return { total:l.length, rate:l.length?Math.round((g/l.length)*100):0 }; });
+            const myNextTasks = computed(() => (tasks.value||[]).filter(t => t.assigned_to === currentUser.value?.name));
+
+            // View Components
+            const currentViewComponent = computed(() => { 
+                if (currentView.value === 'dashboard') return Dashboard; 
+                if (currentView.value === 'vehicles') return Vehicles; 
+                if (currentView.value === 'staff') return Staff;
+                if (currentView.value === 'fuel') return Fuel;
+                if (currentView.value === 'tasks') return Tasks;
+                if (currentView.value === 'reports') return Reports;
+                if (currentView.value === 'shifts') return Shifts;
+                if (currentView.value === 'statistics') return Stats;
+                if (currentView.value === 'my_tasks') return {
+                    template: `
+                    <div class="space-y-6">
+                        <div class="space-y-4">
+                            <h2 class="text-xl font-bold text-white">Pending Tasks / 待办任务</h2>
+                            <div v-for="t in $root.myNextTasks" :key="t.id" class="kmc-card p-5 cursor-pointer hover:border-blue-500" @click="$root.openTaskExec(t)"><div class="font-bold text-white">{{ t.title_en }}</div><div class="text-xs text-kmc-muted mt-2">{{ t.content }}</div><div class="mt-3 flex gap-2"><span class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded">START TASK / 开始</span></div></div>
+                            <div v-if="$root.myNextTasks.length===0" class="text-gray-500 text-center py-4 text-xs italic">No pending tasks / 暂无待办</div>
+                        </div>
+                        <div class="space-y-4 pt-4 border-t border-white/10">
+                            <h2 class="text-xl font-bold text-white">My Submission History / 提交记录</h2>
+                            <div v-for="log in $root.logs.filter(l => l.category==='task_exec' && l.user_name===$root.currentUser.name).slice(0,5)" :key="log.id" class="kmc-card p-4 opacity-80">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-bold text-sm text-white">{{ log.title_en }}</div>
+                                    <span v-if="log.rating==='green'" class="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded">PASSED</span>
+                                    <span v-else-if="log.rating==='red'" class="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded">REJECTED</span>
+                                    <span v-else class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">PENDING</span>
+                                </div>
+                                <div class="text-xs text-kmc-muted mt-1">{{ new Date(log.timestamp).toLocaleString() }}</div>
+                                <div v-if="log.rating==='red' && log.feedback" class="mt-2 p-2 bg-red-500/10 border border-red-500/20 text-red-300 text-xs rounded">
+                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Feedback: {{ log.feedback }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`
+                };
+                return { template: `<div class="p-10 text-center text-gray-500">View Module Loaded</div>` };
+            });
+
+            const handleExport = () => { const data = { users: users.value, vehicles: vehicles.value, tasks: tasks.value, logs: logs.value, shifts: shifts.value }; const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kmc_backup.json'; a.click(); };
+            const handleImport = (e) => { const r = new FileReader(); r.onload=(evt)=>{ try { const d=JSON.parse(evt.target.result);
+                users.value=d.users; vehicles.value=d.vehicles; tasks.value=d.tasks; logs.value=d.logs; shifts.value=d.shifts; alert("Restored Successfully! / 恢复成功!"); } catch(e){alert("Error Restoring / 恢复失败");} }; r.readAsText(e.target.files[0]); };
+            const saveApiKey = () => { apiKey.value = tempApiKey.value; localStorage.setItem('k_key', apiKey.value); showApiKeyModal.value=false; };
+            
+            return {
+                currentUser, loginForm, loginError, handleLogin, handleLogout, factoryReset,
+                currentView, navigate, navClass, getPageTitle, isMobileMenuOpen, currentViewComponent,
+                users, vehicles, tasks, logs, shifts, isStaff,
+                showModal, modalTitle, modalFields, formData, openForm, submitForm, deleteItem, openTaskExec, showProfileModal, profileForm, updateProfile, openProfileModal: ()=>showProfileModal.value=true,
+                showApiKeyModal, apiKey, tempApiKey, saveApiKey, translate, translating, handleCam, removePhoto,
+                recentLogs, maintenanceVehicles, todaysShifts, pendingReviews, globalFuel, myStats, myNextTasks, getPlate,
+                isSaveLocked, taskContext, approveLog, rejectLog, undoLog,
+                sigCanvas, fullSigCanvas, isSigFullScreen, sigPenColor, startSign, drawSign, endSign, clearSignature, saveSignature, openFullScreenSig, clearFullScreenSig, saveFullScreenSig, toggleFieldLock,
+                searchQuery, filteredVehicles, previewImage, openPreview, handleExport, handleImport,
+                storageUsage, statsTab, statsFilters, resetStatsFilters,
+                syncStatus // Exposed to template
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
