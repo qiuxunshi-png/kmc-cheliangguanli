@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#09090b">
-    <title>KMC Vehicle Manager</title>
+    <title>KMC Vehicle Manager (SQL + Bi-Lingual)</title>
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,8 +27,11 @@
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out' },
-                    keyframes: { fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } } }
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-in': 'slideIn 0.3s ease-out' },
+                    keyframes: { 
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+                        slideIn: { '0%': { transform: 'translateX(100%)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
+                    }
                 }
             }
         }
@@ -46,13 +49,15 @@
         .kmc-btn { font-weight: 600; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .kmc-btn:active { transform: scale(0.98); }
         .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
-        .action-badge { font-size: 10px; padding: 2px 8px; border-radius: 4px; background: rgba(59, 130, 246, 0.15); color: #60a5fa; cursor: pointer; border: 1px solid rgba(59, 130, 246, 0.2); transition: all 0.2s; display: flex; align-items: center; gap: 4px; }
-        .action-badge:hover { background: rgba(59, 130, 246, 0.25); border-color: rgba(59, 130, 246, 0.4); }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
         .kmc-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; transition: all 0.2s; }
         .kmc-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
         
+        /* New AI Button */
+        .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
+        .ai-btn:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+
         /* Photo Grid */
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #3f3f46; cursor: zoom-in; }
@@ -75,6 +80,21 @@
 <body class="antialiased selection:bg-kmc-primary/30 text-sm">
 
 <div id="app" class="h-screen flex flex-col overflow-hidden text-kmc-text">
+    
+    <div v-if="isGlobalLoading" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <div class="text-white font-bold tracking-widest animate-pulse">SYNCING DB...</div>
+    </div>
+
+    <div class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none">
+        <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3" :class="toast.type==='success'?'border-green-500':(toast.type==='error'?'border-red-500':'border-blue-500')">
+            <i class="mt-0.5 fa-solid" :class="toast.type==='success'?'fa-check-circle text-green-500':(toast.type==='error'?'fa-triangle-exclamation text-red-500':'fa-info-circle text-blue-500')"></i>
+            <div>
+                <div class="text-white font-bold text-sm">{{ toast.title }}</div>
+                <div class="text-xs text-gray-400 mt-1">{{ toast.msg }}</div>
+            </div>
+        </div>
+    </div>
 
     <div v-if="!currentUser" class="flex-1 flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80')] bg-cover bg-center relative">
         <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
@@ -82,7 +102,7 @@
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20"><i class="fa-solid fa-truck-shield text-3xl text-white"></i></div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">V27.10 HYBRID AI</p>
+                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">V28.1 SQL + DUAL AI</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div>
@@ -97,6 +117,7 @@
             </form>
             <div class="mt-4 text-center">
                 <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-2 rounded border border-red-500/20 mb-3" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
+                <p class="text-[10px] text-gray-500 italic">Default: admin / 666666 (Ensure DB Inserted)</p>
             </div>
         </div>
     </div>
@@ -133,12 +154,7 @@
                 <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
                     <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System / 系统</div>
                     <a @click="handleExport" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-download w-5 text-center"></i> Backup / 备份</a>
-                    <div class="relative">
-                        <input type="file" accept=".json" @change="handleImport" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                        <a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-upload w-5 text-center"></i> Restore / 恢复</a>
-                    </div>
                     <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Reset / 重置</a>
-                    <a @click="showApiKeyModal=true" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-robot w-5 text-center"></i> AI Key / AI配置</a>
                 </div>
             </nav>
             <div class="p-4 border-t border-kmc-border bg-black/20"><button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button></div>
@@ -151,10 +167,11 @@
                     <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> {{ getPageTitle() }}</h1>
                 </div>
                 <div class="flex items-center gap-3">
-                    <span v-if="syncStatus === 'syncing'" class="text-[10px] text-blue-400 font-mono flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> Syncing...</span>
-                    <span v-else-if="syncStatus === 'saved'" class="text-[10px] text-green-400 font-mono flex items-center gap-2"><i class="fa-solid fa-cloud-arrow-up"></i> Saved</span>
-                    <span v-else-if="syncStatus === 'error'" class="text-[10px] text-red-400 font-mono flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Sync Error</span>
-                    <span class="text-[10px] text-green-500 font-mono border border-green-900 bg-green-900/10 px-2 py-1 rounded">Storage / 存储: {{ storageUsage }}%</span>
+                    <button @click="forceSync" class="text-[10px] font-mono flex items-center gap-2 px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/5 transition" :class="syncStatus==='error'?'text-red-400':(syncStatus==='syncing'?'text-blue-400':'text-green-400')">
+                        <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
+                        {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
+                    </button>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">Storage: {{ storageUsage }}%</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -177,8 +194,14 @@
                         <div v-if="taskContext.remarks"><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 mt-3">Note / 备注</div><div class="text-sm text-gray-300">{{ taskContext.remarks }}</div></div>
                     </div>
                     <div>
-                        <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报 (Translate)</label><div class="action-badge" @click="translate('content')"><i v-if="translating==='content'" class="fa-solid fa-spinner fa-spin"></i><span v-else><i class="fa-solid fa-language mr-1"></i> AI Translate</span></div></div>
-                        <div class="input-group"><textarea v-model="formData.content" class="kmc-input h-32 resize-none" placeholder="Enter details... / 输入详情"></textarea></div>
+                        <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报</label></div>
+                        <div class="relative group">
+                            <textarea v-model="formData.content" class="kmc-input h-32 resize-none pr-10" placeholder="Enter details... / 输入详情"></textarea>
+                            <div class="ai-btn" @click="translate('content')" title="One-Click Translate">
+                                <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                        </div>
                     </div>
                     <div v-if="taskContext.req_photo">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Photos / 现场照片 (Required)</label>
@@ -195,12 +218,28 @@
                     <div v-if="!field.showIf || field.showIf(formData)">
                         <div class="flex justify-between items-end mb-1.5 ml-1">
                             <label class="block text-[10px] font-bold text-kmc-muted uppercase">{{ field.label }}</label>
-                            <div v-if="!field.locked && (field.translate || field.type==='textarea' || ['name','model','route','station','remark','reason','feedback','title_en'].some(k=>key.toLowerCase().includes(k)) && field.translate!==false)" class="action-badge" @click="translate(key)">
-                                <i v-if="translating===key" class="fa-solid fa-spinner fa-spin"></i>
-                                <span v-else><i class="fa-solid fa-language mr-1"></i> AI Translate</span>
-                            </div>
                         </div>
-                        <div v-if="['text','textarea','editable_select','number','date'].includes(field.type)" class="input-group relative"><div v-if="!field.alwaysLocked && field.locked !== undefined" class="input-lock-btn" :class="{ 'unlocked': !field.locked }" @click="toggleFieldLock(key)"><i class="fa-solid" :class="field.locked ? 'fa-pen-to-square' : 'fa-unlock'"></i></div><template v-if="field.type === 'editable_select'"><input v-model="formData[key]" :list="'list-'+key" class="kmc-input pr-9" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'"><datalist :id="'list-'+key"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></datalist></template><template v-else-if="field.type === 'textarea'"><textarea v-model="formData[key]" class="kmc-input h-24 pr-9 resize-none" :disabled="field.locked" :placeholder="field.ph || 'Enter details / 输入详情'"></textarea></template><template v-else><input v-model="formData[key]" :type="field.type" class="kmc-input pr-9" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'"></template></div>
+                        
+                        <div v-if="['text','textarea','editable_select','number','date'].includes(field.type)" class="input-group relative group">
+                            <div v-if="field.translate" class="ai-btn" @click="translate(key)" title="One-Click Translate">
+                                <i v-if="translating===key" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+
+                            <div v-if="!field.alwaysLocked && field.locked !== undefined" class="input-lock-btn" :class="{ 'unlocked': !field.locked }" @click="toggleFieldLock(key)"><i class="fa-solid" :class="field.locked ? 'fa-pen-to-square' : 'fa-unlock'"></i></div>
+                            
+                            <template v-if="field.type === 'editable_select'">
+                                <input v-model="formData[key]" :list="'list-'+key" class="kmc-input pr-10" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'">
+                                <datalist :id="'list-'+key"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></datalist>
+                            </template>
+                            <template v-else-if="field.type === 'textarea'">
+                                <textarea v-model="formData[key]" class="kmc-input h-24 pr-10 resize-none" :disabled="field.locked" :placeholder="field.ph || 'Enter details / 输入详情'"></textarea>
+                            </template>
+                            <template v-else>
+                                <input v-model="formData[key]" :type="field.type" class="kmc-input pr-10" :disabled="field.locked" :placeholder="field.ph || 'Enter value / 输入内容'">
+                            </template>
+                        </div>
+                        
                         <div v-else-if="field.type === 'checkbox'" class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData[key] = !formData[key]"><span class="text-sm font-medium text-gray-300">{{ field.label }}</span><div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData[key]" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData[key] ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div></div>
                         <select v-else-if="field.type === 'select'" v-model="formData[key]" class="kmc-input" :disabled="field.disabled"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></select>
                         <input v-else-if="['time','datetime-local'].includes(field.type)" :type="field.type" v-model="formData[key]" class="kmc-input">
@@ -220,8 +259,6 @@
         <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close / 点击任意处关闭</div>
     </div>
 
-    <div v-if="showApiKeyModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm"><div class="bg-[#18181b] border border-[#3f3f46] p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">AI Configuration / AI配置</h3><input v-model="tempApiKey" class="kmc-input mb-4" placeholder="Gemini API Key (Leave empty to use system default)"><div class="flex gap-3"><button @click="showApiKeyModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Close / 关闭</button><button @click="saveApiKey" class="kmc-btn bg-green-600 text-white flex-1 py-2 text-xs">Save / 保存</button></div></div></div>
-    
     <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm"><div class="bg-[#18181b] border border-[#3f3f46] p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
 
 </div>
@@ -562,59 +599,27 @@
     createApp({
         components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts },
         setup() {
-            // Keys
-            const K_U = 'kmc_opt_u'; const K_V = 'kmc_opt_v'; const K_T = 'kmc_opt_t'; const K_L = 'kmc_opt_l'; const K_S = 'kmc_opt_s';
-            // !!! PASTE YOUR KEY HERE !!!
-            const DEFAULT_GEMINI_KEY = ''; 
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            const load = (k, d) => { const s=localStorage.getItem(k); return s?JSON.parse(s):d; };
-
-            // Supabase Config
+            // Supabase Config (Use your own keys here)
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-            const syncStatus = ref('saved'); // 'syncing', 'saved', 'error'
+            const syncStatus = ref('saved'); 
+            const isGlobalLoading = ref(false);
             
-            // Debounced Save for performance + Supabase Sync
-            let saveTimeout;
-            const debouncedSave = () => {
-                syncStatus.value = 'syncing';
-                clearTimeout(saveTimeout);
-                saveTimeout = setTimeout(async () => {
-                    // 1. Local Save
-                    localStorage.setItem(K_U, JSON.stringify(users.value));
-                    localStorage.setItem(K_V, JSON.stringify(vehicles.value));
-                    localStorage.setItem(K_T, JSON.stringify(tasks.value));
-                    localStorage.setItem(K_L, JSON.stringify(logs.value));
-                    localStorage.setItem(K_S, JSON.stringify(shifts.value));
-                    checkStorageUsage();
-
-                    // 2. Cloud Save (Supabase Upsert)
-                    try {
-                        const { error } = await supabase.from('kmc_storage').upsert([
-                            { key: K_U, value: users.value },
-                            { key: K_V, value: vehicles.value },
-                            { key: K_T, value: tasks.value },
-                            { key: K_L, value: logs.value },
-                            { key: K_S, value: shifts.value }
-                        ]);
-                        if (error) throw error;
-                        syncStatus.value = 'saved';
-                    } catch (err) {
-                        console.error('Cloud Sync Error:', err);
-                        syncStatus.value = 'error';
-                    }
-                }, 2000); // 2 seconds debounce for cloud save
+            // Toast System
+            const toasts = ref([]);
+            const showToast = (title, msg, type='info') => {
+                const id = Date.now();
+                toasts.value.push({id, title, msg, type});
+                setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 3000);
             };
 
             // Init Data
-            const users = ref(load(K_U, []));
-            if(users.value.length === 0) users.value.push({id:1, name:'admin', password:'666666', role:'01'});
-            const vehicles = ref(load(K_V, []));
-            const tasks = ref(load(K_T, []));
-            const logs = ref(load(K_L, []));
-            const shifts = ref(load(K_S, []));
+            const users = ref([]);
+            const vehicles = ref([]);
+            const tasks = ref([]);
+            const logs = ref([]);
+            const shifts = ref([]);
 
             // UI State
             const currentUser = ref(null);
@@ -659,34 +664,151 @@
                 for(let key in localStorage) {
                     if(localStorage.hasOwnProperty(key)) total += (localStorage[key].length * 2);
                 }
-                storageUsage.value = ((total / 1024 / 1024) / 5 * 100).toFixed(1); // Assuming 5MB limit
+                storageUsage.value = ((total / 1024 / 1024) / 5 * 100).toFixed(1); 
             };
 
-            // Cloud Fetch
-            const fetchCloudData = async () => {
+            // --- SQL SYNC LOGIC ---
+            
+            // 1. Fetch from SQL Tables
+            const fetchCloudData = async (silent = false) => {
+                if(!silent) isGlobalLoading.value = true;
                 syncStatus.value = 'syncing';
-                const { data, error } = await supabase.from('kmc_storage').select('*');
-                if (!error && data) {
-                    data.forEach(item => {
-                        if (item.key === K_U && item.value) users.value = item.value;
-                        if (item.key === K_V && item.value) vehicles.value = item.value;
-                        if (item.key === K_T && item.value) tasks.value = item.value;
-                        if (item.key === K_L && item.value) logs.value = item.value;
-                        if (item.key === K_S && item.value) shifts.value = item.value;
-                    });
+                try {
+                    const [resU, resV, resT, resL, resS] = await Promise.all([
+                        supabase.from('app_users').select('*'),
+                        supabase.from('vehicles').select('*'),
+                        supabase.from('task_configs').select('*'),
+                        supabase.from('app_logs').select('*').order('timestamp', { ascending: false }), 
+                        supabase.from('shifts').select('*')
+                    ]);
+
+                    if(resU.error) throw resU.error;
+                    if(resV.error) throw resV.error;
+                    if(resT.error) throw resT.error;
+                    if(resL.error) throw resL.error;
+                    if(resS.error) throw resS.error;
+
+                    users.value = resU.data || [];
+                    vehicles.value = resV.data || [];
+                    tasks.value = resT.data || [];
+                    shifts.value = resS.data || [];
+                    
+                    // Unpack extra_data from JSONB
+                    logs.value = (resL.data || []).map(log => ({
+                        ...log,
+                        ...log.extra_data, 
+                        extra_data: undefined 
+                    }));
+
                     syncStatus.value = 'saved';
-                } else {
+                    if(!silent) showToast('Sync Complete', 'SQL Data loaded.', 'success');
+                } catch (err) {
+                    console.error('Fetch Error:', err);
                     syncStatus.value = 'error';
+                    if(!silent) showToast('Sync Failed', 'DB Error: ' + err.message, 'error');
+                } finally {
+                    isGlobalLoading.value = false;
+                }
+            };
+
+            // 2. Generic Save to Table (Upsert)
+            const saveToTable = async (table, item, extraFields = []) => {
+                isGlobalLoading.value = true;
+                try {
+                    const payload = { ...item };
+                    
+                    // Pack extra fields into JSONB for logs
+                    if (extraFields.length > 0) {
+                        payload.extra_data = {};
+                        extraFields.forEach(f => {
+                            if (payload[f] !== undefined) {
+                                payload.extra_data[f] = payload[f];
+                                delete payload[f]; 
+                            }
+                        });
+                    }
+
+                    if(typeof payload.id === 'string' && !isNaN(Number(payload.id))) payload.id = Number(payload.id);
+
+                    const { error } = await supabase.from(table).upsert(payload);
+                    if (error) throw error;
+                    
+                    syncStatus.value = 'saved';
+                } catch (err) {
+                    console.error(`Save to ${table} Error:`, err);
+                    syncStatus.value = 'error';
+                    showToast('Save Failed', err.message, 'error');
+                    throw err; 
+                } finally {
+                    isGlobalLoading.value = false;
+                }
+            };
+
+            // 3. Delete from Table
+            const deleteFromTable = async (table, id) => {
+                if(!confirm("Delete this item? / 确认删除?")) return;
+                isGlobalLoading.value = true;
+                try {
+                    const { error } = await supabase.from(table).delete().eq('id', id);
+                    if(error) throw error;
+
+                    if(table==='app_users') users.value=users.value.filter(x=>x.id!==id);
+                    else if(table==='vehicles') vehicles.value=vehicles.value.filter(x=>x.id!==id); 
+                    else if(table==='task_configs') tasks.value=tasks.value.filter(x=>x.id!==id); 
+                    else if(table==='shifts') shifts.value=shifts.value.filter(x=>x.id!==id);
+                    else if(table==='app_logs') logs.value=logs.value.filter(x=>x.id!==id);
+
+                    showToast('Deleted', 'Item removed.', 'success');
+                } catch(err) {
+                    showToast('Delete Failed', err.message, 'error');
+                } finally {
+                    isGlobalLoading.value = false;
                 }
             };
 
             onMounted(() => { 
                 checkStorageUsage(); 
                 resetStatsFilters();
-                fetchCloudData(); // Fetch cloud data on start
+                fetchCloudData(false); // Force load on start
             });
             
-            watch([users, vehicles, tasks, logs, shifts], () => { debouncedSave(); }, {deep:true});
+            // --- END SQL SYNC LOGIC ---
+
+            // --- BILINGUAL TRANSLATE ---
+            const translate = async (k) => { 
+                const text = formData.value[k];
+                if (!text) return;
+
+                if (text.includes('(') && text.includes(')')) {
+                     if(!confirm("Already translated. Translate again? / 看起来已经翻译过了，要再次翻译吗？")) return;
+                }
+
+                translating.value = k;
+
+                const hasChinese = /[\u4e00-\u9fa5]/.test(text);
+                const langPair = hasChinese ? 'zh|en' : 'en|zh-CN';
+
+                try { 
+                    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
+                    const res = await fetch(url);
+                    const data = await res.json(); 
+
+                    if(data.responseData && data.responseData.translatedText){
+                          const translated = data.responseData.translatedText;
+                          formData.value[k] = `${text} (${translated})`;
+                          
+                          if(['content', 'standards', 'remarks'].includes(k)) isTaskTranslated.value = true;
+                          showToast("Success", "Translated (Bilingual)", "success");
+                    } else {
+                        throw new Error("API No Data");
+                    }
+                } catch(e){
+                    console.error(e);
+                    showToast("Translate Failed", "Network error.", "error");
+                } finally {
+                    translating.value = null;
+                }
+            };
 
             // Canvas Logic
             const initCanvas = (targetCanvas) => {
@@ -737,41 +859,66 @@
                 return {locked:false, msg:'Save Changes / 保存更改'};
             });
 
-            // COMPRESSED Camera Handler
+            // --- OPTIMIZED Camera Handler ---
             const handleCam = (e, k) => { 
-                const f=e.target.files[0];
-                if(!f)return; 
-                const r=new FileReader(); 
-                r.onload=(evt)=>{ 
-                    const img=new Image();
-                    img.onload=()=>{ 
-                        const maxWidth = 600;
+                const f = e.target.files[0];
+                if(!f) return; 
+
+                // Size check (Limit to ~5MB)
+                if(f.size > 5 * 1024 * 1024) {
+                    showToast("Error", "Image too large (Max 5MB)", "error");
+                    return;
+                }
+
+                const r = new FileReader(); 
+                r.onload = (evt) => { 
+                    const img = new Image();
+                    img.onload = () => { 
+                        const maxWidth = 800; // Force resize for DB storage safety
                         let w = img.width;
                         let h = img.height;
-                        if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; }
-                        const c=document.createElement('canvas');
-                        const ctx=c.getContext('2d'); 
-                        c.width=w; c.height=h; 
+                        if(w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+                        
+                        const c = document.createElement('canvas');
+                        const ctx = c.getContext('2d'); 
+                        c.width = w; c.height = h; 
+                        
+                        // Draw white background (prevent png transparency issues)
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(0,0,w,h);
                         ctx.drawImage(img,0,0,w,h); 
+                        
                         // Watermark
-                        ctx.fillStyle="rgba(0,0,0,0.5)";
-                        ctx.fillRect(0,c.height-30,c.width,30); 
-                        ctx.fillStyle="white"; ctx.font="12px monospace"; 
-                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10);
+                        ctx.fillStyle = "rgba(0,0,0,0.5)";
+                        ctx.fillRect(0, c.height - 30, c.width, 30); 
+                        ctx.fillStyle = "white"; 
+                        ctx.font = "14px monospace"; 
+                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height - 10);
+                        
                         if(!formData.value[k]) formData.value[k] = [];
-                        try { formData.value[k].push(c.toDataURL('image/jpeg', 0.5)); } catch(err) { alert("Storage Full! / 空间不足"); }
-                    };
-                    img.src=evt.target.result; 
+                        
+                        // Compress (JPEG 0.4 quality)
+                        const base64 = c.toDataURL('image/jpeg', 0.4);
+                        if(base64.length > 500000) showToast("Info", "Image compressed for storage", "info");
+                        
+                        formData.value[k].push(base64); 
+                    }; 
+                    img.src = evt.target.result; 
                 }; 
                 r.readAsDataURL(f); 
             };
 
             // Basic Helpers
             const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
-            const handleLogin = () => { const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
-                if(u) currentUser.value = u; else loginError.value = 'Invalid Credentials / 密码或账号错误'; };
+            
+            // NOTE: Client-side password check is for DEMO ONLY. In production use Supabase Auth.
+            const handleLogin = () => { 
+                const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
+                if(u) currentUser.value = u; else loginError.value = 'Invalid Credentials / 密码或账号错误'; 
+            };
+            
             const handleLogout = () => currentUser.value = null;
-            const factoryReset = () => { if(confirm("Reset All Data? / 重置所有数据?")) { localStorage.clear(); location.reload(); }};
+            const factoryReset = () => { if(confirm("Reset Local Data?")) { localStorage.clear(); location.reload(); }};
             const navigate = (v) => { currentView.value = v; isMobileMenuOpen.value = false; };
             const navClass = (v) => currentView.value === v ? 'bg-blue-500/10 text-blue-400 font-bold' : 'text-kmc-muted hover:text-white';
             const getPageTitle = () => currentView.value.replace('_', ' ').toUpperCase();
@@ -835,10 +982,10 @@
                     
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
                     modalFields.value = {
-                        title_en: {label:'Task Name / 任务名', type:'text'}, 
-                        content: {label:'Content / 内容 (Text)', type:'textarea'},
-                        standards: {label:'Standards / 标准 (Text)', type:'textarea'},
-                        remarks: {label:'Remarks / 备注', type:'textarea'}, 
+                        title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
+                        content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
+                        standards: {label:'Standards / 标准 (Text)', type:'textarea', translate: true},
+                        remarks: {label:'Remarks / 备注', type:'textarea', translate: true}, 
                         req_photo: {label:'Require Photo / 需拍照', type:'checkbox'},
                         req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
                         assigned_to: {label:'Assign To / 指派给', type:'select', options: assignOptions}
@@ -871,14 +1018,23 @@
                 showModal.value = true;
             };
 
-            const submitForm = () => {
+            const submitForm = async () => {
                 try {
-                    if (modalType.value === 'staff') { const idx = users.value.findIndex(x => x.id === formData.value.id);
-                        if(idx !== -1) users.value[idx] = {...formData.value}; else users.value.push({...formData.value}); }
-                    else if (modalType.value === 'vehicle') { const idx = vehicles.value.findIndex(x => x.id === formData.value.id);
-                        if(idx !== -1) vehicles.value[idx] = {...formData.value}; else vehicles.value.push({...formData.value}); }
-                    else if (modalType.value === 'task_config') { const idx = tasks.value.findIndex(x => x.id === formData.value.id);
-                        if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); }
+                    if (modalType.value === 'staff') { 
+                        const idx = users.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) users.value[idx] = {...formData.value}; else users.value.push({...formData.value}); 
+                        await saveToTable('app_users', formData.value);
+                    }
+                    else if (modalType.value === 'vehicle') { 
+                        const idx = vehicles.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) vehicles.value[idx] = {...formData.value}; else vehicles.value.push({...formData.value}); 
+                        await saveToTable('vehicles', formData.value);
+                    }
+                    else if (modalType.value === 'task_config') { 
+                        const idx = tasks.value.findIndex(x => x.id === formData.value.id);
+                        if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); 
+                        await saveToTable('task_configs', formData.value);
+                    }
                     else if (modalType.value.startsWith('shift')) { 
                         if (modalType.value === 'shift_temp' && formData.value.start_datetime) {
                             formData.value.date = formData.value.start_datetime.split('T')[0];
@@ -886,61 +1042,61 @@
                         }
                         const idx = shifts.value.findIndex(s => s.id === formData.value.id);
                         if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); 
+                        await saveToTable('shifts', formData.value);
                     }
                     else if (modalType.value === 'fuel') { 
                         const v = vehicles.value.find(x => x.id === formData.value.entity_id);
-                        if(formData.value.mileage <= v.mileage) { alert("Mileage Error: Must be > current / 里程错误: 必须大于当前里程"); return; } 
+                        if(formData.value.mileage <= v.mileage) { showToast("Mileage Error", "New mileage must be greater than current.", "error"); return; } 
                         v.mileage = formData.value.mileage;
-                        logs.value.unshift({...formData.value, category:'fuel', timestamp: new Date().toISOString()}); 
+                        
+                        await saveToTable('vehicles', v);
+                        const newLog = {...formData.value, category:'fuel', timestamp: new Date().toISOString()};
+                        logs.value.unshift(newLog); 
+                        await saveToTable('app_logs', newLog, ['liters', 'price', 'mileage', 'station', 'is_internal']);
                     }
-                    else if (modalType.value === 'task_exec') { logs.value.unshift({...formData.value, timestamp: new Date().toISOString()}); }
+                    else if (modalType.value === 'task_exec') { 
+                        const newLog = {...formData.value, timestamp: new Date().toISOString()};
+                        logs.value.unshift(newLog); 
+                        await saveToTable('app_logs', newLog);
+                    }
                     
                     showModal.value = false;
+                    showToast('Saved', 'Data synced to DB.', 'success');
                 } catch(e) {
-                    alert("Error saving data. Storage might be full. / 保存失败，存储空间可能已满。");
+                    showToast("Error", "Could not save form.", "error");
                 }
             };
 
-            const deleteItem = (t, id) => { if(confirm("Delete this item? / 确认删除?")) { if(t==='users') users.value=users.value.filter(x=>x.id!==id);
-                else if(t==='vehicles') vehicles.value=vehicles.value.filter(x=>x.id!==id); else if(t==='tasks') tasks.value=tasks.value.filter(x=>x.id!==id); else if(t==='shifts') shifts.value=shifts.value.filter(x=>x.id!==id); } };
+            const deleteItem = async (t, id) => { 
+                const tableMap = { 'users': 'app_users', 'vehicles': 'vehicles', 'tasks': 'task_configs', 'shifts': 'shifts' };
+                if(tableMap[t]) { await deleteFromTable(tableMap[t], id); }
+            };
             
-            const approveLog = (log) => { log.rating = 'green'; log.feedback = null; debouncedSave(); };
-            const rejectLog = (log, reason) => { log.rating = 'red'; log.feedback = reason || 'No reason provided'; debouncedSave(); };
-            const undoLog = (log) => { log.rating = null; log.feedback = null; debouncedSave(); };
-
-            const translate = async (k) => { 
-                translating.value=k;
-                const finalKey = apiKey.value || DEFAULT_GEMINI_KEY;
-
-                if(!finalKey){ 
-                    setTimeout(()=>{ 
-                        formData.value[k]+=" (No Key)"; 
-                        translating.value=null;
-                        alert("Please configure AI Key in System Settings or add DEFAULT_GEMINI_KEY in code."); 
-                    }, 500); 
-                    return; 
-                } 
-                try{ 
-                    // Updated Model to gemini-1.5-flash for stability
-                    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${finalKey}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:`Translate to English/Chinese (if English -> Chinese, if Chinese -> English): ${formData.value[k]}`}]}]})});
-                    const d=await res.json(); 
-                    if(d.candidates && d.candidates[0] && d.candidates[0].content){
-                         formData.value[k]=d.candidates[0].content.parts[0].text.trim();
-                         if(['content', 'standards', 'remarks'].includes(k)) isTaskTranslated.value = true;
-                    } else {
-                        throw new Error("API Error");
-                    }
-                } catch(e){
-                    console.error(e);
-                    formData.value[k]+=" (Err)";
-                } 
-                translating.value=null;
+            const approveLog = async (log) => { 
+                log.rating = 'green'; log.feedback = null; 
+                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+            };
+            const rejectLog = async (log, reason) => { 
+                log.rating = 'red'; log.feedback = reason || 'No reason provided'; 
+                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+            };
+            const undoLog = async (log) => { 
+                log.rating = null; log.feedback = null; 
+                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
             };
 
             const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en;
                 formData.value = {id:Date.now(), title_en:t.title_en, user_name:currentUser.value.name, category:'task_exec', photos:[], signature: null}; showModal.value = true; };
             
-            const updateProfile = () => { const idx=users.value.findIndex(u=>u.id===currentUser.value.id); if(profileForm.value.password) users.value[idx].password=profileForm.value.password; if(profileForm.value.name) users.value[idx].name=profileForm.value.name; currentUser.value=users.value[idx]; showProfileModal.value=false; alert("Profile Updated / 资料已更新"); };
+            const updateProfile = async () => { 
+                const idx=users.value.findIndex(u=>u.id===currentUser.value.id); 
+                if(profileForm.value.password) users.value[idx].password=profileForm.value.password; 
+                if(profileForm.value.name) users.value[idx].name=profileForm.value.name; 
+                currentUser.value=users.value[idx]; 
+                await saveToTable('app_users', currentUser.value);
+                showProfileModal.value=false; 
+                showToast("Profile Updated","","success"); 
+            };
 
             // Computed Helpers
             const recentLogs = computed(() => (logs.value || []).slice(0, 10));
@@ -990,8 +1146,10 @@
             });
 
             const handleExport = () => { const data = { users: users.value, vehicles: vehicles.value, tasks: tasks.value, logs: logs.value, shifts: shifts.value }; const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kmc_backup.json'; a.click(); };
-            const handleImport = (e) => { const r = new FileReader(); r.onload=(evt)=>{ try { const d=JSON.parse(evt.target.result);
-                users.value=d.users; vehicles.value=d.vehicles; tasks.value=d.tasks; logs.value=d.logs; shifts.value=d.shifts; alert("Restored Successfully! / 恢复成功!"); } catch(e){alert("Error Restoring / 恢复失败");} }; r.readAsText(e.target.files[0]); };
+            const handleImport = (e) => { const r = new FileReader(); r.onload= async (evt)=>{ try { const d=JSON.parse(evt.target.result);
+                // Note: For SQL hybrid, import might need manual handling or bulk insert. For now we just load to memory warning.
+                users.value=d.users; vehicles.value=d.vehicles; tasks.value=d.tasks; logs.value=d.logs; shifts.value=d.shifts; 
+                showToast("Warning", "Imported to memory only. Please save individually to sync.", "warning"); } catch(e){showToast("Error", "Restore Failed", "error");} }; r.readAsText(e.target.files[0]); };
             const saveApiKey = () => { apiKey.value = tempApiKey.value; localStorage.setItem('k_key', apiKey.value); showApiKeyModal.value=false; };
             
             return {
@@ -1005,7 +1163,7 @@
                 sigCanvas, fullSigCanvas, isSigFullScreen, sigPenColor, startSign, drawSign, endSign, clearSignature, saveSignature, openFullScreenSig, clearFullScreenSig, saveFullScreenSig, toggleFieldLock,
                 searchQuery, filteredVehicles, previewImage, openPreview, handleExport, handleImport,
                 storageUsage, statsTab, statsFilters, resetStatsFilters,
-                syncStatus // Exposed to template
+                syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts
             };
         }
     }).mount('#app');
