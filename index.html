@@ -150,6 +150,14 @@
         .tool-btn.active { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
         
         .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
+
+        /* Print Fixes */
+        @media print {
+            tr, .kmc-card, .break-inside-avoid {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+        }
     </style>
 </head>
 <body class="antialiased selection:bg-kmc-primary/30 text-sm">
@@ -158,7 +166,7 @@
     
     <div v-if="isGlobalLoading" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4 shadow-glow"></div>
-        <div class="text-white font-bold tracking-widest animate-pulse text-xs">SYNCING DB... / 同步中</div>
+        <div class="text-white font-bold tracking-widest animate-pulse text-xs">PROCESSING / 处理中</div>
     </div>
 
     <div class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none">
@@ -176,7 +184,7 @@
             <div class="text-center mb-10">
                 <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
                 <h1 class="text-3xl font-bold text-white tracking-tight mb-2">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Global Edition</p>
+                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Cloud Edition</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-6">
                 <div>
@@ -248,7 +256,7 @@
                     <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded hover:bg-gray-800 transition cursor-default">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V30.0</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V31.0</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -925,7 +933,7 @@
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
 
-            // 计算总记录数 (NEW)
+            // 计算总记录数
             const totalRecords = computed(() => {
                 return (users.value.length || 0) + 
                        (vehicles.value.length || 0) + 
@@ -934,7 +942,6 @@
                        (shifts.value.length || 0);
             });
 
-            // 辅助函数: 格式化多人显示
             const formatAssignee = (val) => {
                 if (!val) return 'None';
                 if (Array.isArray(val)) return val.join(', ');
@@ -952,13 +959,18 @@
                 if(!silent) isGlobalLoading.value = true;
                 syncStatus.value = 'syncing';
                 try {
-                    const [resU, resV, resT, resL, resS] = await Promise.all([
-                        supabase.from('app_users').select('*'),
-                        supabase.from('vehicles').select('*'),
-                        supabase.from('task_configs').select('*'),
-                        supabase.from('app_logs').select('*').order('timestamp', { ascending: false }), 
-                        supabase.from('shifts').select('*')
-                    ]);
+                    const p1 = supabase.from('app_users').select('*');
+                    const p2 = supabase.from('vehicles').select('*');
+                    const p3 = supabase.from('task_configs').select('*');
+                    const p4 = supabase.from('shifts').select('*');
+                    
+                    // 优化：日志只加载最近 200 条，避免卡顿
+                    const p5 = supabase.from('app_logs')
+                        .select('*')
+                        .order('timestamp', { ascending: false })
+                        .limit(200); 
+
+                    const [resU, resV, resT, resS, resL] = await Promise.all([p1, p2, p3, p4, p5]);
 
                     if(resU.error) throw resU.error;
                     if(resV.error) throw resV.error;
@@ -992,7 +1004,6 @@
                 try {
                     const payload = { ...item };
                     
-                    // 自动将非标准字段打包进 extra_data
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'],
                         'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
@@ -1050,13 +1061,12 @@
             };
 
             // --- EXPORT & CLEAR LOGIC (New) ---
-            const exportConfig = ref({ includeImages: true }); // Default to include
+            const exportConfig = ref({ includeImages: true }); 
 
             // 1. JSON Backup
             const handleExportJSON = () => {
-                // Clone data to avoid modifying live view
                 let dataToExport = {
-                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v30.0" },
+                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v31.0" },
                     users: JSON.parse(JSON.stringify(users.value)),
                     vehicles: JSON.parse(JSON.stringify(vehicles.value)),
                     tasks: JSON.parse(JSON.stringify(tasks.value)),
@@ -1064,7 +1074,6 @@
                     logs: JSON.parse(JSON.stringify(logs.value))
                 };
 
-                // Filter logic if toggle is OFF
                 if (!exportConfig.value.includeImages) {
                     const stripMedia = (item) => {
                         if (item.photos) delete item.photos;
@@ -1099,7 +1108,6 @@
                     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
                 };
                 
-                // Slight delay to ensure v-if rendering handles toggle state
                 setTimeout(() => {
                     html2pdf().set(opt).from(element).save().then(() => { 
                         isGlobalLoading.value = false; 
@@ -1114,9 +1122,8 @@
             const handleClear = async () => {
                 isGlobalLoading.value = true;
                 try {
-                    // Only clear operational data (Logs and Shifts), keep Configs (Users, Vehicles, Tasks)
-                    const { error: err1 } = await supabase.from('app_logs').delete().neq('id', 0); // Delete all logs
-                    const { error: err2 } = await supabase.from('shifts').delete().neq('id', 0); // Delete all shifts
+                    const { error: err1 } = await supabase.from('app_logs').delete().neq('id', 0); 
+                    const { error: err2 } = await supabase.from('shifts').delete().neq('id', 0); 
                     
                     if(err1) throw err1;
                     if(err2) throw err2;
@@ -1135,7 +1142,7 @@
 
             onMounted(() => { 
                 resetStatsFilters();
-                fetchCloudData(false); // 启动时加载数据
+                fetchCloudData(false); 
             });
             
             // --- 翻译功能 ---
@@ -1221,47 +1228,100 @@
                 return {locked:false, msg:'Save Changes / 保存更改'};
             });
 
-            // Camera Handler (Compressed)
-            const handleCam = (e, k) => { 
-                const f=e.target.files[0];
-                if(!f)return; 
-                const r=new FileReader(); 
-                r.onload=(evt)=>{ 
-                    const img=new Image();
-                    img.onload=()=>{ 
-                        const maxWidth = 800; // Increased quality slightly for cloud
-                        let w = img.width;
-                        let h = img.height;
-                        if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; }
-                        const c=document.createElement('canvas');
-                        const ctx=c.getContext('2d'); 
-                        c.width=w; c.height=h; 
-                        ctx.drawImage(img,0,0,w,h); 
-                        // Watermark
-                        ctx.fillStyle="rgba(0,0,0,0.5)";
-                        ctx.fillRect(0,c.height-30,c.width,30); 
-                        ctx.fillStyle="white"; ctx.font="12px monospace"; 
-                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10);
-                        if(!formData.value[k]) formData.value[k] = [];
-                        try { formData.value[k].push(c.toDataURL('image/jpeg', 0.6)); } catch(err) { showToast("Error","Image too large","error"); }
-                    }; 
-                    img.src=evt.target.result; 
-                }; 
-                r.readAsDataURL(f); 
+            // --- 新版相机处理逻辑 (上传至 Supabase Storage) ---
+            const handleCam = async (e, k) => { 
+                const f = e.target.files[0];
+                if (!f) return;
+
+                // 1. 开启加载动画
+                isGlobalLoading.value = true;
+                showToast("Uploading", "Compressing & Uploading image...", "info");
+
+                try {
+                    // 2. 读取文件并压缩
+                    const processImage = () => {
+                        return new Promise((resolve, reject) => {
+                            const r = new FileReader();
+                            r.onload = (evt) => {
+                                const img = new Image();
+                                img.onload = () => {
+                                    const maxWidth = 1000;
+                                    let w = img.width;
+                                    let h = img.height;
+                                    if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+                                    
+                                    const c = document.createElement('canvas');
+                                    c.width = w; c.height = h;
+                                    const ctx = c.getContext('2d');
+                                    ctx.drawImage(img, 0, 0, w, h);
+                                    
+                                    // 水印
+                                    ctx.fillStyle = "rgba(0,0,0,0.5)";
+                                    ctx.fillRect(0, c.height - 30, c.width, 30);
+                                    ctx.fillStyle = "white"; ctx.font = "12px monospace";
+                                    ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height - 10);
+
+                                    // 转换为 Blob
+                                    c.toBlob((blob) => {
+                                        if (blob) resolve(blob);
+                                        else reject(new Error("Canvas conversion failed"));
+                                    }, 'image/jpeg', 0.6);
+                                };
+                                img.onerror = reject;
+                                img.src = evt.target.result;
+                            };
+                            r.onerror = reject;
+                            r.readAsDataURL(f);
+                        });
+                    };
+
+                    const imageBlob = await processImage();
+
+                    // 3. 生成唯一文件名
+                    const fileExt = 'jpg';
+                    const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`;
+                    const filePath = `uploads/${fileName}`;
+
+                    // 4. 上传
+                    const { data, error: uploadError } = await supabase.storage
+                        .from('kmc-media')
+                        .upload(filePath, imageBlob, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    // 5. 获取 URL
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('kmc-media')
+                        .getPublicUrl(filePath);
+
+                    // 6. 存入 formData
+                    if (!formData.value[k]) formData.value[k] = [];
+                    formData.value[k].push(publicUrl);
+
+                    showToast("Success", "Photo uploaded to cloud.", "success");
+
+                } catch (err) {
+                    console.error("Upload failed:", err);
+                    showToast("Error", "Upload failed: " + err.message, "error");
+                } finally {
+                    isGlobalLoading.value = false;
+                    e.target.value = ''; 
+                }
             };
 
             const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
             
             // Login Logic
             const handleLogin = () => { 
-                // Local check against synced users
                 const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
                 if(u) {
                     currentUser.value = u; 
                     showToast("Welcome", `Logged in as ${u.name}`, "success");
                 } else { 
                     loginError.value = 'Invalid Credentials or Sync Pending'; 
-                    // Try fetch again just in case
                     fetchCloudData(true);
                 } 
             };
@@ -1331,7 +1391,6 @@
                     
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
                     
-                    // --- MULTI-SELECT SUPPORT ---
                     modalFields.value = {
                         title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
                         content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
@@ -1343,7 +1402,6 @@
                     };
                     if(!data) formData.value = {id:Date.now(), assigned_to: []};
                     else {
-                        // Data compatibility handler
                         let existing = data.assigned_to;
                         try {
                             if (typeof existing === 'string' && existing.startsWith('[')) existing = JSON.parse(existing);
@@ -1395,7 +1453,6 @@
                     else if (modalType.value === 'task_config') { 
                         const idx = tasks.value.findIndex(x => x.id === formData.value.id);
                         
-                        // --- MULTI-SELECT SAVING (Convert array to JSON string) ---
                         if (Array.isArray(formData.value.assigned_to)) {
                             formData.value.assigned_to = JSON.stringify(formData.value.assigned_to);
                         }
@@ -1479,10 +1536,8 @@
                 const assign = t.assigned_to;
                 if (!assign) return false;
                 
-                // Case 1: Array (Unlikely from DB text column, but possible in local state)
                 if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
                 
-                // Case 2: JSON String (New format)
                 if (typeof assign === 'string' && assign.startsWith('[')) {
                     try {
                         const parsed = JSON.parse(assign);
@@ -1490,7 +1545,6 @@
                     } catch(e) {}
                 }
                 
-                // Case 3: Simple String (Legacy format)
                 return assign === currentUser.value?.name;
             }));
 
@@ -1504,7 +1558,7 @@
                 if (currentView.value === 'reports') return Reports;
                 if (currentView.value === 'shifts') return Shifts;
                 if (currentView.value === 'statistics') return Stats;
-                if (currentView.value === 'storage') return StorageView; // NEW COMPONENT
+                if (currentView.value === 'storage') return StorageView;
                 if (currentView.value === 'my_tasks') return {
                     template: `
                     <div class="space-y-6">
