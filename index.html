@@ -248,7 +248,7 @@
                     <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded hover:bg-gray-800 transition cursor-default">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V29.1</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V29.3</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -738,7 +738,7 @@
         template: `
         <div class="space-y-8 animate-fade-in">
             <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Storage Management / 存储管理</h2>
+                <h2 class="text-xl font-bold text-white">Storage & Backup / 存储与备份</h2>
             </div>
             
             <div class="kmc-card p-6">
@@ -746,7 +746,7 @@
                     <div>
                         <div class="text-[10px] text-kmc-muted uppercase font-bold tracking-widest mb-1">Database Capacity / 数据库容量</div>
                         <div class="text-3xl font-bold text-white flex items-end gap-2">
-                            {{ $root.totalRecords }} <span class="text-sm text-gray-500 font-normal mb-1">/ {{ softLimit }} Records (Soft Limit)</span>
+                            {{ $root.totalRecords }} <span class="text-sm text-gray-500 font-normal mb-1">/ {{ softLimit }} Records (Ref)</span>
                         </div>
                     </div>
                     <div class="text-right">
@@ -754,11 +754,9 @@
                         <div class="text-[10px] text-gray-500">Used</div>
                     </div>
                 </div>
-                
                 <div class="w-full bg-gray-700 rounded-full h-2.5 mb-6 overflow-hidden">
                     <div class="h-2.5 rounded-full transition-all duration-1000" :style="{ width: percentage + '%' }" :class="percentage > 80 ? 'bg-red-500' : (percentage > 50 ? 'bg-yellow-500' : 'bg-green-500')"></div>
                 </div>
-
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                     <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Logs</div><div class="font-bold text-white">{{ $root.logs.length }}</div></div>
                     <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Shifts</div><div class="font-bold text-white">{{ $root.shifts.length }}</div></div>
@@ -767,26 +765,98 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="kmc-card p-6 border-l-4 border-l-blue-500">
-                    <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Export Data / 导出备份</h3>
-                    <p class="text-xs text-gray-400 mb-6">Download a full JSON backup of all vehicles, logs, and settings. Recommended before clearing data.<br>下载所有数据的JSON备份。建议在清空前执行。</p>
-                    <button @click="$root.handleExport" class="kmc-btn bg-blue-600 hover:bg-blue-500 text-white w-full py-3 text-sm shadow-lg"><i class="fa-solid fa-file-export mr-2"></i> Export All Data</button>
+            <div class="kmc-card p-6 border-l-4 border-l-blue-500">
+                <h3 class="font-bold text-white mb-4"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Export Options / 导出选项</h3>
+                
+                <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg mb-6 border border-white/10">
+                    <div>
+                        <div class="font-bold text-white text-sm">Include Media / 包含媒体</div>
+                        <div class="text-[10px] text-gray-400">Photos & Signatures (Increases file size) / 照片与签字</div>
+                    </div>
+                    <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" id="toggle-media" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="$root.exportConfig.includeImages ? 'right-0 border-blue-500' : 'left-0 border-gray-400'" v-model="$root.exportConfig.includeImages"/>
+                        <label for="toggle-media" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer" :class="$root.exportConfig.includeImages ? 'bg-blue-500' : 'bg-gray-700'"></label>
+                    </div>
                 </div>
 
-                <div class="kmc-card p-6 border-l-4 border-l-red-500">
-                    <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-trash-can text-red-500 mr-2"></i> Clear History / 清空历史</h3>
-                    <p class="text-xs text-gray-400 mb-6">Permanently delete logs and shifts to free up space. Vehicles and Staff settings will be KEPT.<br>永久删除日志和排班以释放空间。车辆和人员设置将被保留。</p>
-                    <button @click="confirmClear" class="kmc-btn bg-red-900/50 border border-red-500/50 hover:bg-red-800 text-red-100 w-full py-3 text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Clear Logs & Shifts</button>
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="$root.handleExportJSON" class="kmc-btn bg-white/10 hover:bg-white/20 text-white py-3 text-xs border border-white/10">
+                        <i class="fa-solid fa-file-code mr-2 text-yellow-400"></i> JSON Backup
+                    </button>
+                    <button @click="$root.handleExportPDF" class="kmc-btn bg-white/10 hover:bg-white/20 text-white py-3 text-xs border border-white/10">
+                        <i class="fa-solid fa-file-pdf mr-2 text-red-400"></i> Export PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="kmc-card p-6 border-l-4 border-l-red-500 opacity-80 hover:opacity-100 transition">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-trash-can text-red-500 mr-2"></i> Danger Zone</h3>
+                        <p class="text-[10px] text-gray-400">Clear logs/shifts only. Configs are safe. / 仅清空流水记录</p>
+                    </div>
+                    <button @click="confirmClear" class="px-4 py-2 bg-red-900/30 border border-red-500/50 text-red-200 text-[10px] font-bold rounded hover:bg-red-900/50">Clear History</button>
+                </div>
+            </div>
+
+            <div style="position: absolute; left: -9999px; top: 0;">
+                <div id="storage-pdf-template" class="bg-white text-black p-8 w-[210mm] min-h-[297mm]">
+                    <div class="border-b-2 border-black pb-4 mb-6">
+                        <h1 class="text-2xl font-bold uppercase">System Data Export</h1>
+                        <div class="flex justify-between text-xs text-gray-600 mt-2">
+                            <span>Generated by: {{ $root.currentUser?.name }}</span>
+                            <span>Date: {{ new Date().toLocaleString() }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-6 bg-gray-100 p-4 rounded text-xs">
+                        <h3 class="font-bold border-b border-gray-300 mb-2 pb-1">System Status</h3>
+                        <div class="grid grid-cols-4 gap-4">
+                            <div>Vehicles: <b>{{ $root.vehicles.length }}</b></div>
+                            <div>Staff: <b>{{ $root.users.length }}</b></div>
+                            <div>Logs: <b>{{ $root.logs.length }}</b></div>
+                            <div>Shifts: <b>{{ $root.shifts.length }}</b></div>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-sm uppercase border-b-2 border-black mb-3 pb-1">Recent Operations Log (Top 100)</h3>
+                    <table class="w-full text-left border border-gray-300 text-[10px] mb-6">
+                        <thead class="bg-gray-200 font-bold">
+                            <tr>
+                                <th class="p-2 border">Time</th>
+                                <th class="p-2 border">Type</th>
+                                <th class="p-2 border">User</th>
+                                <th class="p-2 border">Details</th>
+                                <th class="p-2 border text-center w-24">Proof</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b">
+                                <td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td>
+                                <td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td>
+                                <td class="p-2 border">{{ log.user_name }}</td>
+                                <td class="p-2 border">
+                                    <div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div>
+                                    <div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div>
+                                </td>
+                                <td class="p-2 border text-center">
+                                    <div v-if="$root.exportConfig.includeImages">
+                                        <img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-10 h-10 object-cover inline-block border border-gray-300">
+                                        <img v-if="log.signature" :src="log.signature" class="w-10 h-8 object-contain inline-block border border-gray-300 ml-1 filter invert">
+                                    </div>
+                                    <span v-else class="text-gray-400 italic">Omitted</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center text-[10px] text-gray-400 mt-4">--- End of Report ---</div>
                 </div>
             </div>
         </div>
         `,
-        data() { return { softLimit: 3000 } }, // 3000 records soft limit for visual
+        data() { return { softLimit: 3000 } },
         computed: {
-            percentage() {
-                return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100);
-            }
+            percentage() { return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100); }
         },
         methods: {
             confirmClear() {
@@ -980,23 +1050,65 @@
             };
 
             // --- EXPORT & CLEAR LOGIC (New) ---
-            const handleExport = () => {
-                const data = {
-                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v29.1" },
-                    users: users.value,
-                    vehicles: vehicles.value,
-                    tasks: tasks.value,
-                    shifts: shifts.value,
-                    logs: logs.value
+            const exportConfig = ref({ includeImages: true }); // Default to include
+
+            // 1. JSON Backup
+            const handleExportJSON = () => {
+                // Clone data to avoid modifying live view
+                let dataToExport = {
+                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v29.3" },
+                    users: JSON.parse(JSON.stringify(users.value)),
+                    vehicles: JSON.parse(JSON.stringify(vehicles.value)),
+                    tasks: JSON.parse(JSON.stringify(tasks.value)),
+                    shifts: JSON.parse(JSON.stringify(shifts.value)),
+                    logs: JSON.parse(JSON.stringify(logs.value))
                 };
-                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+
+                // Filter logic if toggle is OFF
+                if (!exportConfig.value.includeImages) {
+                    const stripMedia = (item) => {
+                        if (item.photos) delete item.photos;
+                        if (item.archive_photos) delete item.archive_photos;
+                        if (item.signature) delete item.signature;
+                        return item;
+                    };
+                    dataToExport.vehicles = dataToExport.vehicles.map(stripMedia);
+                    dataToExport.logs = dataToExport.logs.map(stripMedia);
+                }
+
+                const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {type: 'application/json'});
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `KMC_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.download = `KMC_Backup_${exportConfig.value.includeImages ? 'Full' : 'TextOnly'}_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
                 URL.revokeObjectURL(url);
-                showToast("Exported", "Data backup downloaded.", "success");
+                showToast("Exported", `JSON Backup (${exportConfig.value.includeImages ? 'Full' : 'No Media'}) downloaded.`, "success");
+            };
+
+            // 2. PDF Report
+            const handleExportPDF = () => {
+                isGlobalLoading.value = true;
+                const element = document.getElementById('storage-pdf-template');
+                const opt = { 
+                    margin: 10, 
+                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.95 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                // Slight delay to ensure v-if rendering handles toggle state
+                setTimeout(() => {
+                    html2pdf().set(opt).from(element).save().then(() => { 
+                        isGlobalLoading.value = false; 
+                        showToast("Success", "PDF Report Generated", "success");
+                    }).catch(err => {
+                        isGlobalLoading.value = false;
+                        showToast("Error", "PDF Generation failed", "error");
+                    });
+                }, 100);
             };
 
             const handleClear = async () => {
@@ -1435,7 +1547,7 @@
                 syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts,
                 totalRecords, formatAssignee,
                 // New Exports
-                handleExport, handleClear
+                handleExportJSON, handleExportPDF, handleClear, exportConfig
             };
         }
     }).mount('#app');
