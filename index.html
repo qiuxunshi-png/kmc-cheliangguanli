@@ -170,7 +170,7 @@
                         <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
                         {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
                     </button>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.2 SQL</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.3 SQL</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -586,7 +586,7 @@
              <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
                 <div>
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }} <span class="ml-2 bg-gray-800 px-1 rounded text-gray-400" v-if="s.date">{{ s.date }}</span></div>
                 </div>
                  <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
              </div>
@@ -981,13 +981,14 @@
                         if(!data) formData.value = {id:Date.now(), type:'temp'};
                     } else {
                         modalFields.value = {
+                            date: {label:'Date / 日期', type:'date'},
                             vehicle_type: { label:'Bus Type / 车型', type:'editable_select', ph: 'Select...', options: [{val:'Big Bus', label:'Big Bus'}, {val:'Medium Bus', label:'Medium Bus'}] },
                             route: { label:'Route / 路线', type:'editable_select', ph: 'Select...', options: [{val:'Morning Commute', label:'Morning Commute'}] },
                             driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))},
                             start_time: {label:'Start Time / 开始', type:'time'}, end_time: {label:'End Time / 结束', type:'time'},
-                            standards: {label:'Rules / 规则', type:'textarea', locked:true},
+                            standards: {label:'Rules / 规则', type:'textarea', translate: true},
                         };
-                        if(!data) formData.value = {id:Date.now(), type:'fixed'};
+                        if(!data) formData.value = {id:Date.now(), type:'fixed', date: new Date().toISOString().split('T')[0]};
                     }
                 }
                 showModal.value = true;
