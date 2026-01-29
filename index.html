@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#09090b">
-    <title>KMC Vehicle Manager (Cloud Edition)</title>
+    <meta name="theme-color" content="#050505">
+    <title>KMC Vehicle Manager (Aurora Edition)</title>
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,16 +21,24 @@
                 extend: {
                     colors: {
                         kmc: {
-                            bg: '#09090b', card: '#18181b', border: '#27272a',
-                            primary: '#3b82f6', success: '#10b981', danger: '#ef4444',
+                            bg: '#050505', 
+                            card: 'rgba(20, 20, 23, 0.6)', 
+                            border: 'rgba(255, 255, 255, 0.08)',
+                            primary: '#3b82f6', 
+                            accent: '#6366f1',
+                            success: '#10b981', danger: '#ef4444',
                             warning: '#f59e0b', text: '#e4e4e7', muted: '#a1a1aa'
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-in': 'slideIn 0.3s ease-out' },
+                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' },
                     keyframes: { 
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-                        slideIn: { '0%': { transform: 'translateX(100%)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
+                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+                        slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px -5px rgba(59, 130, 246, 0.3)',
+                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     }
                 }
             }
@@ -38,35 +46,102 @@
     </script>
 
     <style>
-        body { background-color: #09090b; color: #e4e4e7; touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent; }
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        /* 1. 全局噪点背景 & 极光环境光 */
+        body { 
+            background-color: #050505; 
+            color: #e4e4e7; 
+            font-family: 'Inter', sans-serif;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 25%);
+            background-attachment: fixed;
+            touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent;
+        }
+        body::before {
+            content: "";
+            position: fixed; inset: 0; z-index: -1;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        /* 2. 滚动条优化 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 99px; }
-        .glass-panel { background: rgba(24, 24, 27, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); }
-        .kmc-input { background-color: rgba(0, 0, 0, 0.3); border: 1px solid #27272a; color: #e4e4e7; width: 100%; padding: 10px 14px; border-radius: 8px; font-size: 14px; transition: all 0.2s; }
-        .kmc-input:focus { border-color: #3b82f6; outline: none; background-color: rgba(0, 0, 0, 0.5); }
-        .kmc-input:disabled { opacity: 0.6; cursor: not-allowed; background-color: rgba(255, 255, 255, 0.05); color: #71717a; }
-        .kmc-btn { font-weight: 600; border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .kmc-btn:active { transform: scale(0.98); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* 3. 玻璃拟态卡片 (Premium Glass Card) */
+        .kmc-card { 
+            background: rgba(20, 20, 23, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .kmc-card::after { /* 顶部高光 */
+            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        }
+        .kmc-card:hover { 
+            border-color: rgba(255, 255, 255, 0.1); 
+            transform: translateY(-4px); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 4. 输入框 (Glow Input) */
+        .kmc-input { 
+            background-color: rgba(0, 0, 0, 0.2); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            color: #e4e4e7; width: 100%; padding: 12px 16px; border-radius: 10px; font-size: 14px; 
+            transition: all 0.2s; 
+        }
+        .kmc-input:focus { 
+            border-color: #3b82f6; 
+            outline: none; 
+            background-color: rgba(0, 0, 0, 0.4); 
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+        .kmc-input:disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
+
+        /* 5. 按钮 (Tactile Button) */
+        .kmc-btn { 
+            font-weight: 600; border-radius: 10px; transition: all 0.2s; 
+            display: flex; align-items: center; justify-content: center;
+            letter-spacing: 0.025em;
+        }
+        .kmc-btn:active { transform: scale(0.96); }
         .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
+        
+        .kmc-btn.bg-kmc-primary {
+            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .kmc-btn.bg-kmc-primary:hover {
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+            filter: brightness(1.1);
+        }
+
+        /* 6. 其他组件 */
+        .glass-panel { background: rgba(20, 20, 23, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+        
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
-        .kmc-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; transition: all 0.2s; }
-        .kmc-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
         
-        /* AI Button */
-        .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
-        .ai-btn:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+        .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
+        .ai-btn:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
 
-        /* Photo Grid */
-        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #3f3f46; cursor: zoom-in; }
-        .photo-add-btn { aspect-ratio: 1/1; border: 2px dashed #3f3f46; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #71717a; cursor: pointer; position: relative; transition: all 0.2s; }
+        .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: zoom-in; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .photo-add-btn { aspect-ratio: 1/1; border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #71717a; cursor: pointer; position: relative; transition: all 0.2s; background: rgba(255,255,255,0.02); }
         .photo-add-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.05); }
-        .photo-del-btn { position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; }
+        .photo-del-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* Signature Pad */
-        .sig-wrapper { position: relative; width: 100%; height: 180px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46; }
+        .sig-wrapper { position: relative; width: 100%; height: 180px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .sig-canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; position: relative; z-index: 2; }
         .sig-watermark { position: absolute; bottom: 30px; left: 20px; right: 20px; border-bottom: 2px dashed #cbd5e1; color: #cbd5e1; font-size: 20px; font-weight: bold; font-family: 'Times New Roman', serif; z-index: 1; pointer-events: none; user-select: none; }
         .sig-tools { position: absolute; top: 10px; right: 10px; z-index: 10; display: flex; gap: 8px; background: rgba(255,255,255,0.9); padding: 4px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
@@ -82,12 +157,12 @@
 <div id="app" class="h-screen flex flex-col overflow-hidden text-kmc-text">
     
     <div v-if="isGlobalLoading" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <div class="text-white font-bold tracking-widest animate-pulse">SYNCING DB...</div>
+        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4 shadow-glow"></div>
+        <div class="text-white font-bold tracking-widest animate-pulse text-xs">SYNCING DB...</div>
     </div>
 
     <div class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none">
-        <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3" :class="toast.type==='success'?'border-green-500':(toast.type==='error'?'border-red-500':'border-blue-500')">
+        <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded-xl shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3 border border-white/5 backdrop-blur-md" :class="toast.type==='success'?'border-l-green-500':(toast.type==='error'?'border-l-red-500':'border-l-blue-500')">
             <i class="mt-0.5 fa-solid" :class="toast.type==='success'?'fa-check-circle text-green-500':(toast.type==='error'?'fa-triangle-exclamation text-red-500':'fa-info-circle text-blue-500')"></i>
             <div>
                 <div class="text-white font-bold text-sm">{{ toast.title }}</div>
@@ -96,43 +171,42 @@
         </div>
     </div>
 
-    <div v-if="!currentUser" class="flex-1 flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80')] bg-cover bg-center relative">
-        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm"></div>
-        <div class="w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl relative z-10 mx-4">
-            <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20"><i class="fa-solid fa-truck-shield text-3xl text-white"></i></div>
-                <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">Cloud Edition • Supabase</p>
+    <div v-if="!currentUser" class="flex-1 flex items-center justify-center relative">
+        <div class="w-full max-w-md p-10 glass-panel rounded-2xl shadow-2xl relative z-10 mx-4 border border-white/10 animate-fade-in">
+            <div class="text-center mb-10">
+                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
+                <h1 class="text-3xl font-bold text-white tracking-tight mb-2">KMC Vehicle Manager</h1>
+                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Cloud Aurora Edition</p>
             </div>
-            <form @submit.prevent="handleLogin" class="space-y-5">
+            <form @submit.prevent="handleLogin" class="space-y-6">
                 <div>
-                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Name / 姓名</label>
-                    <input v-model="loginForm.name" type="text" class="kmc-input bg-[#18181b]" placeholder="admin">
+                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
+                    <input v-model="loginForm.name" type="text" class="kmc-input" placeholder="admin">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Password / 密码</label>
+                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Password / 密码</label>
                     <input v-model="loginForm.password" type="password" class="kmc-input" placeholder="666666">
                 </div>
-                <button type="submit" class="kmc-btn bg-kmc-primary hover:bg-blue-600 text-white w-full py-3.5 text-sm shadow-lg">Login System / 登录系统</button>
+                <button type="submit" class="kmc-btn bg-kmc-primary text-white w-full py-4 text-sm shadow-lg mt-4">Login System / 登录系统</button>
             </form>
-            <div class="mt-4 text-center">
-                <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-2 rounded border border-red-500/20 mb-3" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
-                <p class="text-[10px] text-gray-500 italic">Default: admin / 666666</p>
+            <div class="mt-6 text-center">
+                <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-3 rounded border border-red-500/20 mb-4" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
+                <p class="text-[10px] text-gray-600 italic">Default: admin / 666666</p>
             </div>
         </div>
     </div>
 
     <div v-else class="flex h-full">
-        <aside :class="['border-r border-kmc-border flex flex-col transition-all duration-300 z-40 bg-kmc-card', isMobileMenuOpen ? 'fixed inset-0 w-full z-50 bg-kmc-card' : 'hidden md:flex w-64']">
+        <aside :class="['border-r border-kmc-border flex flex-col transition-all duration-300 z-40 bg-black/40 backdrop-blur-xl', isMobileMenuOpen ? 'fixed inset-0 w-full z-50 bg-black/90' : 'hidden md:flex w-64']">
             <div class="p-6 border-b border-kmc-border">
                 <div class="flex items-center justify-between mb-1 md:hidden"><span class="text-xs font-bold text-kmc-muted">MENU</span><button @click="isMobileMenuOpen=false" class="text-white"><i class="fa-solid fa-times text-lg"></i></button></div>
                 <div class="flex items-center gap-3 cursor-pointer group" @click="openProfileModal">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/5">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
-                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/10 group-hover:scale-105 transition">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
+                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate group-hover:text-blue-400 transition">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
                 </div>
             </div>
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                <div class="px-3 mb-2 mt-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Operations / 运营操作</div>
+                <div class="px-3 mb-2 mt-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Operations</div>
                 <a @click="navigate('dashboard')" :class="navClass('dashboard')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard / 仪表盘</a>
                 
                 <template v-if="currentUser.role.startsWith('03')">
@@ -145,35 +219,35 @@
                     <a @click="navigate('tasks')" :class="navClass('tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-list-check w-5 text-center"></i> Config / 任务配置</a>
                     <a @click="navigate('reports')" :class="navClass('reports')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-file-signature w-5 text-center"></i> Reviews / 评审</a>
                     
-                    <div class="px-3 mb-2 mt-6 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Admin / 管理</div>
+                    <div class="px-3 mb-2 mt-6 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Admin</div>
                     <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-blue-400"></i> Stats / 统计报表</a>
                     <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
                     <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
                 </template>
                 
                 <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
-                    <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System / 系统</div>
+                    <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System</div>
                     <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Clear Local / 清除缓存</a>
                 </div>
             </nav>
             <div class="p-4 border-t border-kmc-border bg-black/20"><button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button></div>
         </aside>
 
-        <main class="flex-1 flex flex-col h-full bg-kmc-bg relative overflow-hidden">
-            <header class="h-16 border-b border-kmc-border bg-kmc-card/80 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
+        <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+            <header class="h-16 border-b border-kmc-border bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
                 <div class="flex items-center gap-4">
                     <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10"><i class="fa-solid fa-bars text-lg"></i></button>
-                    <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500"></span> {{ getPageTitle() }}</h1>
+                    <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shadow-glow"></span> {{ getPageTitle() }}</h1>
                 </div>
                 <div class="flex items-center gap-3">
                     <button @click="forceSync" class="text-[10px] font-mono flex items-center gap-2 px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/5 transition" :class="syncStatus==='error'?'text-red-400':(syncStatus==='syncing'?'text-blue-400':'text-green-400')">
                         <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
                         {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
                     </button>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded hover:bg-gray-800 transition cursor-default">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.7</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.8</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -182,11 +256,11 @@
         </main>
     </div>
 
-    <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
         <div class="bg-kmc-card border border-kmc-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
-            <div class="p-5 border-b border-[#27272a] flex justify-between items-center sticky top-0 bg-kmc-card z-10">
+            <div class="p-5 border-b border-[#27272a] flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-10">
                 <h3 class="text-lg font-bold text-white uppercase tracking-wide flex items-center gap-2"><span class="w-1 h-5 bg-blue-500 rounded-full"></span> {{ modalTitle }}</h3>
-                <button @click="showModal=false" class="text-kmc-muted hover:text-white"><i class="fa-solid fa-times"></i></button>
+                <button @click="showModal=false" class="text-kmc-muted hover:text-white transition"><i class="fa-solid fa-times"></i></button>
             </div>
             
             <div class="p-6 space-y-5">
@@ -271,12 +345,12 @@
 
     <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-blue-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear / 清除</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel / 取消</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-blue-600 text-white rounded text-sm font-bold shadow">Done / 完成</button></div></div><div class="fs-canvas-area"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
     
-    <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
+    <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out backdrop-blur-sm" @click="previewImage=null">
         <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl">
         <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close / 点击任意处关闭</div>
     </div>
 
-    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-sm"><div class="bg-[#18181b] border border-[#3f3f46] p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
+    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in"><div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
 
 </div>
 
@@ -650,7 +724,7 @@
              <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
                 <div>
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }} <span class="ml-2 bg-gray-800 px-1 rounded text-gray-400" v-if="s.date">{{ s.date }}</span></div>
                 </div>
                  <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
              </div>
