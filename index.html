@@ -5,12 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Manager (Aurora Edition)</title>
+    <title>KMC Vehicle Manager (Aurora Stable)</title>
     
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            document.body.innerHTML = `
+                <div style="color:#ff4444; padding:30px; background:#111; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+                    <h2 style="font-size:24px; margin-bottom:10px;">⚠️ System Load Error</h2>
+                    <p style="color:#888; font-size:14px;">${msg}</p>
+                    <p style="color:#555; font-size:12px; margin-top:5px;">${url} : ${line}</p>
+                    <button onclick="location.reload()" style="margin-top:20px; padding:10px 25px; background:#3b82f6; color:white; border:none; border-radius:8px; cursor:pointer;">Reload System</button>
+                </div>
+            `;
+            return false;
+        };
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
@@ -46,7 +60,6 @@
     </script>
 
     <style>
-        /* 1. 全局噪点背景 & 极光环境光 */
         body { 
             background-color: #050505; 
             color: #e4e4e7; 
@@ -58,77 +71,35 @@
             touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent;
         }
         body::before {
-            content: "";
-            position: fixed; inset: 0; z-index: -1;
+            content: ""; position: fixed; inset: 0; z-index: -1;
             background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
             pointer-events: none;
         }
-
-        /* 2. 滚动条优化 */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* 3. 玻璃拟态卡片 (Premium Glass Card) */
         .kmc-card { 
-            background: rgba(20, 20, 23, 0.6); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05); 
-            border-radius: 16px; 
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            background: rgba(20, 20, 23, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
         }
-        .kmc-card::after { /* 顶部高光 */
-            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-        }
-        .kmc-card:hover { 
-            border-color: rgba(255, 255, 255, 0.1); 
-            transform: translateY(-4px); 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-        }
+        .kmc-card::after { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent); }
+        .kmc-card:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); }
 
-        /* 4. 输入框 (Glow Input) */
-        .kmc-input { 
-            background-color: rgba(0, 0, 0, 0.2); 
-            border: 1px solid rgba(255, 255, 255, 0.08); 
-            color: #e4e4e7; width: 100%; padding: 12px 16px; border-radius: 10px; font-size: 14px; 
-            transition: all 0.2s; 
-        }
-        .kmc-input:focus { 
-            border-color: #3b82f6; 
-            outline: none; 
-            background-color: rgba(0, 0, 0, 0.4); 
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
+        .kmc-input { background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); color: #e4e4e7; width: 100%; padding: 12px 16px; border-radius: 10px; font-size: 14px; transition: all 0.2s; }
+        .kmc-input:focus { border-color: #3b82f6; outline: none; background-color: rgba(0, 0, 0, 0.4); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
         .kmc-input:disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
 
-        /* 5. 按钮 (Tactile Button) */
-        .kmc-btn { 
-            font-weight: 600; border-radius: 10px; transition: all 0.2s; 
-            display: flex; align-items: center; justify-content: center;
-            letter-spacing: 0.025em;
-        }
+        .kmc-btn { font-weight: 600; border-radius: 10px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; letter-spacing: 0.025em; }
         .kmc-btn:active { transform: scale(0.96); }
-        .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
-        
-        .kmc-btn.bg-kmc-primary {
-            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        .kmc-btn.bg-kmc-primary:hover {
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
-            filter: brightness(1.1);
-        }
+        .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
+        .kmc-btn.bg-kmc-primary { background-image: linear-gradient(to bottom right, #3b82f6, #2563eb); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .kmc-btn.bg-kmc-primary:hover { box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5); filter: brightness(1.1); }
 
-        /* 6. 其他组件 */
         .glass-panel { background: rgba(20, 20, 23, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
         
@@ -148,7 +119,6 @@
         .tool-btn { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; color: #64748b; border: 1px solid transparent; }
         .tool-btn:hover { background: #f1f5f9; color: #0f172a; }
         .tool-btn.active { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
-        
         .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
     </style>
 </head>
@@ -345,7 +315,7 @@
 
     <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-blue-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear / 清除</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel / 取消</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-blue-600 text-white rounded text-sm font-bold shadow">Done / 完成</button></div></div><div class="fs-canvas-area"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
     
-    <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
+    <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out backdrop-blur-sm" @click="previewImage=null">
         <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl">
         <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close / 点击任意处关闭</div>
     </div>
@@ -568,8 +538,8 @@
 
             const getFilterSummary = (root) => {
                 const f = root.statsFilters;
-                const vName = f.vehicle_id ? root.vehicles.find(v=>v.id===f.vehicle_id)?.plate : 'All Vehicles';
-                const dName = f.driver ? f.driver : 'All Drivers';
+                const vName = f.vehicle_id ? root.vehicles.find(v=>v.id===f.vehicle_id)?.plate : 'All Vehicles / 全部车辆';
+                const dName = f.driver ? f.driver : 'All Drivers / 全部司机';
                 const dateRange = (f.start || 'Beginning') + ' to ' + (f.end || 'Now');
                 return `${dateRange} • ${vName} • ${dName}`;
             };
@@ -624,19 +594,19 @@
                     <div class="flex-1 overflow-y-auto bg-[#525252] p-8 flex justify-center">
                         <div id="report-content" class="bg-white text-black w-[297mm] min-h-[210mm] shadow-2xl p-[15mm] flex flex-col relative box-border">
                             <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
-                                <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-blue-800 mt-1 uppercase tracking-widest">{{ $root.statsTab }} ANALYSIS REPORT</div></div>
-                                <div class="text-right text-xs text-gray-500"><div class="font-bold text-black mb-1">FILTER APPLIED:</div><div class="bg-gray-100 px-2 py-1 rounded font-mono">{{ getFilterSummary($root) }}</div><div class="mt-1">Generated: {{ new Date().toLocaleString() }} by {{ $root.currentUser.name }}</div></div>
+                                <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-blue-800 mt-1 uppercase tracking-widest">{{ $root.statsTab }} ANALYSIS REPORT / 分析报表</div></div>
+                                <div class="text-right text-xs text-gray-500"><div class="font-bold text-black mb-1">FILTER APPLIED / 筛选条件:</div><div class="bg-gray-100 px-2 py-1 rounded font-mono">{{ getFilterSummary($root) }}</div><div class="mt-1">Generated: {{ new Date().toLocaleString() }} by {{ $root.currentUser.name }}</div></div>
                             </div>
 
                             <div v-if="$root.statsTab==='fuel'" class="space-y-6">
                                 <div class="grid grid-cols-4 gap-4 mb-2">
-                                    <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
-                                    <div class="p-3 border border-gray-300 bg-orange-50 rounded"><div class="text-[10px] text-orange-800 uppercase font-bold">Total Liters</div><div class="text-xl font-bold text-orange-600">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
-                                    <div class="p-3 border border-gray-300 bg-green-50 rounded"><div class="text-[10px] text-green-800 uppercase font-bold">Total Cost</div><div class="text-xl font-bold text-green-600">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
-                                    <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : 0 }}</div></div>
+                                    <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records / 记录数</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
+                                    <div class="p-3 border border-gray-300 bg-orange-50 rounded"><div class="text-[10px] text-orange-800 uppercase font-bold">Total Liters / 总油量</div><div class="text-xl font-bold text-orange-600">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
+                                    <div class="p-3 border border-gray-300 bg-green-50 rounded"><div class="text-[10px] text-green-800 uppercase font-bold">Total Cost / 总费用</div><div class="text-xl font-bold text-green-600">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
+                                    <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L / 平均单价</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : 0 }}</div></div>
                                 </div>
                                 <table class="w-full text-left border border-gray-300 text-xs">
-                                    <thead class="bg-gray-800 text-white uppercase font-bold"><tr><th class="p-2 border border-gray-600">Date / 日期</th><th class="p-2 border border-gray-600">Vehicle / 车辆</th><th class="p-2 border border-gray-600">Driver / 司机</th><th class="p-2 border border-gray-600">Station / 油站</th><th class="p-2 border border-gray-600 text-right">Liters</th><th class="p-2 border border-gray-600 text-right">Cost</th><th class="p-2 border border-gray-600 text-center w-24">Proof</th></tr></thead>
+                                    <thead class="bg-gray-800 text-white uppercase font-bold"><tr><th class="p-2 border border-gray-600">Date / 日期</th><th class="p-2 border border-gray-600">Vehicle / 车辆</th><th class="p-2 border border-gray-600">Driver / 司机</th><th class="p-2 border border-gray-600">Station / 油站</th><th class="p-2 border border-gray-600 text-right">Liters / 升数</th><th class="p-2 border border-gray-600 text-right">Cost / 金额</th><th class="p-2 border border-gray-600 text-center w-24">Proof / 凭证</th></tr></thead>
                                     <tbody>
                                         <tr v-for="(log, idx) in filteredFuelLogs" :key="log.id" :class="idx%2===0?'bg-white':'bg-gray-50'" class="border-b border-gray-200">
                                             <td class="p-2 border-r border-gray-200 font-mono">{{ log.timestamp.split('T')[0] }}<br><span class="text-[9px] text-gray-400">{{ log.timestamp.split('T')[1].substr(0,5) }}</span></td>
@@ -654,7 +624,7 @@
                             <div v-if="$root.statsTab==='performance'" class="space-y-8">
                                  <div>
                                     <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-blue-800">1. Summary By Driver / 司机汇总</h3>
-                                    <table class="w-full text-left border border-gray-300 text-xs mb-6"><thead class="bg-gray-100 text-black"><tr><th class="p-2 border border-gray-300">Rank</th><th class="p-2 border border-gray-300">Driver</th><th class="p-2 border border-gray-300 text-center">Total Tasks</th><th class="p-2 border border-gray-300 text-center">Approved</th><th class="p-2 border border-gray-300 text-center">Rejected</th><th class="p-2 border border-gray-300 text-right">Success Rate</th></tr></thead><tbody><tr v-for="(d, idx) in driverPerformanceStats" :key="d.id" class="border-b border-gray-200"><td class="p-2 border-r border-gray-200 font-bold text-center w-12">{{ idx + 1 }}</td><td class="p-2 border-r border-gray-200 font-bold">{{ d.name }}</td><td class="p-2 border-r border-gray-200 text-center">{{ d.total }}</td><td class="p-2 border-r border-gray-200 text-center text-green-700 font-bold">{{ d.approved }}</td><td class="p-2 border-r border-gray-200 text-center text-red-600">{{ d.rejected }}</td><td class="p-2 text-right font-bold">{{ d.rate }}%</td></tr></tbody></table>
+                                    <table class="w-full text-left border border-gray-300 text-xs mb-6"><thead class="bg-gray-100 text-black"><tr><th class="p-2 border border-gray-300">Rank / 排名</th><th class="p-2 border border-gray-300">Driver / 司机</th><th class="p-2 border border-gray-300 text-center">Total Tasks / 总任务</th><th class="p-2 border border-gray-300 text-center">Approved / 通过</th><th class="p-2 border border-gray-300 text-center">Rejected / 驳回</th><th class="p-2 border border-gray-300 text-right">Success Rate / 通过率</th></tr></thead><tbody><tr v-for="(d, idx) in driverPerformanceStats" :key="d.id" class="border-b border-gray-200"><td class="p-2 border-r border-gray-200 font-bold text-center w-12">{{ idx + 1 }}</td><td class="p-2 border-r border-gray-200 font-bold">{{ d.name }}</td><td class="p-2 border-r border-gray-200 text-center">{{ d.total }}</td><td class="p-2 border-r border-gray-200 text-center text-green-700 font-bold">{{ d.approved }}</td><td class="p-2 border-r border-gray-200 text-center text-red-600">{{ d.rejected }}</td><td class="p-2 text-right font-bold">{{ d.rate }}%</td></tr></tbody></table>
                                  </div>
                                  <div>
                                     <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-blue-800">2. Detailed Execution Log / 执行流水</h3>
@@ -663,8 +633,8 @@
                                             <div class="flex justify-between mb-1 border-b border-gray-100 pb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div>
                                             <div class="text-gray-600 mb-1">Driver: <b>{{ t.user_name }}</b></div>
                                             <div class="text-gray-500 italic mb-2 line-clamp-2" v-if="t.content">{{ t.content }}</div>
-                                            <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
-                                            <div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500">Status:</span><span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'PASSED':(t.rating==='red'?'REJECTED':'PENDING') }}</span></div>
+                                            <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,3)" :src="p" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
+                                            <div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500">Status / 状态:</span><span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'PASSED / 通过':(t.rating==='red'?'REJECTED / 驳回':'PENDING / 待审') }}</span></div>
                                         </div>
                                     </div>
                                  </div>
@@ -724,7 +694,7 @@
              <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
                 <div>
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }} <span class="ml-2 bg-gray-800 px-1 rounded text-gray-400" v-if="s.date">{{ s.date }}</span></div>
                 </div>
                  <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
              </div>
@@ -860,6 +830,7 @@
                     const payload = { ...item };
                     
                     // 自动将非标准字段打包进 extra_data
+                    // 这里定义各表已有的实体列，其余放入 extra_data
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'],
                         'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
@@ -1334,4 +1305,3 @@
 </script>
 </body>
 </html>
-}
