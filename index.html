@@ -223,6 +223,7 @@
                     <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-blue-400"></i> Stats / 统计报表</a>
                     <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
                     <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
+                    <a @click="navigate('storage')" :class="navClass('storage')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-server w-5 text-center"></i> Storage / 存储管理</a>
                 </template>
                 
                 <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
@@ -247,7 +248,7 @@
                     <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded hover:bg-gray-800 transition cursor-default">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.9</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V29.1</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -733,8 +734,71 @@
     </div>` 
     };
 
+    const StorageView = {
+        template: `
+        <div class="space-y-8 animate-fade-in">
+            <div class="flex justify-between items-center">
+                <h2 class="text-xl font-bold text-white">Storage Management / 存储管理</h2>
+            </div>
+            
+            <div class="kmc-card p-6">
+                <div class="flex justify-between items-end mb-4">
+                    <div>
+                        <div class="text-[10px] text-kmc-muted uppercase font-bold tracking-widest mb-1">Database Capacity / 数据库容量</div>
+                        <div class="text-3xl font-bold text-white flex items-end gap-2">
+                            {{ $root.totalRecords }} <span class="text-sm text-gray-500 font-normal mb-1">/ {{ softLimit }} Records (Soft Limit)</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-2xl font-bold" :class="percentage > 80 ? 'text-red-500' : 'text-green-500'">{{ percentage }}%</div>
+                        <div class="text-[10px] text-gray-500">Used</div>
+                    </div>
+                </div>
+                
+                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-6 overflow-hidden">
+                    <div class="h-2.5 rounded-full transition-all duration-1000" :style="{ width: percentage + '%' }" :class="percentage > 80 ? 'bg-red-500' : (percentage > 50 ? 'bg-yellow-500' : 'bg-green-500')"></div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Logs</div><div class="font-bold text-white">{{ $root.logs.length }}</div></div>
+                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Shifts</div><div class="font-bold text-white">{{ $root.shifts.length }}</div></div>
+                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Vehicles</div><div class="font-bold text-white">{{ $root.vehicles.length }}</div></div>
+                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Staff</div><div class="font-bold text-white">{{ $root.users.length }}</div></div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="kmc-card p-6 border-l-4 border-l-blue-500">
+                    <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Export Data / 导出备份</h3>
+                    <p class="text-xs text-gray-400 mb-6">Download a full JSON backup of all vehicles, logs, and settings. Recommended before clearing data.<br>下载所有数据的JSON备份。建议在清空前执行。</p>
+                    <button @click="$root.handleExport" class="kmc-btn bg-blue-600 hover:bg-blue-500 text-white w-full py-3 text-sm shadow-lg"><i class="fa-solid fa-file-export mr-2"></i> Export All Data</button>
+                </div>
+
+                <div class="kmc-card p-6 border-l-4 border-l-red-500">
+                    <h3 class="font-bold text-white mb-2"><i class="fa-solid fa-trash-can text-red-500 mr-2"></i> Clear History / 清空历史</h3>
+                    <p class="text-xs text-gray-400 mb-6">Permanently delete logs and shifts to free up space. Vehicles and Staff settings will be KEPT.<br>永久删除日志和排班以释放空间。车辆和人员设置将被保留。</p>
+                    <button @click="confirmClear" class="kmc-btn bg-red-900/50 border border-red-500/50 hover:bg-red-800 text-red-100 w-full py-3 text-sm"><i class="fa-solid fa-triangle-exclamation mr-2"></i> Clear Logs & Shifts</button>
+                </div>
+            </div>
+        </div>
+        `,
+        data() { return { softLimit: 3000 } }, // 3000 records soft limit for visual
+        computed: {
+            percentage() {
+                return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100);
+            }
+        },
+        methods: {
+            confirmClear() {
+                if(confirm("WARNING: This will delete ALL history logs and shift records from the cloud database.\n\nAre you sure? This cannot be undone.\n\n警告：这将从云端数据库删除所有历史日志和排班记录。\n确定吗？此操作无法撤销。")) {
+                    this.$root.handleClear();
+                }
+            }
+        }
+    };
+
     createApp({
-        components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts },
+        components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts, StorageView },
         setup() {
             // --- SUPABASE 配置区域 ---
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
@@ -910,6 +974,48 @@
                     showToast('Deleted', 'Item removed.', 'success');
                 } catch(err) {
                     showToast('Delete Failed', err.message, 'error');
+                } finally {
+                    isGlobalLoading.value = false;
+                }
+            };
+
+            // --- EXPORT & CLEAR LOGIC (New) ---
+            const handleExport = () => {
+                const data = {
+                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v29.1" },
+                    users: users.value,
+                    vehicles: vehicles.value,
+                    tasks: tasks.value,
+                    shifts: shifts.value,
+                    logs: logs.value
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `KMC_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast("Exported", "Data backup downloaded.", "success");
+            };
+
+            const handleClear = async () => {
+                isGlobalLoading.value = true;
+                try {
+                    // Only clear operational data (Logs and Shifts), keep Configs (Users, Vehicles, Tasks)
+                    const { error: err1 } = await supabase.from('app_logs').delete().neq('id', 0); // Delete all logs
+                    const { error: err2 } = await supabase.from('shifts').delete().neq('id', 0); // Delete all shifts
+                    
+                    if(err1) throw err1;
+                    if(err2) throw err2;
+                    
+                    logs.value = [];
+                    shifts.value = [];
+                    
+                    showToast("Cleared", "History logs and shifts deleted.", "success");
+                } catch(err) {
+                    console.error("Clear failed", err);
+                    showToast("Error", "Failed to clear database.", "error");
                 } finally {
                     isGlobalLoading.value = false;
                 }
@@ -1286,6 +1392,7 @@
                 if (currentView.value === 'reports') return Reports;
                 if (currentView.value === 'shifts') return Shifts;
                 if (currentView.value === 'statistics') return Stats;
+                if (currentView.value === 'storage') return StorageView; // NEW COMPONENT
                 if (currentView.value === 'my_tasks') return {
                     template: `
                     <div class="space-y-6">
@@ -1326,7 +1433,9 @@
                 searchQuery, filteredVehicles, previewImage, openPreview, 
                 statsTab, statsFilters, resetStatsFilters,
                 syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts,
-                totalRecords, formatAssignee 
+                totalRecords, formatAssignee,
+                // New Exports
+                handleExport, handleClear
             };
         }
     }).mount('#app');
