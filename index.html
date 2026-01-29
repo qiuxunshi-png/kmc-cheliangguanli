@@ -173,7 +173,7 @@
                     <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.4 SQL</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.5 SQL</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -242,6 +242,21 @@
                             </template>
                         </div>
                         
+                        <div v-else-if="field.type === 'multiselect'" class="space-y-2">
+                            <div class="flex flex-wrap gap-2 mb-2 p-1 min-h-[30px]" v-if="formData[key] && formData[key].length > 0">
+                                <span v-for="sel in formData[key]" :key="sel" class="bg-blue-600/20 border border-blue-600/50 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
+                                    {{ sel }} <button @click.stop="formData[key] = formData[key].filter(i => i !== sel)" class="hover:text-white transition"><i class="fa-solid fa-times"></i></button>
+                                </span>
+                            </div>
+                            <div class="max-h-40 overflow-y-auto border border-kmc-border rounded p-2 bg-black/20">
+                                <label v-for="opt in field.options" :key="opt.val" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer transition">
+                                    <input type="checkbox" :value="opt.val" v-model="formData[key]" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-offset-gray-900 focus:ring-1">
+                                    <span class="text-xs text-gray-300">{{ opt.label }}</span>
+                                </label>
+                            </div>
+                            <div class="text-[9px] text-gray-500 italic text-right">{{ (formData[key]||[]).length }} Selected</div>
+                        </div>
+
                         <div v-else-if="field.type === 'checkbox'" class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData[key] = !formData[key]"><span class="text-sm font-medium text-gray-300">{{ field.label }}</span><div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData[key]" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData[key] ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div></div>
                         <select v-else-if="field.type === 'select'" v-model="formData[key]" class="kmc-input" :disabled="field.disabled"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></select>
                         <input v-else-if="['time','datetime-local'].includes(field.type)" :type="field.type" v-model="formData[key]" class="kmc-input">
@@ -364,7 +379,7 @@
                 </div>
                 <div class="mb-3">
                     <div class="font-bold text-lg text-white">{{ t.title_en }}</div>
-                    <div class="text-xs text-blue-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ t.assigned_to }}</div>
+                    <div class="text-xs text-blue-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ $root.formatAssignee(t.assigned_to) }}</div>
                 </div>
                 <div class="text-sm text-gray-400 line-clamp-2 mb-3">{{ t.content }}</div>
                 <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600">
@@ -666,6 +681,17 @@
                        (shifts.value.length || 0);
             });
 
+            // 辅助函数: 格式化多人显示
+            const formatAssignee = (val) => {
+                if (!val) return 'None';
+                if (Array.isArray(val)) return val.join(', ');
+                try {
+                    const parsed = JSON.parse(val);
+                    if (Array.isArray(parsed)) return parsed.join(', ');
+                } catch(e) {}
+                return val; // Fallback for legacy string
+            };
+
             // --- 核心同步逻辑 (Cloud Sync) ---
             
             // 1. 获取所有数据
@@ -714,7 +740,6 @@
                     const payload = { ...item };
                     
                     // 自动将非标准字段打包进 extra_data
-                    // 这里定义各表已有的实体列，其余放入 extra_data
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'],
                         'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
@@ -968,6 +993,8 @@
                     else if(myRole === '02') targetRoles = ['03'];
                     
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
+                    
+                    // --- CHANGED: Use multiselect type ---
                     modalFields.value = {
                         title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
                         content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
@@ -975,9 +1002,19 @@
                         remarks: {label:'Remarks / 备注', type:'textarea', translate: true}, 
                         req_photo: {label:'Require Photo / 需拍照', type:'checkbox'},
                         req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
-                        assigned_to: {label:'Assign To / 指派给', type:'select', options: assignOptions}
+                        assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
                     };
-                    if(!data) formData.value = {id:Date.now()};
+                    if(!data) formData.value = {id:Date.now(), assigned_to: []};
+                    else {
+                        // Data compatibility handler
+                        let existing = data.assigned_to;
+                        try {
+                            if (typeof existing === 'string' && existing.startsWith('[')) existing = JSON.parse(existing);
+                            else if (typeof existing === 'string') existing = [existing];
+                            else if (!existing) existing = [];
+                        } catch(e) { existing = []; }
+                        formData.value.assigned_to = existing;
+                    }
                 }
                 else if (type === 'shift_fixed' || type === 'shift_temp') { 
                     modalTitle.value = type==='shift_fixed' ? 'FIXED SCHEDULE / 固定班次' : 'TEMP DISPATCH / 临时调度';
@@ -1020,6 +1057,12 @@
                     }
                     else if (modalType.value === 'task_config') { 
                         const idx = tasks.value.findIndex(x => x.id === formData.value.id);
+                        
+                        // --- CHANGED: Convert array to string for Text column ---
+                        if (Array.isArray(formData.value.assigned_to)) {
+                            formData.value.assigned_to = JSON.stringify(formData.value.assigned_to);
+                        }
+                        
                         if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); 
                         await saveToTable('task_configs', formData.value);
                     }
@@ -1093,7 +1136,26 @@
             const pendingReviews = computed(() => (logs.value||[]).filter(l => l.category === 'task_exec' && !l.rating).length);
             const globalFuel = computed(() => { const f = (logs.value||[]).filter(l => l.category === 'fuel'); return { liters: f.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) } });
             const myStats = computed(() => { const l=(logs.value||[]).filter(x=>x.user_name===currentUser.value?.name); const g=l.filter(x=>x.rating==='green').length; return { total:l.length, rate:l.length?Math.round((g/l.length)*100):0 }; });
-            const myNextTasks = computed(() => (tasks.value||[]).filter(t => t.assigned_to === currentUser.value?.name));
+            
+            // --- CHANGED: Support multiple assignees logic ---
+            const myNextTasks = computed(() => (tasks.value||[]).filter(t => {
+                const assign = t.assigned_to;
+                if (!assign) return false;
+                
+                // Case 1: Array (Unlikely from DB text column, but possible in local state)
+                if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
+                
+                // Case 2: JSON String (New format)
+                if (typeof assign === 'string' && assign.startsWith('[')) {
+                    try {
+                        const parsed = JSON.parse(assign);
+                        return Array.isArray(parsed) && parsed.includes(currentUser.value?.name);
+                    } catch(e) {}
+                }
+                
+                // Case 3: Simple String (Legacy format)
+                return assign === currentUser.value?.name;
+            }));
 
             // View Components
             const currentViewComponent = computed(() => { 
@@ -1145,7 +1207,7 @@
                 searchQuery, filteredVehicles, previewImage, openPreview, 
                 statsTab, statsFilters, resetStatsFilters,
                 syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts,
-                totalRecords // NEW: Export to template
+                totalRecords, formatAssignee 
             };
         }
     }).mount('#app');
