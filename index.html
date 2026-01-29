@@ -170,7 +170,10 @@
                         <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
                         {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
                     </button>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.3 SQL</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">
+                        <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
+                    </span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.4 SQL</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -654,6 +657,15 @@
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
 
+            // 计算总记录数 (NEW)
+            const totalRecords = computed(() => {
+                return (users.value.length || 0) + 
+                       (vehicles.value.length || 0) + 
+                       (tasks.value.length || 0) + 
+                       (logs.value.length || 0) + 
+                       (shifts.value.length || 0);
+            });
+
             // --- 核心同步逻辑 (Cloud Sync) ---
             
             // 1. 获取所有数据
@@ -1132,7 +1144,8 @@
                 sigCanvas, fullSigCanvas, isSigFullScreen, sigPenColor, startSign, drawSign, endSign, clearSignature, saveSignature, openFullScreenSig, clearFullScreenSig, saveFullScreenSig, toggleFieldLock,
                 searchQuery, filteredVehicles, previewImage, openPreview, 
                 statsTab, statsFilters, resetStatsFilters,
-                syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts
+                syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts,
+                totalRecords // NEW: Export to template
             };
         }
     }).mount('#app');
