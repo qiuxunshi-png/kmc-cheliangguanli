@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#09090b">
-    <title>KMC Vehicle Manager (SQL + Bi-Lingual)</title>
+    <title>KMC Vehicle Manager (Cloud Edition)</title>
     
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -38,7 +38,7 @@
     </script>
 
     <style>
-        body { background-color: #09090b; color: #e4e4e7; font-feature-settings: "cv11", "ss01"; touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #09090b; color: #e4e4e7; touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 99px; }
@@ -54,7 +54,7 @@
         .kmc-card { background: #18181b; border: 1px solid #27272a; border-radius: 12px; transition: all 0.2s; }
         .kmc-card:hover { border-color: #3f3f46; transform: translateY(-2px); }
         
-        /* New AI Button */
+        /* AI Button */
         .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
         .ai-btn:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
 
@@ -102,7 +102,7 @@
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/20"><i class="fa-solid fa-truck-shield text-3xl text-white"></i></div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">V28.1 SQL + DUAL AI</p>
+                <p class="text-kmc-muted text-xs mt-2 font-mono uppercase tracking-widest">Cloud Edition • Supabase</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div>
@@ -117,7 +117,7 @@
             </form>
             <div class="mt-4 text-center">
                 <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-2 rounded border border-red-500/20 mb-3" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
-                <p class="text-[10px] text-gray-500 italic">Default: admin / 666666 (Ensure DB Inserted)</p>
+                <p class="text-[10px] text-gray-500 italic">Default: admin / 666666</p>
             </div>
         </div>
     </div>
@@ -153,8 +153,7 @@
                 
                 <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
                     <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System / 系统</div>
-                    <a @click="handleExport" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-white/5 text-kmc-muted hover:text-white"><i class="fa-solid fa-download w-5 text-center"></i> Backup / 备份</a>
-                    <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Reset / 重置</a>
+                    <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Clear Local / 清除缓存</a>
                 </div>
             </nav>
             <div class="p-4 border-t border-kmc-border bg-black/20"><button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button></div>
@@ -171,7 +170,7 @@
                         <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
                         {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
                     </button>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">Storage: {{ storageUsage }}%</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.2 SQL</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -266,7 +265,7 @@
 <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
 
-    // --- Components ---
+    // --- 子组件定义 ---
     const Dashboard = { template: `
         <div class="space-y-6">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="!isStaff">
@@ -599,10 +598,12 @@
     createApp({
         components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts },
         setup() {
-            // Supabase Config (Use your own keys here)
+            // --- SUPABASE 配置区域 ---
+            // 依据你提供的信息填充
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            
             const syncStatus = ref('saved'); 
             const isGlobalLoading = ref(false);
             
@@ -614,27 +615,25 @@
                 setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 3000);
             };
 
-            // Init Data
+            // 数据对象 (Data Models)
             const users = ref([]);
             const vehicles = ref([]);
             const tasks = ref([]);
             const logs = ref([]);
             const shifts = ref([]);
 
-            // UI State
+            // UI 状态
             const currentUser = ref(null);
             const loginForm = ref({name:'', password:''});
             const loginError = ref('');
             const currentView = ref('dashboard');
             const isMobileMenuOpen = ref(false);
-            const storageUsage = ref(0);
             
             // Modal & Forms
             const showModal = ref(false);
             const modalTitle = ref(''); const modalType = ref(''); const modalFields = ref({}); const formData = ref({}); const translating = ref(null);
             const showProfileModal = ref(false); const profileForm = ref({});
-            const showApiKeyModal = ref(false); const tempApiKey = ref(''); const apiKey = ref(localStorage.getItem('k_key')||'');
-
+            
             // Stats Logic
             const statsTab = ref('fuel');
             const statsFilters = ref({ start:'', end:'', vehicle_id:'', driver:'', status:'' });
@@ -644,14 +643,10 @@
                 statsFilters.value = { start: lastMonth, end: today, vehicle_id: '', driver: '', status: '' };
             };
 
-            const reportFilter = ref({ driver: '', start: '', end: '' });
-            const reportData = ref(null);
-            const activeShiftTab = ref('fixed');
             const isTaskTranslated = ref(false); const taskContext = ref({});
-            const translatedFields = ref(new Set());
             const searchQuery = ref(''); const previewImage = ref(null);
 
-            // Signature
+            // 签名
             const sigCanvas = ref(null);
             const fullSigCanvas = ref(null); const isSigFullScreen = ref(false); const fullScreenSigKey = ref(null); const sigPenColor = ref('#000');
             let isDrawing = false;
@@ -659,17 +654,9 @@
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
 
-            const checkStorageUsage = () => {
-                let total = 0;
-                for(let key in localStorage) {
-                    if(localStorage.hasOwnProperty(key)) total += (localStorage[key].length * 2);
-                }
-                storageUsage.value = ((total / 1024 / 1024) / 5 * 100).toFixed(1); 
-            };
-
-            // --- SQL SYNC LOGIC ---
+            // --- 核心同步逻辑 (Cloud Sync) ---
             
-            // 1. Fetch from SQL Tables
+            // 1. 获取所有数据
             const fetchCloudData = async (silent = false) => {
                 if(!silent) isGlobalLoading.value = true;
                 syncStatus.value = 'syncing';
@@ -688,44 +675,50 @@
                     if(resL.error) throw resL.error;
                     if(resS.error) throw resS.error;
 
-                    users.value = resU.data || [];
-                    vehicles.value = resV.data || [];
-                    tasks.value = resT.data || [];
-                    shifts.value = resS.data || [];
-                    
-                    // Unpack extra_data from JSONB
-                    logs.value = (resL.data || []).map(log => ({
-                        ...log,
-                        ...log.extra_data, 
-                        extra_data: undefined 
-                    }));
+                    // 解包 JSONB (Unpack extra_data)
+                    const unpack = (list) => list.map(item => ({ ...item, ...item.extra_data }));
+
+                    users.value = unpack(resU.data || []);
+                    vehicles.value = unpack(resV.data || []);
+                    tasks.value = unpack(resT.data || []);
+                    shifts.value = unpack(resS.data || []);
+                    logs.value = unpack(resL.data || []);
 
                     syncStatus.value = 'saved';
-                    if(!silent) showToast('Sync Complete', 'SQL Data loaded.', 'success');
+                    if(!silent) showToast('Sync Complete', 'Cloud Data Loaded', 'success');
                 } catch (err) {
                     console.error('Fetch Error:', err);
                     syncStatus.value = 'error';
-                    if(!silent) showToast('Sync Failed', 'DB Error: ' + err.message, 'error');
+                    if(!silent) showToast('Sync Failed', 'DB Connection Error', 'error');
                 } finally {
                     isGlobalLoading.value = false;
                 }
             };
 
-            // 2. Generic Save to Table (Upsert)
+            // 2. 通用保存逻辑 (Upsert + JSONB Packing)
             const saveToTable = async (table, item, extraFields = []) => {
                 isGlobalLoading.value = true;
                 try {
                     const payload = { ...item };
                     
-                    // Pack extra fields into JSONB for logs
-                    if (extraFields.length > 0) {
-                        payload.extra_data = {};
-                        extraFields.forEach(f => {
-                            if (payload[f] !== undefined) {
-                                payload.extra_data[f] = payload[f];
-                                delete payload[f]; 
-                            }
-                        });
+                    // 自动将非标准字段打包进 extra_data
+                    // 这里定义各表已有的实体列，其余放入 extra_data
+                    const standardCols = {
+                        'app_users': ['id', 'name', 'username', 'password', 'role'],
+                        'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
+                        'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'],
+                        'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature'],
+                        'shifts': ['id', 'type', 'date', 'start_time', 'end_time', 'driver', 'route', 'vehicle_type', 'standards']
+                    };
+
+                    const cols = standardCols[table] || [];
+                    payload.extra_data = {};
+                    
+                    for (const key in payload) {
+                        if (!cols.includes(key) && key !== 'extra_data' && key !== 'id' && key !== 'created_at') {
+                            payload.extra_data[key] = payload[key];
+                            delete payload[key];
+                        }
                     }
 
                     if(typeof payload.id === 'string' && !isNaN(Number(payload.id))) payload.id = Number(payload.id);
@@ -744,7 +737,7 @@
                 }
             };
 
-            // 3. Delete from Table
+            // 3. 删除逻辑
             const deleteFromTable = async (table, id) => {
                 if(!confirm("Delete this item? / 确认删除?")) return;
                 isGlobalLoading.value = true;
@@ -767,14 +760,11 @@
             };
 
             onMounted(() => { 
-                checkStorageUsage(); 
                 resetStatsFilters();
-                fetchCloudData(false); // Force load on start
+                fetchCloudData(false); // 启动时加载数据
             });
             
-            // --- END SQL SYNC LOGIC ---
-
-            // --- BILINGUAL TRANSLATE ---
+            // --- 翻译功能 ---
             const translate = async (k) => { 
                 const text = formData.value[k];
                 if (!text) return;
@@ -784,7 +774,6 @@
                 }
 
                 translating.value = k;
-
                 const hasChinese = /[\u4e00-\u9fa5]/.test(text);
                 const langPair = hasChinese ? 'zh|en' : 'en|zh-CN';
 
@@ -810,7 +799,7 @@
                 }
             };
 
-            // Canvas Logic
+            // Canvas & Signature Logic
             const initCanvas = (targetCanvas) => {
                 if (!targetCanvas) return;
                 const dpr = window.devicePixelRatio || 1;
@@ -830,7 +819,6 @@
                 } 
             });
 
-            // Signature Events
             const getPos = (e, canvas) => { const rect = canvas.getBoundingClientRect();
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 return { x: clientX - rect.left, y: clientY - rect.top }; };
@@ -859,71 +847,57 @@
                 return {locked:false, msg:'Save Changes / 保存更改'};
             });
 
-            // --- OPTIMIZED Camera Handler ---
+            // Camera Handler (Compressed)
             const handleCam = (e, k) => { 
-                const f = e.target.files[0];
-                if(!f) return; 
-
-                // Size check (Limit to ~5MB)
-                if(f.size > 5 * 1024 * 1024) {
-                    showToast("Error", "Image too large (Max 5MB)", "error");
-                    return;
-                }
-
-                const r = new FileReader(); 
-                r.onload = (evt) => { 
-                    const img = new Image();
-                    img.onload = () => { 
-                        const maxWidth = 800; // Force resize for DB storage safety
+                const f=e.target.files[0];
+                if(!f)return; 
+                const r=new FileReader(); 
+                r.onload=(evt)=>{ 
+                    const img=new Image();
+                    img.onload=()=>{ 
+                        const maxWidth = 800; // Increased quality slightly for cloud
                         let w = img.width;
                         let h = img.height;
-                        if(w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
-                        
-                        const c = document.createElement('canvas');
-                        const ctx = c.getContext('2d'); 
-                        c.width = w; c.height = h; 
-                        
-                        // Draw white background (prevent png transparency issues)
-                        ctx.fillStyle = "#FFFFFF";
-                        ctx.fillRect(0,0,w,h);
+                        if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; }
+                        const c=document.createElement('canvas');
+                        const ctx=c.getContext('2d'); 
+                        c.width=w; c.height=h; 
                         ctx.drawImage(img,0,0,w,h); 
-                        
                         // Watermark
-                        ctx.fillStyle = "rgba(0,0,0,0.5)";
-                        ctx.fillRect(0, c.height - 30, c.width, 30); 
-                        ctx.fillStyle = "white"; 
-                        ctx.font = "14px monospace"; 
-                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height - 10);
-                        
+                        ctx.fillStyle="rgba(0,0,0,0.5)";
+                        ctx.fillRect(0,c.height-30,c.width,30); 
+                        ctx.fillStyle="white"; ctx.font="12px monospace"; 
+                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10);
                         if(!formData.value[k]) formData.value[k] = [];
-                        
-                        // Compress (JPEG 0.4 quality)
-                        const base64 = c.toDataURL('image/jpeg', 0.4);
-                        if(base64.length > 500000) showToast("Info", "Image compressed for storage", "info");
-                        
-                        formData.value[k].push(base64); 
+                        try { formData.value[k].push(c.toDataURL('image/jpeg', 0.6)); } catch(err) { showToast("Error","Image too large","error"); }
                     }; 
-                    img.src = evt.target.result; 
+                    img.src=evt.target.result; 
                 }; 
                 r.readAsDataURL(f); 
             };
 
-            // Basic Helpers
             const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
             
-            // NOTE: Client-side password check is for DEMO ONLY. In production use Supabase Auth.
+            // Login Logic
             const handleLogin = () => { 
+                // Local check against synced users
                 const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
-                if(u) currentUser.value = u; else loginError.value = 'Invalid Credentials / 密码或账号错误'; 
+                if(u) {
+                    currentUser.value = u; 
+                    showToast("Welcome", `Logged in as ${u.name}`, "success");
+                } else { 
+                    loginError.value = 'Invalid Credentials or Sync Pending'; 
+                    // Try fetch again just in case
+                    fetchCloudData(true);
+                } 
             };
             
             const handleLogout = () => currentUser.value = null;
-            const factoryReset = () => { if(confirm("Reset Local Data?")) { localStorage.clear(); location.reload(); }};
+            const factoryReset = () => { if(confirm("Clear local cache? Data is safe in cloud.")) { localStorage.clear(); location.reload(); }};
             const navigate = (v) => { currentView.value = v; isMobileMenuOpen.value = false; };
             const navClass = (v) => currentView.value === v ? 'bg-blue-500/10 text-blue-400 font-bold' : 'text-kmc-muted hover:text-white';
             const getPageTitle = () => currentView.value.replace('_', ' ').toUpperCase();
             
-            // Views
             const getPlate = (id) => vehicles.value.find(v=>v.id===id)?.plate || 'Unknown';
             const openPreview = (src) => { if(src) previewImage.value = src; };
             const filteredVehicles = computed(() => {
@@ -935,8 +909,9 @@
             // Modal Logic
             const openForm = (type, data = null) => {
                 modalType.value = type;
-                formData.value = data ? JSON.parse(JSON.stringify(data)) : {}; isTaskTranslated.value = false; translatedFields.value.clear();
+                formData.value = data ? JSON.parse(JSON.stringify(data)) : {}; isTaskTranslated.value = false;
                 if(data && (data.content||data.standards)) isTaskTranslated.value = true;
+                
                 if (type === 'staff') {
                     modalTitle.value = data ? 'Edit Staff / 编辑人员' : 'Add Staff / 新增人员';
                     modalFields.value = {
@@ -1052,7 +1027,7 @@
                         await saveToTable('vehicles', v);
                         const newLog = {...formData.value, category:'fuel', timestamp: new Date().toISOString()};
                         logs.value.unshift(newLog); 
-                        await saveToTable('app_logs', newLog, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+                        await saveToTable('app_logs', newLog);
                     }
                     else if (modalType.value === 'task_exec') { 
                         const newLog = {...formData.value, timestamp: new Date().toISOString()};
@@ -1061,7 +1036,7 @@
                     }
                     
                     showModal.value = false;
-                    showToast('Saved', 'Data synced to DB.', 'success');
+                    showToast('Saved', 'Data synced to Supabase.', 'success');
                 } catch(e) {
                     showToast("Error", "Could not save form.", "error");
                 }
@@ -1074,15 +1049,15 @@
             
             const approveLog = async (log) => { 
                 log.rating = 'green'; log.feedback = null; 
-                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+                await saveToTable('app_logs', log);
             };
             const rejectLog = async (log, reason) => { 
                 log.rating = 'red'; log.feedback = reason || 'No reason provided'; 
-                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+                await saveToTable('app_logs', log);
             };
             const undoLog = async (log) => { 
                 log.rating = null; log.feedback = null; 
-                await saveToTable('app_logs', log, ['liters', 'price', 'mileage', 'station', 'is_internal']);
+                await saveToTable('app_logs', log);
             };
 
             const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en;
@@ -1145,24 +1120,17 @@
                 return { template: `<div class="p-10 text-center text-gray-500">View Module Loaded</div>` };
             });
 
-            const handleExport = () => { const data = { users: users.value, vehicles: vehicles.value, tasks: tasks.value, logs: logs.value, shifts: shifts.value }; const blob = new Blob([JSON.stringify(data)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'kmc_backup.json'; a.click(); };
-            const handleImport = (e) => { const r = new FileReader(); r.onload= async (evt)=>{ try { const d=JSON.parse(evt.target.result);
-                // Note: For SQL hybrid, import might need manual handling or bulk insert. For now we just load to memory warning.
-                users.value=d.users; vehicles.value=d.vehicles; tasks.value=d.tasks; logs.value=d.logs; shifts.value=d.shifts; 
-                showToast("Warning", "Imported to memory only. Please save individually to sync.", "warning"); } catch(e){showToast("Error", "Restore Failed", "error");} }; r.readAsText(e.target.files[0]); };
-            const saveApiKey = () => { apiKey.value = tempApiKey.value; localStorage.setItem('k_key', apiKey.value); showApiKeyModal.value=false; };
-            
             return {
                 currentUser, loginForm, loginError, handleLogin, handleLogout, factoryReset,
                 currentView, navigate, navClass, getPageTitle, isMobileMenuOpen, currentViewComponent,
                 users, vehicles, tasks, logs, shifts, isStaff,
                 showModal, modalTitle, modalFields, formData, openForm, submitForm, deleteItem, openTaskExec, showProfileModal, profileForm, updateProfile, openProfileModal: ()=>showProfileModal.value=true,
-                showApiKeyModal, apiKey, tempApiKey, saveApiKey, translate, translating, handleCam, removePhoto,
+                translate, translating, handleCam, removePhoto,
                 recentLogs, maintenanceVehicles, todaysShifts, pendingReviews, globalFuel, myStats, myNextTasks, getPlate,
                 isSaveLocked, taskContext, approveLog, rejectLog, undoLog,
                 sigCanvas, fullSigCanvas, isSigFullScreen, sigPenColor, startSign, drawSign, endSign, clearSignature, saveSignature, openFullScreenSig, clearFullScreenSig, saveFullScreenSig, toggleFieldLock,
-                searchQuery, filteredVehicles, previewImage, openPreview, handleExport, handleImport,
-                storageUsage, statsTab, statsFilters, resetStatsFilters,
+                searchQuery, filteredVehicles, previewImage, openPreview, 
+                statsTab, statsFilters, resetStatsFilters,
                 syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts
             };
         }
