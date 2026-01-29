@@ -12,51 +12,57 @@
             document.body.innerHTML = `
                 <div style="color:#ff4444; padding:30px; background:#111; font-family:sans-serif; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
                     <h2 style="font-size:24px; margin-bottom:10px;">⚠️ System Load Error</h2>
-                    <p style="color:#888; font-size:14px;">${msg}</p>
-                    <p style="color:#555; font-size:12px; margin-top:5px;">${url} : ${line}</p>
-                    <button onclick="location.reload()" style="margin-top:20px; padding:10px 25px; background:#3b82f6; color:white; border:none; border-radius:8px; cursor:pointer;">Reload System</button>
+                    <p style="color:#bbb; font-size:14px; margin-bottom:20px;">系统加载失败，请检查网络或部署方式。</p>
+                    <div style="background:#222; padding:15px; border-radius:8px; text-align:left; font-family:monospace; font-size:12px; color:#e4e4e7; width:90%; max-width:400px; overflow:auto;">
+                        <div style="color:#f87171; margin-bottom:5px;">Error: ${msg}</div>
+                        <div style="color:#60a5fa;">File: ${url ? url.split('/').pop() : 'Inline Script'}</div>
+                        <div style="color:#fbbf24;">Line: ${line} : ${col}</div>
+                    </div>
+                    <button onclick="location.reload()" style="margin-top:25px; padding:12px 30px; background:#3b82f6; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 12px rgba(59,130,246,0.3);">Reload / 刷新</button>
                 </div>
             `;
             return false;
         };
     </script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js" crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        kmc: {
-                            bg: '#050505', 
-                            card: 'rgba(20, 20, 23, 0.6)', 
-                            border: 'rgba(255, 255, 255, 0.08)',
-                            primary: '#3b82f6', 
-                            accent: '#6366f1',
-                            success: '#10b981', danger: '#ef4444',
-                            warning: '#f59e0b', text: '#e4e4e7', muted: '#a1a1aa'
+        try {
+            tailwind.config = {
+                darkMode: 'class',
+                theme: {
+                    extend: {
+                        colors: {
+                            kmc: {
+                                bg: '#050505', 
+                                card: 'rgba(20, 20, 23, 0.6)', 
+                                border: 'rgba(255, 255, 255, 0.08)',
+                                primary: '#3b82f6', 
+                                accent: '#6366f1',
+                                success: '#10b981', danger: '#ef4444',
+                                warning: '#f59e0b', text: '#e4e4e7', muted: '#a1a1aa'
+                            }
+                        },
+                        fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
+                        animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' },
+                        keyframes: { 
+                            fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
+                            slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
+                        },
+                        boxShadow: {
+                            'glow': '0 0 20px -5px rgba(59, 130, 246, 0.3)',
+                            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                         }
-                    },
-                    fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' },
-                    keyframes: { 
-                        fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
-                        slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
-                    },
-                    boxShadow: {
-                        'glow': '0 0 20px -5px rgba(59, 130, 246, 0.3)',
-                        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     }
                 }
             }
-        }
+        } catch(e) { console.error("Tailwind Init Failed", e); }
     </script>
 
     <style>
@@ -95,7 +101,7 @@
 
         .kmc-btn { font-weight: 600; border-radius: 10px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; letter-spacing: 0.025em; }
         .kmc-btn:active { transform: scale(0.96); }
-        .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(100%); }
+        .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
         .kmc-btn.bg-kmc-primary { background-image: linear-gradient(to bottom right, #3b82f6, #2563eb); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
         .kmc-btn.bg-kmc-primary:hover { box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5); filter: brightness(1.1); }
 
@@ -519,23 +525,14 @@
         setup() {
             const showReportModal = ref(false);
             const isGenerating = ref(false);
-            
             const openReport = () => { showReportModal.value = true; };
-            
             const downloadPDF = () => {
                 isGenerating.value = true;
                 const element = document.getElementById('report-content');
-                const opt = { 
-                    margin: 5, 
-                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
-                    image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
-                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
+                const opt = { margin: 5, filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
                 html2pdf().set(opt).from(element).save().then(() => { isGenerating.value = false; });
             };
-
             const getFilterSummary = (root) => {
                 const f = root.statsFilters;
                 const vName = f.vehicle_id ? root.vehicles.find(v=>v.id===f.vehicle_id)?.plate : 'All Vehicles / 全部车辆';
@@ -543,7 +540,6 @@
                 const dateRange = (f.start || 'Beginning') + ' to ' + (f.end || 'Now');
                 return `${dateRange} • ${vName} • ${dName}`;
             };
-
             return { showReportModal, openReport, downloadPDF, isGenerating, getFilterSummary };
         },
         template: `
@@ -555,7 +551,7 @@
                         <button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
                     </div>
                     <div class="flex items-center gap-2">
-                         <button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset</button>
+                         <button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset / 重置</button>
                          <button @click="openReport" class="kmc-btn bg-green-600 text-white shadow-lg shadow-green-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview & Export</button>
                     </div>
                 </div>
@@ -587,8 +583,8 @@
                     <div class="bg-[#333] p-4 flex justify-between items-center border-b border-white/10 shrink-0">
                         <h3 class="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-print text-blue-400"></i> Print Preview</h3>
                         <div class="flex gap-3">
-                            <button @click="showReportModal=false" class="px-4 py-2 rounded text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition">Close</button>
-                            <button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                            <button @click="showReportModal=false" class="px-4 py-2 rounded text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition">Close / 关闭</button>
+                            <button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-file-pdf"></i> Download PDF / 下载报表</button>
                         </div>
                     </div>
                     <div class="flex-1 overflow-y-auto bg-[#525252] p-8 flex justify-center">
@@ -600,7 +596,7 @@
 
                             <div v-if="$root.statsTab==='fuel'" class="space-y-6">
                                 <div class="grid grid-cols-4 gap-4 mb-2">
-                                    <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records / 记录数</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
+                                    <div class="p-3 border border-gray-200 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records / 记录数</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
                                     <div class="p-3 border border-gray-300 bg-orange-50 rounded"><div class="text-[10px] text-orange-800 uppercase font-bold">Total Liters / 总油量</div><div class="text-xl font-bold text-orange-600">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
                                     <div class="p-3 border border-gray-300 bg-green-50 rounded"><div class="text-[10px] text-green-800 uppercase font-bold">Total Cost / 总费用</div><div class="text-xl font-bold text-green-600">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
                                     <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L / 平均单价</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : 0 }}</div></div>
@@ -633,7 +629,7 @@
                                             <div class="flex justify-between mb-1 border-b border-gray-100 pb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div>
                                             <div class="text-gray-600 mb-1">Driver: <b>{{ t.user_name }}</b></div>
                                             <div class="text-gray-500 italic mb-2 line-clamp-2" v-if="t.content">{{ t.content }}</div>
-                                            <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,3)" :src="p" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
+                                            <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
                                             <div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500">Status / 状态:</span><span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'PASSED / 通过':(t.rating==='red'?'REJECTED / 驳回':'PENDING / 待审') }}</span></div>
                                         </div>
                                     </div>
@@ -694,7 +690,7 @@
              <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
                 <div>
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }} <span class="ml-2 bg-gray-800 px-1 rounded text-gray-400" v-if="s.date">{{ s.date }}</span></div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
                 </div>
                  <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
              </div>
@@ -707,7 +703,6 @@
         components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts },
         setup() {
             // --- SUPABASE 配置区域 ---
-            // 依据你提供的信息填充
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
@@ -723,14 +718,14 @@
                 setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 3000);
             };
 
-            // 数据对象 (Data Models)
+            // Data Models
             const users = ref([]);
             const vehicles = ref([]);
             const tasks = ref([]);
             const logs = ref([]);
             const shifts = ref([]);
 
-            // UI 状态
+            // UI State
             const currentUser = ref(null);
             const loginForm = ref({name:'', password:''});
             const loginError = ref('');
@@ -754,7 +749,7 @@
             const isTaskTranslated = ref(false); const taskContext = ref({});
             const searchQuery = ref(''); const previewImage = ref(null);
 
-            // 签名
+            // Signature
             const sigCanvas = ref(null);
             const fullSigCanvas = ref(null); const isSigFullScreen = ref(false); const fullScreenSigKey = ref(null); const sigPenColor = ref('#000');
             let isDrawing = false;
@@ -762,7 +757,7 @@
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
 
-            // 计算总记录数 (NEW)
+            // Total Records Calculation
             const totalRecords = computed(() => {
                 return (users.value.length || 0) + 
                        (vehicles.value.length || 0) + 
@@ -771,7 +766,7 @@
                        (shifts.value.length || 0);
             });
 
-            // 辅助函数: 格式化多人显示
+            // Format Assignee Helper
             const formatAssignee = (val) => {
                 if (!val) return 'None';
                 if (Array.isArray(val)) return val.join(', ');
@@ -779,12 +774,11 @@
                     const parsed = JSON.parse(val);
                     if (Array.isArray(parsed)) return parsed.join(', ');
                 } catch(e) {}
-                return val; // Fallback for legacy string
+                return val; 
             };
 
-            // --- 核心同步逻辑 (Cloud Sync) ---
+            // --- SQL SYNC LOGIC ---
             
-            // 1. 获取所有数据
             const fetchCloudData = async (silent = false) => {
                 if(!silent) isGlobalLoading.value = true;
                 syncStatus.value = 'syncing';
@@ -803,7 +797,7 @@
                     if(resL.error) throw resL.error;
                     if(resS.error) throw resS.error;
 
-                    // 解包 JSONB (Unpack extra_data)
+                    // Unpack extra_data
                     const unpack = (list) => list.map(item => ({ ...item, ...item.extra_data }));
 
                     users.value = unpack(resU.data || []);
@@ -823,14 +817,10 @@
                 }
             };
 
-            // 2. 通用保存逻辑 (Upsert + JSONB Packing)
             const saveToTable = async (table, item, extraFields = []) => {
                 isGlobalLoading.value = true;
                 try {
                     const payload = { ...item };
-                    
-                    // 自动将非标准字段打包进 extra_data
-                    // 这里定义各表已有的实体列，其余放入 extra_data
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'],
                         'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
@@ -865,7 +855,6 @@
                 }
             };
 
-            // 3. 删除逻辑
             const deleteFromTable = async (table, id) => {
                 if(!confirm("Delete this item? / 确认删除?")) return;
                 isGlobalLoading.value = true;
@@ -889,85 +878,52 @@
 
             onMounted(() => { 
                 resetStatsFilters();
-                fetchCloudData(false); // 启动时加载数据
+                fetchCloudData(false); 
             });
             
-            // --- 翻译功能 ---
+            // --- BILINGUAL TRANSLATE ---
             const translate = async (k) => { 
                 const text = formData.value[k];
                 if (!text) return;
-
-                if (text.includes('(') && text.includes(')')) {
-                     if(!confirm("Already translated. Translate again? / 看起来已经翻译过了，要再次翻译吗？")) return;
-                }
-
+                if (text.includes('(') && text.includes(')')) { if(!confirm("Already translated?")) return; }
                 translating.value = k;
                 const hasChinese = /[\u4e00-\u9fa5]/.test(text);
                 const langPair = hasChinese ? 'zh|en' : 'en|zh-CN';
-
                 try { 
                     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${langPair}`;
                     const res = await fetch(url);
                     const data = await res.json(); 
-
                     if(data.responseData && data.responseData.translatedText){
                           const translated = data.responseData.translatedText;
                           formData.value[k] = `${text} (${translated})`;
-                          
                           if(['content', 'standards', 'remarks'].includes(k)) isTaskTranslated.value = true;
-                          showToast("Success", "Translated (Bilingual)", "success");
-                    } else {
-                        throw new Error("API No Data");
+                          showToast("Success", "Translated", "success");
                     }
-                } catch(e){
-                    console.error(e);
-                    showToast("Translate Failed", "Network error.", "error");
-                } finally {
-                    translating.value = null;
-                }
+                } catch(e){ showToast("Translate Failed", "Network error", "error"); } finally { translating.value = null; }
             };
 
-            // Canvas & Signature Logic
+            // Canvas & Sig
             const initCanvas = (targetCanvas) => {
                 if (!targetCanvas) return;
                 const dpr = window.devicePixelRatio || 1;
                 const rect = targetCanvas.getBoundingClientRect();
                 if(rect.width === 0) return;
-                targetCanvas.width = rect.width * dpr;
-                targetCanvas.height = rect.height * dpr;
-                ctx = targetCanvas.getContext('2d');
-                ctx.scale(dpr, dpr);
-                ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 2.5;
-                ctx.strokeStyle = sigPenColor.value;
+                targetCanvas.width = rect.width * dpr; targetCanvas.height = rect.height * dpr;
+                ctx = targetCanvas.getContext('2d'); ctx.scale(dpr, dpr);
+                ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.lineWidth = 2.5; ctx.strokeStyle = sigPenColor.value;
             };
-
-            watch(() => showModal.value, (val) => { 
-                if (val && (modalType.value === 'vehicle' || modalType.value === 'task_exec' || modalFields.value.signature)) { 
-                    setTimeout(() => nextTick(() => { if(sigCanvas.value) initCanvas(sigCanvas.value); }), 100); 
-                } 
-            });
-
-            const getPos = (e, canvas) => { const rect = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                return { x: clientX - rect.left, y: clientY - rect.top }; };
-            const startSign = (e) => { isDrawing = true; const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value;
-                if(!ctx || ctx.canvas !== canvas) initCanvas(canvas); const pos = getPos(e, canvas); lastX = pos.x; lastY = pos.y; ctx.beginPath(); ctx.moveTo(lastX, lastY);
-            };
-            const drawSign = (e) => { if(!isDrawing || !ctx) return; e.preventDefault(); const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value;
-                const pos = getPos(e, canvas); const endX = (lastX + pos.x) / 2;
-                const endY = (lastY + pos.y) / 2; ctx.quadraticCurveTo(lastX, lastY, endX, endY); ctx.stroke(); ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(pos.x, pos.y);
-                lastX = pos.x; lastY = pos.y; };
+            watch(() => showModal.value, (val) => { if (val && (modalType.value === 'vehicle' || modalType.value === 'task_exec' || modalFields.value.signature)) { setTimeout(() => nextTick(() => { if(sigCanvas.value) initCanvas(sigCanvas.value); }), 100); } });
+            const getPos = (e, canvas) => { const rect = canvas.getBoundingClientRect(); const clientX = e.touches ? e.touches[0].clientX : e.clientX; const clientY = e.touches ? e.touches[0].clientY : e.clientY; return { x: clientX - rect.left, y: clientY - rect.top }; };
+            const startSign = (e) => { isDrawing = true; const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value; if(!ctx || ctx.canvas !== canvas) initCanvas(canvas); const pos = getPos(e, canvas); lastX = pos.x; lastY = pos.y; ctx.beginPath(); ctx.moveTo(lastX, lastY); };
+            const drawSign = (e) => { if(!isDrawing || !ctx) return; e.preventDefault(); const canvas = isSigFullScreen.value ? fullSigCanvas.value : sigCanvas.value; const pos = getPos(e, canvas); const endX = (lastX + pos.x) / 2; const endY = (lastY + pos.y) / 2; ctx.quadraticCurveTo(lastX, lastY, endX, endY); ctx.stroke(); ctx.beginPath(); ctx.moveTo(endX, endY); ctx.lineTo(pos.x, pos.y); lastX = pos.x; lastY = pos.y; };
             const endSign = () => { isDrawing = false; };
             const clearSignature = (key) => { formData.value[key] = null; if(ctx && sigCanvas.value) initCanvas(sigCanvas.value); };
             const saveSignature = (key) => { if(sigCanvas.value) formData.value[key] = sigCanvas.value.toDataURL('image/png'); };
-            const openFullScreenSig = (key) => { fullScreenSigKey.value = key;
-                isSigFullScreen.value = true; setTimeout(() => nextTick(() => { if(fullSigCanvas.value) initCanvas(fullSigCanvas.value); }), 100); };
+            const openFullScreenSig = (key) => { fullScreenSigKey.value = key; isSigFullScreen.value = true; setTimeout(() => nextTick(() => { if(fullSigCanvas.value) initCanvas(fullSigCanvas.value); }), 100); };
             const clearFullScreenSig = () => { if(fullSigCanvas.value) initCanvas(fullSigCanvas.value); };
-            const saveFullScreenSig = () => { if(fullSigCanvas.value && fullScreenSigKey.value) { formData.value[fullScreenSigKey.value] = fullSigCanvas.value.toDataURL('image/png');
-                isSigFullScreen.value = false; } };
+            const saveFullScreenSig = () => { if(fullSigCanvas.value && fullScreenSigKey.value) { formData.value[fullScreenSigKey.value] = fullSigCanvas.value.toDataURL('image/png'); isSigFullScreen.value = false; } };
             const toggleFieldLock = (key) => { if (modalFields.value[key]) { modalFields.value[key].locked = !modalFields.value[key].locked; } };
 
-            // Logic Protection
             const isSaveLocked = computed(() => {
                 if (modalType.value === 'shift_fixed' && formData.value.standards && !isTaskTranslated.value) return {locked:true, msg:'Translate First / 请先翻译'};
                 if (modalType.value === 'fuel' && (!formData.value.photos || formData.value.photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
@@ -975,159 +931,47 @@
                 return {locked:false, msg:'Save Changes / 保存更改'};
             });
 
-            // Camera Handler (Compressed)
-            const handleCam = (e, k) => { 
-                const f=e.target.files[0];
-                if(!f)return; 
-                const r=new FileReader(); 
-                r.onload=(evt)=>{ 
-                    const img=new Image();
-                    img.onload=()=>{ 
-                        const maxWidth = 800; // Increased quality slightly for cloud
-                        let w = img.width;
-                        let h = img.height;
-                        if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; }
-                        const c=document.createElement('canvas');
-                        const ctx=c.getContext('2d'); 
-                        c.width=w; c.height=h; 
-                        ctx.drawImage(img,0,0,w,h); 
-                        // Watermark
-                        ctx.fillStyle="rgba(0,0,0,0.5)";
-                        ctx.fillRect(0,c.height-30,c.width,30); 
-                        ctx.fillStyle="white"; ctx.font="12px monospace"; 
-                        ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10);
-                        if(!formData.value[k]) formData.value[k] = [];
-                        try { formData.value[k].push(c.toDataURL('image/jpeg', 0.6)); } catch(err) { showToast("Error","Image too large","error"); }
-                    }; 
-                    img.src=evt.target.result; 
-                }; 
-                r.readAsDataURL(f); 
-            };
-
-            const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
-            
-            // Login Logic
-            const handleLogin = () => { 
-                // Local check against synced users
-                const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
-                if(u) {
-                    currentUser.value = u; 
-                    showToast("Welcome", `Logged in as ${u.name}`, "success");
-                } else { 
-                    loginError.value = 'Invalid Credentials or Sync Pending'; 
-                    // Try fetch again just in case
-                    fetchCloudData(true);
-                } 
-            };
-            
+            const handleCam = (e, k) => { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=(evt)=>{ const img=new Image(); img.onload=()=>{ const maxWidth = 800; let w = img.width; let h = img.height; if(w > maxWidth) { h = (h*maxWidth)/w; w = maxWidth; } const c=document.createElement('canvas'); const ctx=c.getContext('2d'); c.width=w; c.height=h; ctx.drawImage(img,0,0,w,h); ctx.fillStyle="rgba(0,0,0,0.5)"; ctx.fillRect(0,c.height-30,c.width,30); ctx.fillStyle="white"; ctx.font="12px monospace"; ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height-10); if(!formData.value[k]) formData.value[k] = []; try { formData.value[k].push(c.toDataURL('image/jpeg', 0.6)); } catch(err) { showToast("Error","Image too large","error"); } }; img.src=evt.target.result; }; r.readAsDataURL(f); };
+            const removePhoto = (k, idx) => { if(confirm('Delete photo?')) formData.value[k].splice(idx, 1); };
+            const handleLogin = () => { const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password); if(u) { currentUser.value = u; showToast("Welcome", `Logged in as ${u.name}`, "success"); } else { loginError.value = 'Invalid Credentials or Sync Pending'; fetchCloudData(true); } };
             const handleLogout = () => currentUser.value = null;
-            const factoryReset = () => { if(confirm("Clear local cache? Data is safe in cloud.")) { localStorage.clear(); location.reload(); }};
+            const factoryReset = () => { if(confirm("Clear local cache?")) { localStorage.clear(); location.reload(); }};
             const navigate = (v) => { currentView.value = v; isMobileMenuOpen.value = false; };
             const navClass = (v) => currentView.value === v ? 'bg-blue-500/10 text-blue-400 font-bold' : 'text-kmc-muted hover:text-white';
             const getPageTitle = () => currentView.value.replace('_', ' ').toUpperCase();
-            
             const getPlate = (id) => vehicles.value.find(v=>v.id===id)?.plate || 'Unknown';
             const openPreview = (src) => { if(src) previewImage.value = src; };
-            const filteredVehicles = computed(() => {
-                if(!searchQuery.value) return vehicles.value;
-                const q = searchQuery.value.toLowerCase();
-                return vehicles.value.filter(v => v.plate.toLowerCase().includes(q) || (v.model && v.model.toLowerCase().includes(q)));
-            });
+            const filteredVehicles = computed(() => { if(!searchQuery.value) return vehicles.value; const q = searchQuery.value.toLowerCase(); return vehicles.value.filter(v => v.plate.toLowerCase().includes(q) || (v.model && v.model.toLowerCase().includes(q))); });
 
-            // Modal Logic
             const openForm = (type, data = null) => {
-                modalType.value = type;
-                formData.value = data ? JSON.parse(JSON.stringify(data)) : {}; isTaskTranslated.value = false;
+                modalType.value = type; formData.value = data ? JSON.parse(JSON.stringify(data)) : {}; isTaskTranslated.value = false;
                 if(data && (data.content||data.standards)) isTaskTranslated.value = true;
                 
                 if (type === 'staff') {
                     modalTitle.value = data ? 'Edit Staff / 编辑人员' : 'Add Staff / 新增人员';
-                    modalFields.value = {
-                        name: {label:'Full Name / 姓名 (ID)', type:'text', disabled: data && data.role === '01'}, 
-                        password: {label:'Password / 密码', type:'text'},
-                        role: {label:'Role / 角色', type:'select', options:[{val:'01',label:'01 - Director / 总监'},{val:'02',label:'02 - Manager / 经理'},{val:'03',label:'03 - Staff / 员工'}], disabled: data && data.role === '01'}
-                    };
+                    modalFields.value = { name: {label:'Full Name / 姓名 (ID)', type:'text', disabled: data && data.role === '01'}, password: {label:'Password / 密码', type:'text'}, role: {label:'Role / 角色', type:'select', options:[{val:'01',label:'01 - Director / 总监'},{val:'02',label:'02 - Manager / 经理'},{val:'03',label:'03 - Staff / 员工'}], disabled: data && data.role === '01'} };
                     if(!data) formData.value = {id:Date.now(), role:'03', password:'666666'};
-                }
-                else if (type === 'vehicle') {
+                } else if (type === 'vehicle') {
                     modalTitle.value = data ? 'Edit Vehicle / 编辑车辆' : 'Add Vehicle / 新增车辆';
-                    const locked = isStaff.value;
-                    modalFields.value = {
-                        plate: {label:'Plate / 车牌', type:'text', locked: true},
-                        model: {label:'Model / 车型', type:'editable_select', options:[...new Set(vehicles.value.map(v=>v.model))].map(m=>({val:m,label:m})), locked: true},
-                        status: {label:'Status / 状态', type:'select', options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}], disabled: locked},
-                        mileage: {label:'Current Mileage / 当前里程', type:'number', locked: true},
-                        responsible: {label:'Person in Charge / 责任人', type:'text', locked: true},
-                        archive_photos: {label:'Archive Photos / 档案照片 (Required)', type:'camera', note: 'Front, Side, Rear / 前、侧、后'},
-                    };
+                    modalFields.value = { plate: {label:'Plate / 车牌', type:'text', locked: true}, model: {label:'Model / 车型', type:'editable_select', options:[...new Set(vehicles.value.map(v=>v.model))].map(m=>({val:m,label:m})), locked: true}, status: {label:'Status / 状态', type:'select', options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}], disabled: isStaff.value}, mileage: {label:'Current Mileage / 当前里程', type:'number', locked: true}, responsible: {label:'Person in Charge / 责任人', type:'text', locked: true}, archive_photos: {label:'Archive Photos / 档案照片 (Required)', type:'camera', note: 'Front, Side, Rear / 前、侧、后'} };
                     if(!data) formData.value = { id:Date.now(), status:'Active', mileage:0, archive_photos:[] };
-                    if(!formData.value.archive_photos) formData.value.archive_photos = [];
-                }
-                else if (type === 'fuel') {
+                } else if (type === 'fuel') {
                     modalTitle.value = 'FUEL ENTRY / 加油录入';
-                    modalFields.value = {
-                        entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))},
-                        is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' },
-                        station: {label:'Station / 加油站', type:'text'},
-                        price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, 
-                        liters: {label:'Liters / 加油量', type:'number'},
-                        mileage: {label:'Current Odo / 当前里程', type:'number'},
-                        photos: {label:'Evidence / 凭证 (Required)', type:'camera', note:'Odometer, Receipt / 里程表、收据'}
-                    };
+                    modalFields.value = { entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))}, is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' }, station: {label:'Station / 加油站', type:'text'}, price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, liters: {label:'Liters / 加油量', type:'number'}, mileage: {label:'Current Odo / 当前里程', type:'number'}, photos: {label:'Evidence / 凭证 (Required)', type:'camera', note:'Odometer, Receipt / 里程表、收据'} };
                     formData.value = {id:Date.now(), user_name:currentUser.value.name, photos:[], is_internal: false};
-                }
-                else if (type === 'task_config') {
+                } else if (type === 'task_config') {
                     modalTitle.value = 'TASK CONFIG / 任务配置';
-                    const myRole = currentUser.value.role;
-                    let targetRoles = [];
-                    if(myRole === '01') targetRoles = ['02', '03'];
-                    else if(myRole === '02') targetRoles = ['03'];
-                    
-                    const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
-                    
-                    // --- MULTI-SELECT SUPPORT ---
-                    modalFields.value = {
-                        title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
-                        content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
-                        standards: {label:'Standards / 标准 (Text)', type:'textarea', translate: true},
-                        remarks: {label:'Remarks / 备注', type:'textarea', translate: true}, 
-                        req_photo: {label:'Require Photo / 需拍照', type:'checkbox'},
-                        req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
-                        assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
-                    };
+                    const assignOptions = users.value.filter(u => ['02','03'].some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
+                    modalFields.value = { title_en: {label:'Task Name / 任务名', type:'text', translate: true}, content: {label:'Content / 内容 (Text)', type:'textarea', translate: true}, standards: {label:'Standards / 标准 (Text)', type:'textarea', translate: true}, remarks: {label:'Remarks / 备注', type:'textarea', translate: true}, req_photo: {label:'Require Photo / 需拍照', type:'checkbox'}, req_signature: {label:'Require Signature / 需签字', type:'checkbox'}, assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions} };
                     if(!data) formData.value = {id:Date.now(), assigned_to: []};
-                    else {
-                        // Data compatibility handler
-                        let existing = data.assigned_to;
-                        try {
-                            if (typeof existing === 'string' && existing.startsWith('[')) existing = JSON.parse(existing);
-                            else if (typeof existing === 'string') existing = [existing];
-                            else if (!existing) existing = [];
-                        } catch(e) { existing = []; }
-                        formData.value.assigned_to = existing;
-                    }
-                }
-                else if (type === 'shift_fixed' || type === 'shift_temp') { 
+                    else { try { let existing = data.assigned_to; if (typeof existing === 'string' && existing.startsWith('[')) existing = JSON.parse(existing); else if (typeof existing === 'string') existing = [existing]; else if (!existing) existing = []; formData.value.assigned_to = existing; } catch(e) { formData.value.assigned_to = []; } }
+                } else if (type.startsWith('shift')) { 
                     modalTitle.value = type==='shift_fixed' ? 'FIXED SCHEDULE / 固定班次' : 'TEMP DISPATCH / 临时调度';
                     if (type === 'shift_temp') {
-                        modalFields.value = {
-                            task_name: {label:'Task Name / 任务名', type:'text'},
-                            driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))},
-                            start_datetime: {label:'Start Time / 开始时间', type:'datetime-local'},
-                            end_datetime: {label:'End Time / 结束时间', type:'datetime-local'},
-                            route: {label:'Destination / 目的地', type:'text'},
-                            notes: {label:'Notes / 备注', type:'textarea'}
-                        };
+                        modalFields.value = { task_name: {label:'Task Name / 任务名', type:'text'}, driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))}, start_datetime: {label:'Start Time / 开始时间', type:'datetime-local'}, end_datetime: {label:'End Time / 结束时间', type:'datetime-local'}, route: {label:'Destination / 目的地', type:'text'}, notes: {label:'Notes / 备注', type:'textarea'} };
                         if(!data) formData.value = {id:Date.now(), type:'temp'};
                     } else {
-                        modalFields.value = {
-                            date: {label:'Date / 日期', type:'date'},
-                            vehicle_type: { label:'Bus Type / 车型', type:'editable_select', ph: 'Select...', options: [{val:'Big Bus', label:'Big Bus'}, {val:'Medium Bus', label:'Medium Bus'}] },
-                            route: { label:'Route / 路线', type:'editable_select', ph: 'Select...', options: [{val:'Morning Commute', label:'Morning Commute'}] },
-                            driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))},
-                            start_time: {label:'Start Time / 开始', type:'time'}, end_time: {label:'End Time / 结束', type:'time'},
-                            standards: {label:'Rules / 规则', type:'textarea', translate: true},
-                        };
+                        modalFields.value = { date: {label:'Date / 日期', type:'date'}, vehicle_type: { label:'Bus Type / 车型', type:'editable_select', ph: 'Select...', options: [{val:'Big Bus', label:'Big Bus'}, {val:'Medium Bus', label:'Medium Bus'}] }, route: { label:'Route / 路线', type:'editable_select', ph: 'Select...', options: [{val:'Morning Commute', label:'Morning Commute'}] }, driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))}, start_time: {label:'Start Time / 开始', type:'time'}, end_time: {label:'End Time / 结束', type:'time'}, standards: {label:'Rules / 规则', type:'textarea', translate: true} };
                         if(!data) formData.value = {id:Date.now(), type:'fixed', date: new Date().toISOString().split('T')[0]};
                     }
                 }
@@ -1136,89 +980,22 @@
 
             const submitForm = async () => {
                 try {
-                    if (modalType.value === 'staff') { 
-                        const idx = users.value.findIndex(x => x.id === formData.value.id);
-                        if(idx !== -1) users.value[idx] = {...formData.value}; else users.value.push({...formData.value}); 
-                        await saveToTable('app_users', formData.value);
-                    }
-                    else if (modalType.value === 'vehicle') { 
-                        const idx = vehicles.value.findIndex(x => x.id === formData.value.id);
-                        if(idx !== -1) vehicles.value[idx] = {...formData.value}; else vehicles.value.push({...formData.value}); 
-                        await saveToTable('vehicles', formData.value);
-                    }
-                    else if (modalType.value === 'task_config') { 
-                        const idx = tasks.value.findIndex(x => x.id === formData.value.id);
-                        
-                        // --- MULTI-SELECT SAVING (Convert array to JSON string) ---
-                        if (Array.isArray(formData.value.assigned_to)) {
-                            formData.value.assigned_to = JSON.stringify(formData.value.assigned_to);
-                        }
-                        
-                        if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); 
-                        await saveToTable('task_configs', formData.value);
-                    }
-                    else if (modalType.value.startsWith('shift')) { 
-                        if (modalType.value === 'shift_temp' && formData.value.start_datetime) {
-                            formData.value.date = formData.value.start_datetime.split('T')[0];
-                            formData.value.start_time = formData.value.start_datetime.split('T')[1];
-                        }
-                        const idx = shifts.value.findIndex(s => s.id === formData.value.id);
-                        if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); 
-                        await saveToTable('shifts', formData.value);
-                    }
-                    else if (modalType.value === 'fuel') { 
-                        const v = vehicles.value.find(x => x.id === formData.value.entity_id);
-                        if(formData.value.mileage <= v.mileage) { showToast("Mileage Error", "New mileage must be greater than current.", "error"); return; } 
-                        v.mileage = formData.value.mileage;
-                        
-                        await saveToTable('vehicles', v);
-                        const newLog = {...formData.value, category:'fuel', timestamp: new Date().toISOString()};
-                        logs.value.unshift(newLog); 
-                        await saveToTable('app_logs', newLog);
-                    }
-                    else if (modalType.value === 'task_exec') { 
-                        const newLog = {...formData.value, timestamp: new Date().toISOString()};
-                        logs.value.unshift(newLog); 
-                        await saveToTable('app_logs', newLog);
-                    }
-                    
-                    showModal.value = false;
-                    showToast('Saved', 'Data synced to Supabase.', 'success');
-                } catch(e) {
-                    showToast("Error", "Could not save form.", "error");
-                }
+                    if (modalType.value === 'staff') { const idx = users.value.findIndex(x => x.id === formData.value.id); if(idx !== -1) users.value[idx] = {...formData.value}; else users.value.push({...formData.value}); await saveToTable('app_users', formData.value); }
+                    else if (modalType.value === 'vehicle') { const idx = vehicles.value.findIndex(x => x.id === formData.value.id); if(idx !== -1) vehicles.value[idx] = {...formData.value}; else vehicles.value.push({...formData.value}); await saveToTable('vehicles', formData.value); }
+                    else if (modalType.value === 'task_config') { const idx = tasks.value.findIndex(x => x.id === formData.value.id); if (Array.isArray(formData.value.assigned_to)) formData.value.assigned_to = JSON.stringify(formData.value.assigned_to); if(idx !== -1) tasks.value[idx] = {...formData.value}; else tasks.value.push({...formData.value}); await saveToTable('task_configs', formData.value); }
+                    else if (modalType.value.startsWith('shift')) { if (modalType.value === 'shift_temp' && formData.value.start_datetime) { formData.value.date = formData.value.start_datetime.split('T')[0]; formData.value.start_time = formData.value.start_datetime.split('T')[1]; } const idx = shifts.value.findIndex(s => s.id === formData.value.id); if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); await saveToTable('shifts', formData.value); }
+                    else if (modalType.value === 'fuel') { const v = vehicles.value.find(x => x.id === formData.value.entity_id); if(formData.value.mileage <= v.mileage) { showToast("Mileage Error", "New mileage must be greater than current.", "error"); return; } v.mileage = formData.value.mileage; await saveToTable('vehicles', v); const newLog = {...formData.value, category:'fuel', timestamp: new Date().toISOString()}; logs.value.unshift(newLog); await saveToTable('app_logs', newLog); }
+                    else if (modalType.value === 'task_exec') { const newLog = {...formData.value, timestamp: new Date().toISOString()}; logs.value.unshift(newLog); await saveToTable('app_logs', newLog); }
+                    showModal.value = false; showToast('Saved', 'Data synced to Supabase.', 'success');
+                } catch(e) { showToast("Error", "Could not save form.", "error"); }
             };
 
-            const deleteItem = async (t, id) => { 
-                const tableMap = { 'users': 'app_users', 'vehicles': 'vehicles', 'tasks': 'task_configs', 'shifts': 'shifts' };
-                if(tableMap[t]) { await deleteFromTable(tableMap[t], id); }
-            };
-            
-            const approveLog = async (log) => { 
-                log.rating = 'green'; log.feedback = null; 
-                await saveToTable('app_logs', log);
-            };
-            const rejectLog = async (log, reason) => { 
-                log.rating = 'red'; log.feedback = reason || 'No reason provided'; 
-                await saveToTable('app_logs', log);
-            };
-            const undoLog = async (log) => { 
-                log.rating = null; log.feedback = null; 
-                await saveToTable('app_logs', log);
-            };
-
-            const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en;
-                formData.value = {id:Date.now(), title_en:t.title_en, user_name:currentUser.value.name, category:'task_exec', photos:[], signature: null}; showModal.value = true; };
-            
-            const updateProfile = async () => { 
-                const idx=users.value.findIndex(u=>u.id===currentUser.value.id); 
-                if(profileForm.value.password) users.value[idx].password=profileForm.value.password; 
-                if(profileForm.value.name) users.value[idx].name=profileForm.value.name; 
-                currentUser.value=users.value[idx]; 
-                await saveToTable('app_users', currentUser.value);
-                showProfileModal.value=false; 
-                showToast("Profile Updated","","success"); 
-            };
+            const deleteItem = async (t, id) => { const tableMap = { 'users': 'app_users', 'vehicles': 'vehicles', 'tasks': 'task_configs', 'shifts': 'shifts' }; if(tableMap[t]) await deleteFromTable(tableMap[t], id); };
+            const approveLog = async (log) => { log.rating = 'green'; log.feedback = null; await saveToTable('app_logs', log); };
+            const rejectLog = async (log, reason) => { log.rating = 'red'; log.feedback = reason || 'No reason provided'; await saveToTable('app_logs', log); };
+            const undoLog = async (log) => { log.rating = null; log.feedback = null; await saveToTable('app_logs', log); };
+            const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en; formData.value = {id:Date.now(), title_en:t.title_en, user_name:currentUser.value.name, category:'task_exec', photos:[], signature: null}; showModal.value = true; };
+            const updateProfile = async () => { const idx=users.value.findIndex(u=>u.id===currentUser.value.id); if(profileForm.value.password) users.value[idx].password=profileForm.value.password; if(profileForm.value.name) users.value[idx].name=profileForm.value.name; currentUser.value=users.value[idx]; await saveToTable('app_users', currentUser.value); showProfileModal.value=false; showToast("Profile Updated","","success"); };
 
             // Computed Helpers
             const recentLogs = computed(() => (logs.value || []).slice(0, 10));
@@ -1227,24 +1004,11 @@
             const pendingReviews = computed(() => (logs.value||[]).filter(l => l.category === 'task_exec' && !l.rating).length);
             const globalFuel = computed(() => { const f = (logs.value||[]).filter(l => l.category === 'fuel'); return { liters: f.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) } });
             const myStats = computed(() => { const l=(logs.value||[]).filter(x=>x.user_name===currentUser.value?.name); const g=l.filter(x=>x.rating==='green').length; return { total:l.length, rate:l.length?Math.round((g/l.length)*100):0 }; });
-            
-            // --- MY TASKS LOGIC (Multi-select Support) ---
             const myNextTasks = computed(() => (tasks.value||[]).filter(t => {
                 const assign = t.assigned_to;
                 if (!assign) return false;
-                
-                // Case 1: Array (Unlikely from DB text column, but possible in local state)
                 if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
-                
-                // Case 2: JSON String (New format)
-                if (typeof assign === 'string' && assign.startsWith('[')) {
-                    try {
-                        const parsed = JSON.parse(assign);
-                        return Array.isArray(parsed) && parsed.includes(currentUser.value?.name);
-                    } catch(e) {}
-                }
-                
-                // Case 3: Simple String (Legacy format)
+                if (typeof assign === 'string' && assign.startsWith('[')) { try { const parsed = JSON.parse(assign); return Array.isArray(parsed) && parsed.includes(currentUser.value?.name); } catch(e) {} }
                 return assign === currentUser.value?.name;
             }));
 
