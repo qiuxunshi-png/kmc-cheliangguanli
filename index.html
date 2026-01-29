@@ -173,7 +173,7 @@
                     <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">
                         <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.6</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V28.7</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -304,7 +304,7 @@
                     <div class="space-y-4">
                         <div v-for="log in $root.recentLogs" :key="log.timestamp" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0">
                             <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-blue-500'"></div>
-                            <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> ($<b>{{ log.price }}</b>) - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
+                            <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> <span v-if="log.price && !log.is_internal">($<b>{{ log.price }}</b>)</span> - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
                         </div>
                         <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10">No recent activities / 暂无动态</div>
                     </div>
@@ -351,13 +351,13 @@
                 <div class="flex gap-4 items-center">
                     <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500"><i class="fa-solid fa-gas-pump"></i></div>
                     <div>
-                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.station" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.station }}</span></div>
+                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.station" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.station }}</span> <span v-if="log.is_internal" class="text-[9px] text-blue-300 bg-blue-900/50 border border-blue-500/50 px-1.5 py-0.5 rounded ml-1 uppercase">INTERNAL</span></div>
                         <div class="text-xs text-kmc-muted">{{ new Date(log.timestamp).toLocaleString() }} • {{ log.user_name }}</div>
                     </div>
                 </div>
                 <div class="text-right">
                     <div class="font-bold text-white">{{ log.liters }} L</div>
-                    <div class="text-xs text-green-400 font-mono" v-if="log.price && !$root.isStaff">$ {{ log.price }}</div>
+                    <div class="text-xs text-green-400 font-mono" v-if="log.price && !log.is_internal && !$root.isStaff">$ {{ log.price }}</div>
                 </div>
             </div>
             <div v-if="($root.isStaff ? $root.logs.filter(l => l.category === 'fuel' && l.user_name === $root.currentUser.name) : $root.logs.filter(l => l.category === 'fuel')).length === 0" class="text-center text-gray-500 py-8">No records found / 暂无记录</div>
@@ -568,9 +568,9 @@
                                             <td class="p-2 border-r border-gray-200 font-mono">{{ log.timestamp.split('T')[0] }}<br><span class="text-[9px] text-gray-400">{{ log.timestamp.split('T')[1].substr(0,5) }}</span></td>
                                             <td class="p-2 border-r border-gray-200 font-bold">{{ $root.getPlate(log.entity_id) }}</td>
                                             <td class="p-2 border-r border-gray-200">{{ log.user_name }}</td>
-                                            <td class="p-2 border-r border-gray-200 truncate max-w-[100px]">{{ log.station || '-' }}</td>
+                                            <td class="p-2 border-r border-gray-200 truncate max-w-[100px]">{{ log.station || '-' }} <span v-if="log.is_internal" class="ml-1 text-[8px] uppercase bg-blue-100 text-blue-600 px-1 rounded border border-blue-200">INTERNAL</span></td>
                                             <td class="p-2 border-r border-gray-200 text-right font-bold text-orange-600">{{ log.liters }}</td>
-                                            <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price }}</td>
+                                            <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price || '-' }}</td>
                                             <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-12 h-10 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
                                         </tr>
                                     </tbody>
@@ -650,7 +650,7 @@
              <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
                 <div>
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }} <span class="ml-2 bg-gray-800 px-1 rounded text-gray-400" v-if="s.date">{{ s.date }}</span></div>
+                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
                 </div>
                  <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
              </div>
@@ -1182,8 +1182,6 @@
             const pendingReviews = computed(() => (logs.value||[]).filter(l => l.category === 'task_exec' && !l.rating).length);
             const globalFuel = computed(() => { const f = (logs.value||[]).filter(l => l.category === 'fuel'); return { liters: f.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) } });
             const myStats = computed(() => { const l=(logs.value||[]).filter(x=>x.user_name===currentUser.value?.name); const g=l.filter(x=>x.rating==='green').length; return { total:l.length, rate:l.length?Math.round((g/l.length)*100):0 }; });
-            
-            // --- MY TASKS LOGIC (Multi-select Support) ---
             const myNextTasks = computed(() => (tasks.value||[]).filter(t => {
                 const assign = t.assigned_to;
                 if (!assign) return false;
