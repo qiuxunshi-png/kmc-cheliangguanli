@@ -290,7 +290,9 @@
                     </div>
                     <div v-if="taskContext.req_photo">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Photos / 现场照片 (Required)</label>
-                        <div class="photo-grid"><div v-for="(p, idx) in formData.photos" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto('photos', idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn"><input type="file" accept="image/*" capture="environment" @change="(e)=>handleCam(e, 'photos')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div>
+                        <div class="photo-grid"><div v-for="(p, idx) in formData.photos" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto('photos', idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
+                            <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, 'photos')" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div>
                     </div>
                     <div v-if="taskContext.req_signature">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Signature / 签字 (Required)</label>
@@ -343,7 +345,9 @@
                         <div v-else-if="field.type === 'checkbox'" class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData[key] = !formData[key]"><span class="text-sm font-medium text-gray-300">{{ field.label }}</span><div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData[key]" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData[key] ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div></div>
                         <select v-else-if="field.type === 'select'" v-model="formData[key]" class="kmc-input" :disabled="field.disabled"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></select>
                         <input v-else-if="['time','datetime-local'].includes(field.type)" :type="field.type" v-model="formData[key]" class="kmc-input">
-                        <div v-else-if="field.type === 'camera'"><div class="text-[10px] text-orange-400 mb-2 font-bold" v-if="field.note"><i class="fa-solid fa-circle-info mr-1"></i> {{ field.note }}</div><div class="photo-grid"><div v-for="(p, idx) in formData[key]" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto(key, idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn"><input type="file" accept="image/*" capture="environment" @change="(e)=>handleCam(e, key)" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div></div>
+                        <div v-else-if="field.type === 'camera'"><div class="text-[10px] text-orange-400 mb-2 font-bold" v-if="field.note"><i class="fa-solid fa-circle-info mr-1"></i> {{ field.note }}</div><div class="photo-grid"><div v-for="(p, idx) in formData[key]" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto(key, idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
+                            <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, key)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                            <i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div></div>
                         <div v-else-if="field.type === 'signature_pad'"><div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature(key)"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig(key)"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData[key]" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData[key]" class="h-3/4 object-contain"></div></div><button v-if="!formData[key]" @click="saveSignature(key)" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature(key)" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button></div>
                     </div>
                 </div>
@@ -359,7 +363,11 @@
         <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close / 点击任意处关闭</div>
     </div>
 
-    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in"><div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
+    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in"><div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div>
+    
+    <div v-if="currentUser.role === '01'" class="pt-2 border-t border-white/10"><div class="flex items-center justify-between"><label class="text-[10px] font-bold text-kmc-muted uppercase">Allow Staff Gallery / 允许全员相册</label><div class="relative inline-block w-8 h-4 align-middle select-none"><input type="checkbox" v-model="allowStaffGallery" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-700" :class="allowStaffGallery ? 'bg-blue-500' : ''"></label></div></div><p class="text-[9px] text-gray-500 mt-1">If enabled, role 02/03 can upload from album. (Reset on reload)</p></div>
+
+    <div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
 
 </div>
 
@@ -932,6 +940,15 @@
             let ctx = null; let lastX = 0; let lastY = 0;
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
+
+            // CHANGED: Camera Permission Logic
+            const allowStaffGallery = ref(false); 
+            const getCaptureMode = computed(() => {
+                if (!currentUser.value) return 'environment';
+                if (currentUser.value.role === '01') return null; // Role 01 always allowed gallery
+                if (allowStaffGallery.value) return null; // Staff allowed if switch is ON
+                return 'environment'; // Default force camera
+            });
 
             // 计算总记录数
             const totalRecords = computed(() => {
@@ -1601,7 +1618,9 @@
                 syncStatus, forceSync: fetchCloudData, isGlobalLoading, toasts,
                 totalRecords, formatAssignee,
                 // New Exports
-                handleExportJSON, handleExportPDF, handleClear, exportConfig
+                handleExportJSON, handleExportPDF, handleClear, exportConfig,
+                // CHANGED: Exports for camera permissions
+                allowStaffGallery, getCaptureMode
             };
         }
     }).mount('#app');
