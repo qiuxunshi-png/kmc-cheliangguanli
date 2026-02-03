@@ -1700,7 +1700,7 @@
                     modalFields.value = {
                         assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
                     };
-                    if(!data) formData.value = {id:Date.now(), assigned_to: [], frequency: 'daily', req_photo: false, req_signature: false};
+                    if(!data) formData.value = {id:Date.now(), assigned_to: [], frequency: 'daily', req_photo: false, req_signature: false, title_en: '', content: '', standards: ''};
                     else {
                         let existing = data.assigned_to;
                         try {
