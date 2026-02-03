@@ -830,35 +830,15 @@
             </div>
         </div>
         `,
+        data() { return { softLimit: 3000 } },
         computed: {
-            filteredFuelLogs() {
-                const f = this.$root.statsFilters;
-                let logs = this.$root.logs.filter(l => l.category === 'fuel');
-                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
-                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
-                if (f.vehicle_id) logs = logs.filter(l => l.entity_id === f.vehicle_id);
-                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
-                return logs;
-            },
-            filteredTaskLogs() {
-                const f = this.$root.statsFilters;
-                let logs = this.$root.logs.filter(l => l.category === 'task_exec');
-                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
-                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
-                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
-                return logs;
-            },
-            driverPerformanceStats() {
-                const logs = this.filteredTaskLogs;
-                let drivers = this.$root.users.filter(u => u.role.startsWith('03'));
-                if (this.$root.statsFilters.driver) drivers = drivers.filter(u => u.name === this.$root.statsFilters.driver);
-                return drivers.map(d => {
-                    const dl = logs.filter(l => l.user_name === d.name);
-                    const total = dl.length;
-                    const approved = dl.filter(l => l.rating === 'green').length;
-                    const rejected = dl.filter(l => l.rating === 'red').length;
-                    return { id: d.id, name: d.name, total, approved, rejected, rate: total > 0 ? Math.round((approved / total) * 100) : 0 };
-                }).sort((a,b) => b.rate - a.rate);
+            percentage() { return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100); }
+        },
+        methods: {
+            confirmClear() {
+                if(confirm("WARNING: This will delete ALL history logs and shift records from the cloud database.\n\nAre you sure? This cannot be undone.\n\n警告：这将从云端数据库删除所有历史日志和排班记录。\n确定吗？此操作无法撤销。")) {
+                    this.$root.handleClear();
+                }
             }
         }
     };
