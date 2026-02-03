@@ -151,6 +151,25 @@
         
         .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
 
+        /* MERGED INPUTS STYLE (NEW) */
+        .merged-input-group {
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.2s;
+        }
+        .merged-input-group:focus-within {
+            border-color: #3b82f6;
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+        }
+        .merged-input-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+        }
+
         /* Print Fixes */
         @media print {
             tr, .kmc-card, .break-inside-avoid {
@@ -276,7 +295,6 @@
                 <div v-if="modalType === 'task_exec'" class="space-y-5">
                     <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl space-y-3">
                         <div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
-                        <div v-if="taskContext.remarks"><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 mt-3">Note / 备注</div><div class="text-sm text-gray-300">{{ taskContext.remarks }}</div></div>
                     </div>
                     <div>
                         <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报</label></div>
@@ -298,6 +316,84 @@
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Signature / 签字 (Required)</label>
                         <div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature('signature')"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig('signature')"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData.signature" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData.signature" class="h-3/4 object-contain"></div></div>
                         <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
+                    </div>
+                </div>
+
+                <div v-else-if="modalType === 'task_config'" class="space-y-6">
+                    <div class="input-group">
+                        <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Frequency / 频率</label>
+                        <select v-model="formData.frequency" class="kmc-input">
+                            <option value="daily">Daily / 每日例行</option>
+                            <option value="one_time">One Time / 单次工单</option>
+                        </select>
+                        <div class="text-[10px] text-gray-500 mt-1 italic">Daily resets 00:00. One-time hides after finish.</div>
+                    </div>
+
+                    <div class="merged-input-group">
+                        <div class="relative group">
+                            <div class="px-4 pt-3 flex justify-between items-center">
+                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Task Name / 任务名 (Required)</label>
+                                <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('title_en')" title="Translate">
+                                    <i v-if="translating==='title_en'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                </div>
+                            </div>
+                            <input v-model="formData.title_en" type="text" class="w-full bg-transparent border-none text-white px-4 py-2 font-bold text-lg focus:ring-0 placeholder-gray-600" placeholder="Enter task name...">
+                        </div>
+                        <div class="merged-input-divider"></div>
+                        <div class="relative group">
+                            <div class="px-4 pt-3 flex justify-between items-center">
+                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Content / 内容 (Required)</label>
+                                <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('content')" title="Translate">
+                                    <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                </div>
+                            </div>
+                            <textarea v-model="formData.content" class="w-full bg-transparent border-none text-gray-300 px-4 py-2 h-24 resize-none focus:ring-0 placeholder-gray-600 text-sm" placeholder="Enter detailed description..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="merged-input-group">
+                        <div class="relative group">
+                            <div class="px-4 pt-3 flex justify-between items-center">
+                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Standards & Remarks / 执行标准与备注 (Required)</label>
+                                <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('standards')" title="Translate">
+                                    <i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                </div>
+                            </div>
+                            <textarea v-model="formData.standards" class="w-full bg-transparent border-none text-gray-300 px-4 py-2 h-32 resize-none focus:ring-0 placeholder-gray-600 text-sm" placeholder="Enter standards and remarks..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 p-1">
+                        <div class="flex items-center gap-2 cursor-pointer" @click="formData.req_photo = !formData.req_photo">
+                            <div class="w-4 h-4 border rounded flex items-center justify-center" :class="formData.req_photo ? 'bg-blue-600 border-blue-600' : 'border-gray-500'">
+                                <i v-if="formData.req_photo" class="fa-solid fa-check text-[10px] text-white"></i>
+                            </div>
+                            <span class="text-xs text-gray-300">Require Photo</span>
+                        </div>
+                        <div class="flex items-center gap-2 cursor-pointer" @click="formData.req_signature = !formData.req_signature">
+                            <div class="w-4 h-4 border rounded flex items-center justify-center" :class="formData.req_signature ? 'bg-blue-600 border-blue-600' : 'border-gray-500'">
+                                <i v-if="formData.req_signature" class="fa-solid fa-check text-[10px] text-white"></i>
+                            </div>
+                            <span class="text-xs text-gray-300">Require Signature</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-kmc-muted uppercase ml-1">Assign To / 指派给</label>
+                        <div class="flex flex-wrap gap-2 mb-2 p-1 min-h-[30px]" v-if="formData.assigned_to && formData.assigned_to.length > 0">
+                            <span v-for="sel in formData.assigned_to" :key="sel" class="bg-blue-600/20 border border-blue-600/50 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
+                                {{ sel }} <button @click.stop="formData.assigned_to = formData.assigned_to.filter(i => i !== sel)" class="hover:text-white transition"><i class="fa-solid fa-times"></i></button>
+                            </span>
+                        </div>
+                        <div class="max-h-40 overflow-y-auto border border-kmc-border rounded p-2 bg-black/20">
+                            <label v-for="opt in modalFields.assigned_to.options" :key="opt.val" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer transition">
+                                <input type="checkbox" :value="opt.val" v-model="formData.assigned_to" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-offset-gray-900 focus:ring-1">
+                                <span class="text-xs text-gray-300">{{ opt.label }}</span>
+                            </label>
+                        </div>
                     </div>
                 </div>
 
@@ -944,7 +1040,7 @@
 
             const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
 
-            // CHANGED: Camera Permission Logic
+            // Camera Permission Logic
             const allowStaffGallery = ref(false); 
             const getCaptureMode = computed(() => {
                 if (!currentUser.value) return 'environment';
@@ -1243,6 +1339,10 @@
             // Logic Protection
             const isSaveLocked = computed(() => {
                 if (modalType.value === 'shift_fixed' && formData.value.standards && !isTaskTranslated.value) return {locked:true, msg:'Translate First / 请先翻译'};
+                
+                // NEW: Task Config Validation
+                if (modalType.value === 'task_config' && (!formData.value.title_en || !formData.value.content || !formData.value.standards)) return {locked:true, msg:'Missing Fields / 信息不全'};
+                
                 if (modalType.value === 'fuel' && (!formData.value.photos || formData.value.photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
                 if (modalType.value === 'vehicle' && (!formData.value.archive_photos || formData.value.archive_photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
                 return {locked:false, msg:'Save Changes / 保存更改'};
@@ -1411,18 +1511,11 @@
                     
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
                     
+                    // Note: 'remarks' removed as requested. 'title', 'content', 'standards' handled in custom HTML
                     modalFields.value = {
-                        // UPDATED: Added frequency
-                        frequency: {label:'Frequency / 频率', type:'select', options:[{val:'daily',label:'Daily / 每日例行'},{val:'one_time',label:'One Time / 单次工单'}], note:'Daily resets 00:00. One-time hides after finish.'},
-                        title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
-                        content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
-                        standards: {label:'Standards / 标准 (Text)', type:'textarea', translate: true},
-                        remarks: {label:'Remarks / 备注', type:'textarea', translate: true}, 
-                        req_photo: {label:'Require Photo / 需拍照', type:'checkbox'},
-                        req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
                         assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
                     };
-                    if(!data) formData.value = {id:Date.now(), assigned_to: [], frequency: 'daily'};
+                    if(!data) formData.value = {id:Date.now(), assigned_to: [], frequency: 'daily', req_photo: false, req_signature: false};
                     else {
                         let existing = data.assigned_to;
                         try {
@@ -1431,6 +1524,7 @@
                             else if (!existing) existing = [];
                         } catch(e) { existing = []; }
                         formData.value.assigned_to = existing;
+                        if (!formData.value.frequency) formData.value.frequency = 'daily';
                     }
                 }
                 else if (type === 'shift_fixed' || type === 'shift_temp') { 
