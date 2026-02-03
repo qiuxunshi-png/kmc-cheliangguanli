@@ -31,7 +31,7 @@
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' },
+                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
                         slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
@@ -151,7 +151,7 @@
         
         .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
 
-        /* MERGED INPUTS STYLE (NEW) */
+        /* MERGED INPUTS STYLE */
         .merged-input-group {
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
@@ -169,6 +169,38 @@
             background: rgba(255, 255, 255, 0.1);
             width: 100%;
         }
+
+        /* NEW: WORK ORDER CARD STYLE (READ-ONLY) */
+        .instruction-card {
+            background: linear-gradient(180deg, rgba(30, 58, 138, 0.2) 0%, rgba(30, 58, 138, 0.05) 100%);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .instruction-card::before {
+            content: "";
+            position: absolute; top:0; left:0; width: 4px; height: 100%;
+            background: #3b82f6;
+        }
+        .instruction-header {
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.2);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .instruction-body {
+            padding: 16px;
+        }
+        
+        /* NEW: STATUS BADGE */
+        .status-badge {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            padding: 4px 8px; border-radius: 99px; letter-spacing: 0.05em;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .status-badge.pending { background: rgba(234, 179, 8, 0.2); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+        .status-badge.active { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); box-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
 
         /* Print Fixes */
         @media print {
@@ -292,30 +324,62 @@
             </div>
             
             <div class="p-6 space-y-5">
-                <div v-if="modalType === 'task_exec'" class="space-y-5">
-                    <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl space-y-3">
-                        <div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
+                <div v-if="modalType === 'task_exec'" class="space-y-6">
+                    <div class="instruction-card">
+                        <div class="instruction-header">
+                            <span class="text-[10px] text-blue-300 font-bold uppercase tracking-widest"><i class="fa-solid fa-circle-info mr-1"></i> WORK ORDER / 工单详情</span>
+                            <div class="status-badge" :class="isExecutionStarted ? 'active' : 'pending'">
+                                <i class="fa-solid" :class="isExecutionStarted ? 'fa-spinner fa-spin' : 'fa-clock'"></i>
+                                {{ isExecutionStarted ? 'IN PROGRESS / 进行中' : 'WAITING / 待开始' }}
+                            </div>
+                        </div>
+                        <div class="instruction-body space-y-4">
+                            <div>
+                                <div class="text-[9px] text-blue-400 font-bold uppercase mb-1">Task / 任务名</div>
+                                <div class="text-lg font-bold text-white leading-tight">{{ formData.title_en }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-blue-400 font-bold uppercase mb-1">Instructions / 指令内容</div>
+                                <div class="text-sm text-gray-300 bg-black/20 p-2 rounded border border-white/5">{{ taskContext.content || 'No content provided' }}</div>
+                            </div>
+                            <div>
+                                <div class="text-[9px] text-blue-400 font-bold uppercase mb-1">Standard / 执行标准</div>
+                                <div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards' }}</div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报</label></div>
+
+                    <div v-if="!isExecutionStarted" class="py-4 text-center animate-fade-in">
+                        <div class="mb-4 text-gray-400 text-xs">Please review the instructions above before starting.<br>请先阅读上方指令。</div>
+                        <button @click="isExecutionStarted = true" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/50 transform hover:scale-[1.02] transition-all flex items-center justify-center gap-2 text-base">
+                            <i class="fa-solid fa-play"></i> START TASK / 开始执行
+                        </button>
+                    </div>
+
+                    <div v-if="isExecutionStarted" class="space-y-5 animate-fade-in border-t border-dashed border-white/10 pt-4">
+                        <div class="flex items-center gap-2 mb-2 text-green-400 text-xs font-bold uppercase"><i class="fa-solid fa-pen-to-square"></i> Report Area / 填报区域</div>
+                        
                         <div class="relative group">
-                            <textarea v-model="formData.content" class="kmc-input h-32 resize-none pr-10" placeholder="Enter details... / 输入详情"></textarea>
+                            <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Execution Report / 执行汇报</label></div>
+                            <textarea v-model="formData.content" class="kmc-input h-32 resize-none pr-10" placeholder="Describe current situation... / 描述现场情况..."></textarea>
                             <div class="ai-btn" @click="translate('content')" title="One-Click Translate">
                                 <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
                                 <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
                             </div>
                         </div>
-                    </div>
-                    <div v-if="taskContext.req_photo">
-                        <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Photos / 现场照片 (Required)</label>
-                        <div class="photo-grid"><div v-for="(p, idx) in formData.photos" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto('photos', idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
-                            <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, 'photos')" class="absolute inset-0 opacity-0 cursor-pointer z-10">
-                            <i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div>
-                    </div>
-                    <div v-if="taskContext.req_signature">
-                        <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Signature / 签字 (Required)</label>
-                        <div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature('signature')"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig('signature')"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData.signature" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData.signature" class="h-3/4 object-contain"></div></div>
-                        <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
+
+                        <div v-if="taskContext.req_photo">
+                            <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Evidence Photos / 现场取证 (Required)</label>
+                            <div class="photo-grid"><div v-for="(p, idx) in formData.photos" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto('photos', idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
+                                <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, 'photos')" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+                                <i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div>
+                        </div>
+
+                        <div v-if="taskContext.req_signature">
+                            <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Confirmation Signature / 确认签字 (Required)</label>
+                            <div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature('signature')"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig('signature')"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData.signature" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData.signature" class="h-3/4 object-contain"></div></div>
+                            <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
+                        </div>
                     </div>
                 </div>
 
@@ -381,7 +445,7 @@
                         </div>
                     </div>
 
-                    <div class="space-y-2">
+                    <div class="space-y-2" v-if="!isStaff">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase ml-1">Assign To / 指派给</label>
                         <div class="flex flex-wrap gap-2 mb-2 p-1 min-h-[30px]" v-if="formData.assigned_to && formData.assigned_to.length > 0">
                             <span v-for="sel in formData.assigned_to" :key="sel" class="bg-blue-600/20 border border-blue-600/50 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
@@ -449,7 +513,11 @@
                     </div>
                 </div>
             </div>
-            <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3"><button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button><button @click="submitForm" :disabled="isSaveLocked.locked" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg"><i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i>{{ isSaveLocked.msg }}</button></div>
+            <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3">
+                <button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button>
+                <button v-if="modalType === 'task_exec' && !isExecutionStarted" disabled class="kmc-btn bg-white/10 text-white/30 flex-1 py-3 text-sm cursor-not-allowed">Start Task First</button>
+                <button v-else @click="submitForm" :disabled="isSaveLocked.locked" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg"><i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i>{{ isSaveLocked.msg }}</button>
+            </div>
         </div>
     </div>
 
@@ -797,178 +865,6 @@
             </div>
         </div>
         `,
-        computed: {
-            filteredFuelLogs() {
-                const f = this.$root.statsFilters;
-                let logs = this.$root.logs.filter(l => l.category === 'fuel');
-                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
-                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
-                if (f.vehicle_id) logs = logs.filter(l => l.entity_id === f.vehicle_id);
-                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
-                return logs;
-            },
-            filteredTaskLogs() {
-                const f = this.$root.statsFilters;
-                let logs = this.$root.logs.filter(l => l.category === 'task_exec');
-                if (f.start) logs = logs.filter(l => l.timestamp >= f.start);
-                if (f.end) logs = logs.filter(l => l.timestamp <= f.end + 'T23:59:59');
-                if (f.driver) logs = logs.filter(l => l.user_name === f.driver);
-                return logs;
-            },
-            driverPerformanceStats() {
-                const logs = this.filteredTaskLogs;
-                let drivers = this.$root.users.filter(u => u.role.startsWith('03'));
-                if (this.$root.statsFilters.driver) drivers = drivers.filter(u => u.name === this.$root.statsFilters.driver);
-                return drivers.map(d => {
-                    const dl = logs.filter(l => l.user_name === d.name);
-                    const total = dl.length;
-                    const approved = dl.filter(l => l.rating === 'green').length;
-                    const rejected = dl.filter(l => l.rating === 'red').length;
-                    return { id: d.id, name: d.name, total, approved, rejected, rate: total > 0 ? Math.round((approved / total) * 100) : 0 };
-                }).sort((a,b) => b.rate - a.rate);
-            }
-        }
-    };
-    
-    const Shifts = { template: `
-    <div class="space-y-6">
-        <div class="flex justify-between items-center">
-            <h2 class="text-xl font-bold text-white">Shift Management / 排班</h2>
-            <button @click="$root.openForm('shift_fixed')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg">New Shift / 新班次</button>
-        </div>
-        <div class="space-y-3">
-             <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
-                <div>
-                    <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
-                    <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
-                </div>
-                 <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
-             </div>
-             <div v-if="$root.shifts.length === 0" class="text-center text-gray-500">No shifts configured / 暂无排班</div>
-        </div>
-    </div>` 
-    };
-
-    const StorageView = {
-        template: `
-        <div class="space-y-8 animate-fade-in">
-            <div class="flex justify-between items-center">
-                <h2 class="text-xl font-bold text-white">Storage & Backup / 存储与备份</h2>
-            </div>
-            
-            <div class="kmc-card p-6">
-                <div class="flex justify-between items-end mb-4">
-                    <div>
-                        <div class="text-[10px] text-kmc-muted uppercase font-bold tracking-widest mb-1">Database Capacity / 数据库容量</div>
-                        <div class="text-3xl font-bold text-white flex items-end gap-2">
-                            {{ $root.totalRecords }} <span class="text-sm text-gray-500 font-normal mb-1">/ {{ softLimit }} Records (Ref)</span>
-                        </div>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-bold" :class="percentage > 80 ? 'text-red-500' : 'text-green-500'">{{ percentage }}%</div>
-                        <div class="text-[10px] text-gray-500">Used</div>
-                    </div>
-                </div>
-                <div class="w-full bg-gray-700 rounded-full h-2.5 mb-6 overflow-hidden">
-                    <div class="h-2.5 rounded-full transition-all duration-1000" :style="{ width: percentage + '%' }" :class="percentage > 80 ? 'bg-red-500' : (percentage > 50 ? 'bg-yellow-500' : 'bg-green-500')"></div>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Logs</div><div class="font-bold text-white">{{ $root.logs.length }}</div></div>
-                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Shifts</div><div class="font-bold text-white">{{ $root.shifts.length }}</div></div>
-                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Vehicles</div><div class="font-bold text-white">{{ $root.vehicles.length }}</div></div>
-                    <div class="p-3 bg-white/5 rounded border border-white/5"><div class="text-gray-500">Staff</div><div class="font-bold text-white">{{ $root.users.length }}</div></div>
-                </div>
-            </div>
-
-            <div class="kmc-card p-6 border-l-4 border-l-blue-500">
-                <h3 class="font-bold text-white mb-4"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Export Options / 导出选项</h3>
-                
-                <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg mb-6 border border-white/10">
-                    <div>
-                        <div class="font-bold text-white text-sm">Include Media / 包含媒体</div>
-                        <div class="text-[10px] text-gray-400">Photos & Signatures (Increases file size) / 照片与签字</div>
-                    </div>
-                    <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" id="toggle-media" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="$root.exportConfig.includeImages ? 'right-0 border-blue-500' : 'left-0 border-gray-400'" v-model="$root.exportConfig.includeImages"/>
-                        <label for="toggle-media" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer" :class="$root.exportConfig.includeImages ? 'bg-blue-500' : 'bg-gray-700'"></label>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <button @click="$root.handleExportJSON" class="kmc-btn bg-white/10 hover:bg-white/20 text-white py-3 text-xs border border-white/10">
-                        <i class="fa-solid fa-file-code mr-2 text-yellow-400"></i> JSON Backup
-                    </button>
-                    <button @click="$root.handleExportPDF" class="kmc-btn bg-white/10 hover:bg-white/20 text-white py-3 text-xs border border-white/10">
-                        <i class="fa-solid fa-file-pdf mr-2 text-red-400"></i> Export PDF
-                    </button>
-                </div>
-            </div>
-
-            <div class="kmc-card p-6 border-l-4 border-l-red-500 opacity-80 hover:opacity-100 transition">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-white text-sm"><i class="fa-solid fa-trash-can text-red-500 mr-2"></i> Danger Zone</h3>
-                        <p class="text-[10px] text-gray-400">Clear logs/shifts only. Configs are safe. / 仅清空流水记录</p>
-                    </div>
-                    <button @click="confirmClear" class="px-4 py-2 bg-red-900/30 border border-red-500/50 text-red-200 text-[10px] font-bold rounded hover:bg-red-900/50">Clear History / 清空</button>
-                </div>
-            </div>
-
-            <div style="position: absolute; left: -9999px; top: 0;">
-                <div id="storage-pdf-template" class="bg-white text-black p-8 w-[210mm] min-h-[297mm]">
-                    <div class="border-b-2 border-black pb-4 mb-6">
-                        <h1 class="text-2xl font-bold uppercase">System Data Export</h1>
-                        <div class="flex justify-between text-xs text-gray-600 mt-2">
-                            <span>Generated by: {{ $root.currentUser?.name }}</span>
-                            <span>Date: {{ new Date().toLocaleString() }}</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-6 bg-gray-100 p-4 rounded text-xs">
-                        <h3 class="font-bold border-b border-gray-300 mb-2 pb-1">System Status</h3>
-                        <div class="grid grid-cols-4 gap-4">
-                            <div>Vehicles: <b>{{ $root.vehicles.length }}</b></div>
-                            <div>Staff: <b>{{ $root.users.length }}</b></div>
-                            <div>Logs: <b>{{ $root.logs.length }}</b></div>
-                            <div>Shifts: <b>{{ $root.shifts.length }}</b></div>
-                        </div>
-                    </div>
-
-                    <h3 class="font-bold text-sm uppercase border-b-2 border-black mb-3 pb-1">Recent Operations Log (Top 100)</h3>
-                    <table class="w-full text-left border border-gray-300 text-[10px] mb-6">
-                        <thead class="bg-gray-200 font-bold">
-                            <tr>
-                                <th class="p-2 border">Time</th>
-                                <th class="p-2 border">Type</th>
-                                <th class="p-2 border">User</th>
-                                <th class="p-2 border">Details</th>
-                                <th class="p-2 border text-center w-24">Proof</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b">
-                                <td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td>
-                                <td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td>
-                                <td class="p-2 border">{{ log.user_name }}</td>
-                                <td class="p-2 border">
-                                    <div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div>
-                                    <div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div>
-                                </td>
-                                <td class="p-2 border text-center">
-                                    <div v-if="$root.exportConfig.includeImages">
-                                        <img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-10 h-10 object-cover inline-block border border-gray-300">
-                                        <img v-if="log.signature" :src="log.signature" class="w-10 h-8 object-contain inline-block border border-gray-300 ml-1 filter invert">
-                                    </div>
-                                    <span v-else class="text-gray-400 italic">Omitted</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="text-center text-[10px] text-gray-400 mt-4">--- End of Report ---</div>
-                </div>
-            </div>
-        </div>
-        `,
         data() { return { softLimit: 3000 } },
         computed: {
             percentage() { return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100); }
@@ -1020,6 +916,9 @@
             const modalTitle = ref(''); const modalType = ref(''); const modalFields = ref({}); const formData = ref({}); const translating = ref(null);
             const showProfileModal = ref(false); const profileForm = ref({});
             
+            // NEW: Task Execution State
+            const isExecutionStarted = ref(false);
+
             // Stats Logic
             const statsTab = ref('fuel');
             const statsFilters = ref({ start:'', end:'', vehicle_id:'', driver:'', status:'' });
@@ -1631,6 +1530,8 @@
                 taskContext.value = t; 
                 modalType.value = 'task_exec'; 
                 modalTitle.value = t.title_en;
+                // NEW: Reset execution state
+                isExecutionStarted.value = false;
                 formData.value = {
                     id:Date.now(), 
                     task_id: t.id, // NEW: Bind ID
@@ -1776,7 +1677,9 @@
                 // New Exports
                 handleExportJSON, handleExportPDF, handleClear, exportConfig,
                 // CHANGED: Exports for camera permissions
-                allowStaffGallery, getCaptureMode
+                allowStaffGallery, getCaptureMode,
+                // CHANGED: Task Execution State
+                isExecutionStarted
             };
         }
     }).mount('#app');
