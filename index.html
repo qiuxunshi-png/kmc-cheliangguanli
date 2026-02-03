@@ -344,6 +344,7 @@
 
                         <div v-else-if="field.type === 'checkbox'" class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData[key] = !formData[key]"><span class="text-sm font-medium text-gray-300">{{ field.label }}</span><div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData[key]" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData[key] ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div></div>
                         <select v-else-if="field.type === 'select'" v-model="formData[key]" class="kmc-input" :disabled="field.disabled"><option v-for="opt in field.options" :key="opt.val" :value="opt.val">{{ opt.label }}</option></select>
+                        <div v-if="field.note" class="text-[10px] text-gray-500 mt-1 italic">{{ field.note }}</div>
                         <input v-else-if="['time','datetime-local'].includes(field.type)" :type="field.type" v-model="formData[key]" class="kmc-input">
                         <div v-else-if="field.type === 'camera'"><div class="text-[10px] text-orange-400 mb-2 font-bold" v-if="field.note"><i class="fa-solid fa-circle-info mr-1"></i> {{ field.note }}</div><div class="photo-grid"><div v-for="(p, idx) in formData[key]" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto(key, idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
                             <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, key)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
@@ -474,6 +475,8 @@
                 </div>
                 <div class="text-sm text-gray-400 line-clamp-2 mb-3">{{ t.content }}</div>
                 <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600">
+                    <span v-if="t.frequency==='one_time'" class="bg-purple-900/30 text-purple-400 px-2 py-1 rounded border border-purple-500/20">ONE-TIME</span>
+                    <span v-else class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-500/20">DAILY</span>
                     <span v-if="t.req_photo" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-camera mr-1"></i> Photo</span>
                     <span v-if="t.req_signature" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-signature mr-1"></i> Sign</span>
                 </div>
@@ -1409,6 +1412,8 @@
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
                     
                     modalFields.value = {
+                        // UPDATED: Added frequency
+                        frequency: {label:'Frequency / 频率', type:'select', options:[{val:'daily',label:'Daily / 每日例行'},{val:'one_time',label:'One Time / 单次工单'}], note:'Daily resets 00:00. One-time hides after finish.'},
                         title_en: {label:'Task Name / 任务名', type:'text', translate: true}, 
                         content: {label:'Content / 内容 (Text)', type:'textarea', translate: true},
                         standards: {label:'Standards / 标准 (Text)', type:'textarea', translate: true},
@@ -1417,7 +1422,7 @@
                         req_signature: {label:'Require Signature / 需签字', type:'checkbox'},
                         assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
                     };
-                    if(!data) formData.value = {id:Date.now(), assigned_to: []};
+                    if(!data) formData.value = {id:Date.now(), assigned_to: [], frequency: 'daily'};
                     else {
                         let existing = data.assigned_to;
                         try {
@@ -1527,8 +1532,23 @@
                 await saveToTable('app_logs', log);
             };
 
-            const openTaskExec = (t) => { taskContext.value = t; modalType.value = 'task_exec'; modalTitle.value = t.title_en;
-                formData.value = {id:Date.now(), title_en:t.title_en, user_name:currentUser.value.name, category:'task_exec', photos:[], signature: null}; showModal.value = true; };
+            // UPDATED: Open Task Exec with hidden fields
+            const openTaskExec = (t) => { 
+                taskContext.value = t; 
+                modalType.value = 'task_exec'; 
+                modalTitle.value = t.title_en;
+                formData.value = {
+                    id:Date.now(), 
+                    task_id: t.id, // NEW: Bind ID
+                    frequency: t.frequency || 'daily', // NEW
+                    title_en:t.title_en, 
+                    user_name:currentUser.value.name, 
+                    category:'task_exec', 
+                    photos:[], 
+                    signature: null
+                }; 
+                showModal.value = true; 
+            };
             
             const updateProfile = async () => { 
                 const idx=users.value.findIndex(u=>u.id===currentUser.value.id); 
@@ -1548,22 +1568,56 @@
             const globalFuel = computed(() => { const f = (logs.value||[]).filter(l => l.category === 'fuel'); return { liters: f.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) } });
             const myStats = computed(() => { const l=(logs.value||[]).filter(x=>x.user_name===currentUser.value?.name); const g=l.filter(x=>x.rating==='green').length; return { total:l.length, rate:l.length?Math.round((g/l.length)*100):0 }; });
             
-            // --- MY TASKS LOGIC (Multi-select Support) ---
-            const myNextTasks = computed(() => (tasks.value||[]).filter(t => {
-                const assign = t.assigned_to;
-                if (!assign) return false;
-                
-                if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
-                
-                if (typeof assign === 'string' && assign.startsWith('[')) {
-                    try {
-                        const parsed = JSON.parse(assign);
-                        return Array.isArray(parsed) && parsed.includes(currentUser.value?.name);
-                    } catch(e) {}
-                }
-                
-                return assign === currentUser.value?.name;
-            }));
+            // --- UPDATED: MY TASKS LOGIC (Closed Loop) ---
+            const myNextTasks = computed(() => {
+                // 1. Get allocated tasks
+                const allocatedTasks = (tasks.value||[]).filter(t => {
+                    const assign = t.assigned_to;
+                    if (!assign) return false;
+                    
+                    if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
+                    
+                    if (typeof assign === 'string' && assign.startsWith('[')) {
+                        try {
+                            const parsed = JSON.parse(assign);
+                            return Array.isArray(parsed) && parsed.includes(currentUser.value?.name);
+                        } catch(e) {}
+                    }
+                    
+                    return assign === currentUser.value?.name;
+                });
+
+                // 2. Filter completed
+                return allocatedTasks.filter(t => {
+                    const taskLogs = (logs.value || []).filter(l => 
+                        l.category === 'task_exec' && 
+                        l.user_name === currentUser.value?.name && 
+                        (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en))
+                    );
+
+                    if (taskLogs.length === 0) return true;
+
+                    // Check latest log
+                    const lastLog = taskLogs[0]; // Assumes desc sort
+
+                    // If rejected, always show
+                    if (lastLog.rating === 'red') return true;
+
+                    // Daily: Hide if done today
+                    if (!t.frequency || t.frequency === 'daily') {
+                        const todayStr = new Date().toISOString().split('T')[0];
+                        const logDate = lastLog.timestamp.split('T')[0];
+                        return logDate !== todayStr;
+                    }
+
+                    // One Time: Hide if exists
+                    if (t.frequency === 'one_time') {
+                        return false;
+                    }
+
+                    return true;
+                });
+            });
 
             // View Components
             const currentViewComponent = computed(() => { 
@@ -1581,7 +1635,15 @@
                     <div class="space-y-6">
                         <div class="space-y-4">
                             <h2 class="text-xl font-bold text-white">Pending Tasks / 待办任务</h2>
-                            <div v-for="t in $root.myNextTasks" :key="t.id" class="kmc-card p-5 cursor-pointer hover:border-blue-500" @click="$root.openTaskExec(t)"><div class="font-bold text-white">{{ t.title_en }}</div><div class="text-xs text-kmc-muted mt-2">{{ t.content }}</div><div class="mt-3 flex gap-2"><span class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded">START TASK / 开始</span></div></div>
+                            <div v-for="t in $root.myNextTasks" :key="t.id" class="kmc-card p-5 cursor-pointer hover:border-blue-500" @click="$root.openTaskExec(t)">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-bold text-white">{{ t.title_en }}</div>
+                                    <span v-if="$root.logs.find(l => l.task_id === t.id && l.rating === 'red')" class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded animate-pulse">REJECTED / 被驳回</span>
+                                    <span v-else-if="t.frequency==='one_time'" class="text-[9px] border border-blue-500/50 text-blue-400 px-1.5 rounded">ONE-TIME</span>
+                                </div>
+                                <div class="text-xs text-kmc-muted mt-2">{{ t.content }}</div>
+                                <div class="mt-3 flex gap-2"><span class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded">START TASK / 开始</span></div>
+                            </div>
                             <div v-if="$root.myNextTasks.length===0" class="text-gray-500 text-center py-4 text-xs italic">No pending tasks / 暂无待办</div>
                         </div>
                         <div class="space-y-4 pt-4 border-t border-white/10">
