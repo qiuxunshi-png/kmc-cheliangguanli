@@ -354,7 +354,7 @@
                         <div class="merged-input-divider"></div>
                         <div class="relative group">
                             <div class="px-4 pt-3 flex justify-between items-center">
-                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Content / 内容 (Required)</label>
+                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Task Description / 具体任务描述 (Required)</label>
                                 <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('content')" title="Translate">
                                     <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
                                     <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
@@ -367,7 +367,7 @@
                     <div class="merged-input-group">
                         <div class="relative group">
                             <div class="px-4 pt-3 flex justify-between items-center">
-                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Standards & Remarks / 执行标准与备注 (Required)</label>
+                                <label class="text-[10px] font-bold text-kmc-muted uppercase">Standards & Remarks / 任务标准 (Required)</label>
                                 <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('standards')" title="Translate">
                                     <i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
                                     <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
@@ -564,7 +564,6 @@
     </div>
     `};
 
-    // --- REPLACED: Tasks Component (Admin Progress Monitoring) ---
     const Tasks = { template: `
     <div class="space-y-6">
         <div class="flex justify-between items-center">
@@ -943,13 +942,15 @@
     `,
     methods: {
         isAssigned(t) {
-            // Helper to check assignment logic inside v-for
+            if (!t || !t.assigned_to) return false;
             const name = this.$root.currentUser.name;
             const assign = t.assigned_to;
-            if (!assign) return false;
             if (Array.isArray(assign)) return assign.includes(name);
             if (typeof assign === 'string') {
-                try { return JSON.parse(assign).includes(name); } catch(e) { return assign === name; }
+                try { 
+                    const parsed = JSON.parse(assign);
+                    if (Array.isArray(parsed)) return parsed.includes(name);
+                } catch(e) { return assign === name; }
             }
             return false;
         },
@@ -1848,7 +1849,6 @@
             
             // --- UPDATED: MY TASKS LOGIC (Closed Loop) ---
             const myNextTasks = computed(() => {
-                // Legacy support (now handled in MyTasks component directly, but kept for dashboard widget)
                 const allocatedTasks = (tasks.value||[]).filter(t => {
                     const assign = t.assigned_to;
                     if (!assign) return false;
