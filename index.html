@@ -293,6 +293,17 @@
             
             <div class="p-6 space-y-5">
                 <div v-if="modalType === 'task_exec'" class="space-y-5">
+                    
+                    <div v-if="$root.getRejectReason(taskContext)" class="bg-red-500/20 border-l-4 border-red-500 p-4 rounded animate-pulse mb-4">
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5 text-lg"></i>
+                            <div>
+                                <div class="text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Fix Required / 需整改</div>
+                                <div class="text-sm text-white font-bold">{{ $root.getRejectReason(taskContext) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl space-y-3">
                         <div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
                     </div>
@@ -553,6 +564,7 @@
     </div>
     `};
 
+    // --- REPLACED: Tasks Component (Admin Progress Monitoring) ---
     const Tasks = { template: `
     <div class="space-y-6">
         <div class="flex justify-between items-center">
@@ -560,24 +572,45 @@
             <button v-if="!$root.isStaff" @click="$root.openForm('task_config')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-plus mr-2"></i> New Task / 新建</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div v-for="t in $root.tasks" :key="t.id" class="kmc-card p-5 relative group hover:border-blue-500/50 transition">
-                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition" v-if="!$root.isStaff">
+            <div v-for="t in $root.tasks" :key="t.id" class="kmc-card p-5 relative group hover:border-blue-500/50 transition flex flex-col h-full">
+                <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition z-10" v-if="!$root.isStaff">
                     <button @click="$root.openForm('task_config', t)" class="w-8 h-8 rounded bg-white/5 hover:bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
                     <button @click="$root.deleteItem('tasks', t.id)" class="w-8 h-8 rounded bg-white/5 hover:bg-red-500/20 text-red-400 flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
                 </div>
+
                 <div class="mb-3">
-                    <div class="font-bold text-lg text-white">{{ t.title_en }}</div>
+                    <div class="font-bold text-lg text-white pr-16">{{ t.title_en }}</div>
                     <div class="text-xs text-blue-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ $root.formatAssignee(t.assigned_to) }}</div>
                 </div>
-                <div class="text-sm text-gray-400 line-clamp-2 mb-3">{{ t.content }}</div>
-                <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600">
+                <div class="text-sm text-gray-400 line-clamp-2 mb-4 flex-1">{{ t.content }}</div>
+                
+                <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600 mb-4">
                     <span v-if="t.frequency==='one_time'" class="bg-purple-900/30 text-purple-400 px-2 py-1 rounded border border-purple-500/20">ONE-TIME</span>
                     <span v-else class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-500/20">DAILY</span>
                     <span v-if="t.req_photo" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-camera mr-1"></i> Photo</span>
-                    <span v-if="t.req_signature" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-signature mr-1"></i> Sign</span>
+                </div>
+
+                <div v-if="!$root.isStaff && t.frequency!=='one_time' && $root.getTaskProgress(t)" class="mt-auto pt-4 border-t border-white/5">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-[10px] text-kmc-muted uppercase font-bold">Today's Progress</span>
+                        <span class="text-xs font-mono font-bold" :class="$root.getTaskProgress(t).percent===100?'text-green-400':'text-blue-400'">
+                            {{ $root.getTaskProgress(t).doneCount }} / {{ $root.getTaskProgress(t).total }}
+                        </span>
+                    </div>
+                    <div class="w-full bg-gray-700/50 rounded-full h-1.5 overflow-hidden relative group/progress cursor-help">
+                        <div class="h-full rounded-full transition-all duration-500" 
+                             :style="{width: $root.getTaskProgress(t).percent + '%'}" 
+                             :class="$root.getTaskProgress(t).percent===100?'bg-green-500':'bg-blue-500'">
+                        </div>
+                        <div v-if="$root.getTaskProgress(t).pendingUsers.length > 0" class="absolute bottom-full left-0 mb-2 hidden group-hover/progress:block w-full bg-black/90 text-white text-[10px] p-2 rounded border border-white/10 z-20 shadow-xl whitespace-normal">
+                            <div class="font-bold text-red-400 mb-1">Pending / 未完成:</div>
+                            {{ $root.getTaskProgress(t).pendingUsers.join(', ') }}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div v-if="$root.tasks.length === 0" class="col-span-2 text-center text-gray-500 py-10 bg-white/5 rounded-xl border border-dashed border-white/10">
+            
+            <div v-if="$root.tasks.length === 0" class="col-span-1 md:col-span-2 text-center text-gray-500 py-10 bg-white/5 rounded-xl border border-dashed border-white/10">
                 <i class="fa-solid fa-clipboard-list text-4xl mb-3 opacity-50"></i><br>No tasks configured / 暂无任务配置
             </div>
         </div>
@@ -849,6 +882,103 @@
     </div>` 
     };
 
+    // --- REPLACED: MyTasks Component (Staff Three-Section View) ---
+    const MyTasks = {
+    template: `
+    <div class="space-y-8 animate-fade-in">
+        <div>
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> 
+                To Do / 待办与重做
+            </h2>
+            <div class="grid gap-3">
+                <div v-for="t in $root.tasks.filter(x => ['rework', 'todo'].includes($root.getTaskStatus(x, $root.currentUser.name)) && isAssigned(x))" 
+                     :key="t.id" 
+                     @click="$root.openTaskExec(t)"
+                     class="kmc-card p-5 cursor-pointer hover:border-blue-500 transition relative overflow-hidden"
+                     :class="$root.getTaskStatus(t, $root.currentUser.name) === 'rework' ? 'border-red-500/50 bg-red-900/10' : ''">
+                    
+                    <div v-if="$root.getTaskStatus(t, $root.currentUser.name) === 'rework'" class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded-bl">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i> REJECTED / 需重做
+                    </div>
+
+                    <div class="flex justify-between items-start pr-12">
+                        <div>
+                            <div class="font-bold text-white text-base">{{ t.title_en }}</div>
+                            <div class="text-xs text-kmc-muted mt-1 line-clamp-1">{{ t.content }}</div>
+                        </div>
+                        <div class="shrink-0"><i class="fa-solid fa-chevron-right text-gray-600"></i></div>
+                    </div>
+                    
+                    <div class="mt-3 flex gap-2 items-center">
+                         <span v-if="t.frequency==='one_time'" class="text-[9px] border border-blue-500/50 text-blue-400 px-1.5 rounded uppercase">One-Time</span>
+                         <span v-else class="text-[9px] border border-gray-600 text-gray-400 px-1.5 rounded uppercase">Daily</span>
+                         
+                         <span v-if="$root.getTaskStatus(t, $root.currentUser.name) === 'rework'" class="text-[10px] text-red-300 ml-auto">
+                            <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Tap to fix
+                         </span>
+                         <span v-else class="text-[10px] text-blue-400 ml-auto group-hover:underline">Start Task</span>
+                    </div>
+                </div>
+                <div v-if="!hasTasks(['rework', 'todo'])" class="text-center p-6 border border-dashed border-white/10 rounded-xl text-gray-500 text-xs">
+                    <i class="fa-solid fa-check-circle text-2xl mb-2 text-green-500/50"></i><br>All caught up! / 暂无待办
+                </div>
+            </div>
+        </div>
+
+        <div v-if="hasTasks(['review'])">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-yellow-500 rounded-full"></span> 
+                In Review / 审核中
+            </h2>
+            <div class="grid gap-3">
+                <div v-for="t in $root.tasks.filter(x => $root.getTaskStatus(x, $root.currentUser.name) === 'review' && isAssigned(x))" :key="t.id" class="kmc-card p-4 opacity-70">
+                    <div class="flex justify-between items-center">
+                        <div class="font-bold text-white text-sm">{{ t.title_en }}</div>
+                        <span class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20">WAITING</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 mt-1"><i class="fa-solid fa-clock mr-1"></i> Submitted, waiting for admin...</div>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span> 
+                Completed Today / 今日已完成
+            </h2>
+            <div class="grid gap-3">
+                 <div v-for="t in $root.tasks.filter(x => $root.getTaskStatus(x, $root.currentUser.name) === 'done' && isAssigned(x))" :key="t.id" class="kmc-card p-4 border-l-4 border-l-green-500 bg-green-900/5">
+                    <div class="flex justify-between items-center">
+                        <div class="font-bold text-white text-sm decoration-green-500/50">{{ t.title_en }}</div>
+                        <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-black text-xs"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                </div>
+                 <div v-if="!hasTasks(['done'])" class="text-center p-4 text-gray-600 text-xs italic">
+                    No completed tasks yet.
+                </div>
+            </div>
+        </div>
+    </div>
+    `,
+    methods: {
+        isAssigned(t) {
+            // Helper to check assignment logic inside v-for
+            const name = this.$root.currentUser.name;
+            const assign = t.assigned_to;
+            if (!assign) return false;
+            if (Array.isArray(assign)) return assign.includes(name);
+            if (typeof assign === 'string') {
+                try { return JSON.parse(assign).includes(name); } catch(e) { return assign === name; }
+            }
+            return false;
+        },
+        hasTasks(statuses) {
+            return this.$root.tasks.some(t => this.isAssigned(t) && statuses.includes(this.$root.getTaskStatus(t, this.$root.currentUser.name)));
+        }
+    }
+    };
+
     const StorageView = {
         template: `
         <div class="space-y-8 animate-fade-in">
@@ -983,7 +1113,7 @@
     };
 
     createApp({
-        components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts, StorageView },
+        components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts, StorageView, MyTasks },
         setup() {
             // --- SUPABASE 配置区域 ---
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
@@ -1067,6 +1197,81 @@
                 } catch(e) {}
                 return val; // Fallback for legacy string
             };
+
+            // --- NEW: 辅助逻辑 (Task Status & Progress) ---
+
+            // 1. 获取任务今日的状态 (针对当前用户)
+            const getTaskStatus = (t, username) => {
+                const userLogs = (logs.value || []).filter(l => 
+                    l.category === 'task_exec' && 
+                    l.user_name === username && 
+                    (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en))
+                );
+
+                if (userLogs.length === 0) return 'todo';
+
+                // Sort by time desc just in case, though usually API returns desc
+                userLogs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                const lastLog = userLogs[0]; 
+
+                // 如果被驳回，优先级最高
+                if (lastLog.rating === 'red') return 'rework';
+
+                // 如果是一次性任务
+                if (t.frequency === 'one_time') return lastLog.rating === 'green' ? 'done' : 'review';
+
+                // 如果是每日任务，检查日期
+                const todayStr = new Date().toISOString().split('T')[0];
+                const logDate = lastLog.timestamp.split('T')[0];
+
+                if (logDate !== todayStr) return 'todo'; 
+                
+                if (!lastLog.rating) return 'review';
+                return 'done'; // green
+            };
+
+            // 2. 获取任务的驳回理由
+            const getRejectReason = (t) => {
+                if(!currentUser.value) return null;
+                const lastLog = (logs.value || []).find(l => 
+                    l.category === 'task_exec' && 
+                    l.user_name === currentUser.value.name && 
+                    (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en)) &&
+                    l.rating === 'red'
+                );
+                return lastLog ? lastLog.feedback : null;
+            };
+
+            // 3. (管理端) 计算任务今日进度
+            const getTaskProgress = (t) => {
+                let assignees = [];
+                if(Array.isArray(t.assigned_to)) assignees = t.assigned_to;
+                else if (typeof t.assigned_to === 'string') {
+                    try { assignees = JSON.parse(t.assigned_to); } catch(e){ assignees = [t.assigned_to]; }
+                }
+                if(!Array.isArray(assignees) || assignees.length === 0) return null; 
+
+                const todayStr = new Date().toISOString().split('T')[0];
+                
+                const statusMap = assignees.map(user => {
+                    // 找该用户今天的日志
+                    const hasLog = (logs.value||[]).some(l => 
+                        l.category === 'task_exec' && 
+                        l.user_name === user && 
+                        (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en)) &&
+                        l.timestamp.startsWith(todayStr) &&
+                        l.rating !== 'red' 
+                    );
+                    return { user, done: hasLog };
+                });
+
+                const total = assignees.length;
+                const doneCount = statusMap.filter(x => x.done).length;
+                const pendingUsers = statusMap.filter(x => !x.done).map(x => x.user);
+
+                return { total, doneCount, pendingUsers, percent: total > 0 ? Math.round((doneCount/total)*100) : 0 };
+            };
+
 
             // --- 核心同步逻辑 (Cloud Sync) ---
             
@@ -1511,7 +1716,6 @@
                     
                     const assignOptions = users.value.filter(u => targetRoles.some(r => u.role.startsWith(r))).map(u=>({val:u.name, label:u.name + ' (' + u.role + ')'}));
                     
-                    // Note: 'remarks' removed as requested. 'title', 'content', 'standards' handled in custom HTML
                     modalFields.value = {
                         assigned_to: {label:'Assign To / 指派给 (Multi-Select)', type:'multiselect', options: assignOptions}
                     };
@@ -1633,8 +1837,8 @@
                 modalTitle.value = t.title_en;
                 formData.value = {
                     id:Date.now(), 
-                    task_id: t.id, // NEW: Bind ID
-                    frequency: t.frequency || 'daily', // NEW
+                    task_id: t.id, 
+                    frequency: t.frequency || 'daily',
                     title_en:t.title_en, 
                     user_name:currentUser.value.name, 
                     category:'task_exec', 
@@ -1664,52 +1868,20 @@
             
             // --- UPDATED: MY TASKS LOGIC (Closed Loop) ---
             const myNextTasks = computed(() => {
-                // 1. Get allocated tasks
+                // Legacy support (now handled in MyTasks component directly, but kept for dashboard widget)
                 const allocatedTasks = (tasks.value||[]).filter(t => {
                     const assign = t.assigned_to;
                     if (!assign) return false;
-                    
                     if (Array.isArray(assign)) return assign.includes(currentUser.value?.name);
-                    
-                    if (typeof assign === 'string' && assign.startsWith('[')) {
-                        try {
-                            const parsed = JSON.parse(assign);
-                            return Array.isArray(parsed) && parsed.includes(currentUser.value?.name);
-                        } catch(e) {}
+                    if (typeof assign === 'string') {
+                        try { return JSON.parse(assign).includes(currentUser.value?.name); } catch(e) {}
                     }
-                    
                     return assign === currentUser.value?.name;
                 });
 
-                // 2. Filter completed
                 return allocatedTasks.filter(t => {
-                    const taskLogs = (logs.value || []).filter(l => 
-                        l.category === 'task_exec' && 
-                        l.user_name === currentUser.value?.name && 
-                        (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en))
-                    );
-
-                    if (taskLogs.length === 0) return true;
-
-                    // Check latest log
-                    const lastLog = taskLogs[0]; // Assumes desc sort
-
-                    // If rejected, always show
-                    if (lastLog.rating === 'red') return true;
-
-                    // Daily: Hide if done today
-                    if (!t.frequency || t.frequency === 'daily') {
-                        const todayStr = new Date().toISOString().split('T')[0];
-                        const logDate = lastLog.timestamp.split('T')[0];
-                        return logDate !== todayStr;
-                    }
-
-                    // One Time: Hide if exists
-                    if (t.frequency === 'one_time') {
-                        return false;
-                    }
-
-                    return true;
+                   const status = getTaskStatus(t, currentUser.value?.name);
+                   return status === 'todo' || status === 'rework';
                 });
             });
 
@@ -1724,39 +1896,7 @@
                 if (currentView.value === 'shifts') return Shifts;
                 if (currentView.value === 'statistics') return Stats;
                 if (currentView.value === 'storage') return StorageView;
-                if (currentView.value === 'my_tasks') return {
-                    template: `
-                    <div class="space-y-6">
-                        <div class="space-y-4">
-                            <h2 class="text-xl font-bold text-white">Pending Tasks / 待办任务</h2>
-                            <div v-for="t in $root.myNextTasks" :key="t.id" class="kmc-card p-5 cursor-pointer hover:border-blue-500" @click="$root.openTaskExec(t)">
-                                <div class="flex justify-between items-start">
-                                    <div class="font-bold text-white">{{ t.title_en }}</div>
-                                    <span v-if="$root.logs.find(l => l.task_id === t.id && l.rating === 'red')" class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded animate-pulse">REJECTED / 被驳回</span>
-                                    <span v-else-if="t.frequency==='one_time'" class="text-[9px] border border-blue-500/50 text-blue-400 px-1.5 rounded">ONE-TIME</span>
-                                </div>
-                                <div class="text-xs text-kmc-muted mt-2">{{ t.content }}</div>
-                                <div class="mt-3 flex gap-2"><span class="bg-blue-600 text-white text-[10px] px-2 py-1 rounded">START TASK / 开始</span></div>
-                            </div>
-                            <div v-if="$root.myNextTasks.length===0" class="text-gray-500 text-center py-4 text-xs italic">No pending tasks / 暂无待办</div>
-                        </div>
-                        <div class="space-y-4 pt-4 border-t border-white/10">
-                            <h2 class="text-xl font-bold text-white">My Submission History / 提交记录</h2>
-                            <div v-for="log in $root.logs.filter(l => l.category==='task_exec' && l.user_name===$root.currentUser.name).slice(0,5)" :key="log.id" class="kmc-card p-4 opacity-80">
-                                <div class="flex justify-between items-start">
-                                    <div class="font-bold text-sm text-white">{{ log.title_en }}</div>
-                                    <span v-if="log.rating==='green'" class="text-[10px] bg-green-500/20 text-green-400 px-2 py-1 rounded">PASSED</span>
-                                    <span v-else-if="log.rating==='red'" class="text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded">REJECTED</span>
-                                    <span v-else class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded">PENDING</span>
-                                </div>
-                                <div class="text-xs text-kmc-muted mt-1">{{ new Date(log.timestamp).toLocaleString() }}</div>
-                                <div v-if="log.rating==='red' && log.feedback" class="mt-2 p-2 bg-red-500/10 border border-red-500/20 text-red-300 text-xs rounded">
-                                    <i class="fa-solid fa-circle-exclamation mr-1"></i> Feedback: {{ log.feedback }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>`
-                };
+                if (currentView.value === 'my_tasks') return MyTasks; // New Component
                 return { template: `<div class="p-10 text-center text-gray-500">View Module Loaded</div>` };
             });
 
@@ -1775,8 +1915,9 @@
                 totalRecords, formatAssignee,
                 // New Exports
                 handleExportJSON, handleExportPDF, handleClear, exportConfig,
-                // CHANGED: Exports for camera permissions
-                allowStaffGallery, getCaptureMode
+                allowStaffGallery, getCaptureMode,
+                // New Logic Exports
+                getTaskStatus, getRejectReason, getTaskProgress
             };
         }
     }).mount('#app');
