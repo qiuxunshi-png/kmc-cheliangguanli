@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Manager (Global Edition)</title>
+    <title>KMC Vehicle Manager (Global Store Edition)</title>
     
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -24,20 +24,21 @@
                             bg: '#050505', 
                             card: 'rgba(20, 20, 23, 0.6)', 
                             border: 'rgba(255, 255, 255, 0.08)',
-                            primary: '#3b82f6', 
-                            accent: '#6366f1',
+                            primary: '#10b981', 
+                            accent: '#059669',
                             success: '#10b981', danger: '#ef4444',
                             warning: '#f59e0b', text: '#e4e4e7', muted: '#a1a1aa'
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)' },
+                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
                         slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
                     },
                     boxShadow: {
-                        'glow': '0 0 20px -5px rgba(59, 130, 246, 0.3)',
+                        'glow': '0 0 20px -5px rgba(16, 185, 129, 0.3)',
+                        'glow-green': '0 0 20px -5px rgba(16, 185, 129, 0.4)',
                         'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
                     }
                 }
@@ -52,8 +53,8 @@
             color: #e4e4e7; 
             font-family: 'Inter', sans-serif;
             background-image: 
-                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(99, 102, 241, 0.08), transparent 25%);
+                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.06), transparent 25%), 
+                radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.06), transparent 25%);
             background-attachment: fixed;
             touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent;
         }
@@ -102,10 +103,10 @@
             transition: all 0.2s; 
         }
         .kmc-input:focus { 
-            border-color: #3b82f6; 
+            border-color: #10b981; 
             outline: none; 
             background-color: rgba(0, 0, 0, 0.4); 
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
         }
         .kmc-input:disabled { opacity: 0.5; cursor: not-allowed; border-style: dashed; }
 
@@ -119,12 +120,12 @@
         .kmc-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: grayscale(100%); }
         
         .kmc-btn.bg-kmc-primary {
-            background-image: linear-gradient(to bottom right, #3b82f6, #2563eb);
+            background-image: linear-gradient(to bottom right, #10b981, #059669);
             border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
         .kmc-btn.bg-kmc-primary:hover {
-            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5);
             filter: brightness(1.1);
         }
 
@@ -135,12 +136,12 @@
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
         
         .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
-        .ai-btn:hover { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 0 10px rgba(59, 130, 246, 0.2); }
+        .ai-btn:hover { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
 
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: zoom-in; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .photo-add-btn { aspect-ratio: 1/1; border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #71717a; cursor: pointer; position: relative; transition: all 0.2s; background: rgba(255,255,255,0.02); }
-        .photo-add-btn:hover { border-color: #3b82f6; color: #3b82f6; background: rgba(59,130,246,0.05); }
+        .photo-add-btn:hover { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.05); }
         .photo-del-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
         .sig-wrapper { position: relative; width: 100%; height: 180px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
@@ -162,9 +163,9 @@
             transition: all 0.2s;
         }
         .merged-input-group:focus-within {
-            border-color: #3b82f6;
+            border-color: #10b981;
             background: rgba(0, 0, 0, 0.3);
-            box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2);
         }
         .merged-input-divider {
             height: 1px;
@@ -186,13 +187,13 @@
 <div id="app" class="h-screen flex flex-col overflow-hidden text-kmc-text">
     
     <div v-if="isGlobalLoading" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
-        <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4 shadow-glow"></div>
+        <div class="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4 shadow-glow"></div>
         <div class="text-white font-bold tracking-widest animate-pulse text-xs">PROCESSING / 处理中</div>
     </div>
 
     <div class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none">
-        <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded-xl shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3 border border-white/5 backdrop-blur-md" :class="toast.type==='success'?'border-l-green-500':(toast.type==='error'?'border-l-red-500':'border-l-blue-500')">
-            <i class="mt-0.5 fa-solid" :class="toast.type==='success'?'fa-check-circle text-green-500':(toast.type==='error'?'fa-triangle-exclamation text-red-500':'fa-info-circle text-blue-500')"></i>
+        <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded-xl shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3 border border-white/5 backdrop-blur-md" :class="toast.type==='success'?'border-l-green-500':(toast.type==='error'?'border-l-red-500':'border-l-emerald-500')">
+            <i class="mt-0.5 fa-solid" :class="toast.type==='success'?'fa-check-circle text-green-500':(toast.type==='error'?'fa-triangle-exclamation text-red-500':'fa-info-circle text-emerald-500')"></i>
             <div>
                 <div class="text-white font-bold text-sm">{{ toast.title }}</div>
                 <div class="text-xs text-gray-400 mt-1">{{ toast.msg }}</div>
@@ -203,9 +204,9 @@
     <div v-if="!currentUser" class="flex-1 flex items-center justify-center relative">
         <div class="w-full max-w-md p-10 glass-panel rounded-2xl shadow-2xl relative z-10 mx-4 border border-white/10 animate-fade-in">
             <div class="text-center mb-10">
-                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
+                <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
                 <h1 class="text-3xl font-bold text-white tracking-tight mb-2">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Cloud Edition</p>
+                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Cloud Edition V32.0</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-6">
                 <div>
@@ -230,8 +231,8 @@
             <div class="p-6 border-b border-kmc-border">
                 <div class="flex items-center justify-between mb-1 md:hidden"><span class="text-xs font-bold text-kmc-muted">MENU</span><button @click="isMobileMenuOpen=false" class="text-white"><i class="fa-solid fa-times text-lg"></i></button></div>
                 <div class="flex items-center gap-3 cursor-pointer group" @click="openProfileModal">
-                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/10 group-hover:scale-105 transition">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
-                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate group-hover:text-blue-400 transition">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/10 group-hover:scale-105 transition">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
+                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate group-hover:text-emerald-400 transition">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
                 </div>
             </div>
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
@@ -249,7 +250,7 @@
                     <a @click="navigate('reports')" :class="navClass('reports')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-file-signature w-5 text-center"></i> Reviews / 评审</a>
                     
                     <div class="px-3 mb-2 mt-6 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Admin / 管理</div>
-                    <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-blue-400"></i> Stats / 统计报表</a>
+                    <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-emerald-400"></i> Stats / 统计报表</a>
                     <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
                     <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
                     <a @click="navigate('storage')" :class="navClass('storage')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-server w-5 text-center"></i> Storage / 存储管理</a>
@@ -267,17 +268,36 @@
             <header class="h-16 border-b border-kmc-border bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
                 <div class="flex items-center gap-4">
                     <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10"><i class="fa-solid fa-bars text-lg"></i></button>
-                    <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-blue-500 shadow-glow"></span> {{ getPageTitle() }}</h1>
+                    <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500 shadow-glow-green"></span> {{ getPageTitle() }}</h1>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button @click="forceSync" class="text-[10px] font-mono flex items-center gap-2 px-2 py-1 rounded bg-white/5 hover:bg-white/10 border border-white/5 transition" :class="syncStatus==='error'?'text-red-400':(syncStatus==='syncing'?'text-blue-400':'text-green-400')">
+                <div class="flex items-center gap-2">
+                    <!-- 网络状态 -->
+                    <button @click="forceSync" class="text-[10px] font-mono flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition" :class="syncStatus==='error'?'text-red-400 bg-red-500/10 border-red-500/20':(syncStatus==='syncing'?'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 animate-pulse':'text-emerald-400 bg-emerald-500/10 border-emerald-500/20')">
                         <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud')"></i> 
-                        {{ syncStatus === 'syncing' ? 'Syncing...' : (syncStatus === 'error' ? 'Sync Error' : 'Cloud Active') }}
+                        <span class="hidden sm:inline">{{ syncStatus === 'syncing' ? 'Syncing... / 同步中' : (syncStatus === 'error' ? 'Cloud Disconnected / 云端断开' : 'Cloud Active / 云端连接') }}</span>
                     </button>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded hover:bg-gray-800 transition cursor-default">
-                        <i class="fa-solid fa-database mr-1 text-blue-500"></i> {{ totalRecords }} Items
+                    <!-- 管理员任务状态 / Admin Status -->
+                    <div v-if="!isStaff" class="flex items-center gap-1.5 text-[10px] font-mono">
+                        <span v-if="pendingReviews > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400" :title="'Pending Reviews / 待审核: ' + pendingReviews">
+                            <i class="fa-solid fa-clock"></i> {{ pendingReviews }}
+                        </span>
+                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Clear / 全部完成">
+                            <i class="fa-solid fa-check-circle"></i>
+                        </span>
+                    </div>
+                    <!-- 员工任务状态 / Staff Status -->
+                    <div v-if="isStaff" class="flex items-center gap-1.5 text-[10px] font-mono">
+                        <span v-if="myNextTasks.length > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400" :title="'Todo Tasks / 待办: ' + myNextTasks.length">
+                            <i class="fa-solid fa-list-check"></i> {{ myNextTasks.length }}
+                        </span>
+                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Done / 全部完成">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+                    </div>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1.5 rounded-lg hover:bg-gray-800 transition cursor-default">
+                        <i class="fa-solid fa-database mr-1 text-emerald-500"></i> {{ totalRecords }} Items
                     </span>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1 rounded">V31.0</span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1.5 rounded-lg">V32.0</span>
                 </div>
             </header>
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
@@ -289,7 +309,7 @@
     <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
         <div class="bg-kmc-card border border-kmc-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
             <div class="p-5 border-b border-[#27272a] flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-10">
-                <h3 class="text-lg font-bold text-white uppercase tracking-wide flex items-center gap-2"><span class="w-1 h-5 bg-blue-500 rounded-full"></span> {{ modalTitle }}</h3>
+                <h3 class="text-lg font-bold text-white uppercase tracking-wide flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span> {{ modalTitle }}</h3>
                 <button @click="showModal=false" class="text-kmc-muted hover:text-white transition"><i class="fa-solid fa-times"></i></button>
             </div>
             
@@ -306,15 +326,15 @@
                         </div>
                     </div>
 
-                    <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl space-y-3">
-                        <div><div class="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
+                    <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-xl space-y-3">
+                        <div><div class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider mb-1">Standard / 执行标准</div><div class="text-sm text-gray-300 leading-relaxed">{{ taskContext.standards || 'No specific standards / 无特定标准' }}</div></div>
                     </div>
                     <div>
                         <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Report / 汇报</label></div>
                         <div class="relative group">
                             <textarea v-model="formData.content" class="kmc-input h-32 resize-none pr-10" placeholder="Enter details... / 输入详情"></textarea>
                             <div class="ai-btn" @click="translate('content')" title="One-Click Translate">
-                                <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
                                 <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
                             </div>
                         </div>
@@ -328,7 +348,7 @@
                     <div v-if="taskContext.req_signature">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Signature / 签字 (Required)</label>
                         <div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature('signature')"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig('signature')"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData.signature" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData.signature" class="h-3/4 object-contain"></div></div>
-                        <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
+                        <button v-if="!formData.signature" @click="saveSignature('signature')" class="mt-2 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature('signature')" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button>
                     </div>
                 </div>
 
@@ -346,7 +366,7 @@
                             <div class="px-4 pt-3 flex justify-between items-center">
                                 <label class="text-[10px] font-bold text-kmc-muted uppercase">Task Name / 任务名 (必填)</label>
                                 <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('title_en')" title="Translate">
-                                    <i v-if="translating==='title_en'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-if="translating==='title_en'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
                                     <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                                 </div>
                             </div>
@@ -357,7 +377,7 @@
                             <div class="px-4 pt-3 flex justify-between items-center">
                                 <label class="text-[10px] font-bold text-kmc-muted uppercase">Description / 详细描述 (必填)</label>
                                 <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('content')" title="Translate">
-                                    <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
                                     <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                                 </div>
                             </div>
@@ -370,7 +390,7 @@
                             <div class="px-4 pt-3 flex justify-between items-center">
                                 <label class="text-[10px] font-bold text-kmc-muted uppercase">Standards / 执行标准 (必填)</label>
                                 <div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('standards')" title="Translate">
-                                    <i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                    <i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
                                     <i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i>
                                 </div>
                             </div>
@@ -380,13 +400,13 @@
 
                     <div class="flex gap-4 p-2 bg-black/20 rounded-lg border border-white/5">
                         <div class="flex items-center gap-2 cursor-pointer select-none" @click="formData.req_photo = !formData.req_photo">
-                            <div class="w-5 h-5 border rounded flex items-center justify-center transition-colors" :class="formData.req_photo ? 'bg-blue-600 border-blue-600' : 'border-gray-500 bg-transparent'">
+                            <div class="w-5 h-5 border rounded flex items-center justify-center transition-colors" :class="formData.req_photo ? 'bg-emerald-600 border-emerald-600' : 'border-gray-500 bg-transparent'">
                                 <i v-if="formData.req_photo" class="fa-solid fa-check text-xs text-white"></i>
                             </div>
                             <span class="text-xs text-gray-300">Require Photo / 强制拍照</span>
                         </div>
                         <div class="flex items-center gap-2 cursor-pointer select-none" @click="formData.req_signature = !formData.req_signature">
-                            <div class="w-5 h-5 border rounded flex items-center justify-center transition-colors" :class="formData.req_signature ? 'bg-blue-600 border-blue-600' : 'border-gray-500 bg-transparent'">
+                            <div class="w-5 h-5 border rounded flex items-center justify-center transition-colors" :class="formData.req_signature ? 'bg-emerald-600 border-emerald-600' : 'border-gray-500 bg-transparent'">
                                 <i v-if="formData.req_signature" class="fa-solid fa-check text-xs text-white"></i>
                             </div>
                             <span class="text-xs text-gray-300">Require Signature / 强制签字</span>
@@ -396,13 +416,13 @@
                     <div class="space-y-2">
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase ml-1">Assign To / 指派给</label>
                         <div class="flex flex-wrap gap-2 mb-2 p-1 min-h-[30px]" v-if="formData.assigned_to && formData.assigned_to.length > 0">
-                            <span v-for="sel in formData.assigned_to" :key="sel" class="bg-blue-600/20 border border-blue-600/50 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
+                            <span v-for="sel in formData.assigned_to" :key="sel" class="bg-emerald-600/20 border border-emerald-600/50 text-emerald-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
                                 {{ sel }} <button @click.stop="formData.assigned_to = formData.assigned_to.filter(i => i !== sel)" class="hover:text-white transition"><i class="fa-solid fa-times"></i></button>
                             </span>
                         </div>
                         <div class="max-h-40 overflow-y-auto border border-kmc-border rounded-lg p-2 bg-black/20 custom-scrollbar">
                             <label v-for="opt in modalFields.assigned_to.options" :key="opt.val" class="flex items-center gap-3 p-3 hover:bg-white/5 rounded cursor-pointer transition border-b border-white/5 last:border-0">
-                                <input type="checkbox" :value="opt.val" v-model="formData.assigned_to" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-offset-gray-900 focus:ring-1">
+                                <input type="checkbox" :value="opt.val" v-model="formData.assigned_to" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-emerald-600 focus:ring-offset-gray-900 focus:ring-1">
                                 <span class="text-xs text-gray-300 font-bold">{{ opt.label }}</span>
                             </label>
                         </div>
@@ -418,7 +438,7 @@
                         
                         <div v-if="['text','textarea','editable_select','number','date'].includes(field.type)" class="input-group relative group">
                             <div v-if="field.translate" class="ai-btn" @click="translate(key)" title="One-Click Translate">
-                                <i v-if="translating===key" class="fa-solid fa-circle-notch fa-spin text-blue-400"></i>
+                                <i v-if="translating===key" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i>
                                 <i v-else class="fa-solid fa-wand-magic-sparkles"></i>
                             </div>
 
@@ -438,13 +458,13 @@
                         
                         <div v-else-if="field.type === 'multiselect'" class="space-y-2">
                             <div class="flex flex-wrap gap-2 mb-2 p-1 min-h-[30px]" v-if="formData[key] && formData[key].length > 0">
-                                <span v-for="sel in formData[key]" :key="sel" class="bg-blue-600/20 border border-blue-600/50 text-blue-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
+                                <span v-for="sel in formData[key]" :key="sel" class="bg-emerald-600/20 border border-emerald-600/50 text-emerald-400 text-[10px] px-2 py-1 rounded flex items-center gap-2 animate-fade-in">
                                     {{ sel }} <button @click.stop="formData[key] = formData[key].filter(i => i !== sel)" class="hover:text-white transition"><i class="fa-solid fa-times"></i></button>
                                 </span>
                             </div>
                             <div class="max-h-40 overflow-y-auto border border-kmc-border rounded p-2 bg-black/20">
                                 <label v-for="opt in field.options" :key="opt.val" class="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer transition">
-                                    <input type="checkbox" :value="opt.val" v-model="formData[key]" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-blue-600 focus:ring-offset-gray-900 focus:ring-1">
+                                    <input type="checkbox" :value="opt.val" v-model="formData[key]" class="w-4 h-4 rounded border-gray-600 bg-gray-700 text-emerald-600 focus:ring-offset-gray-900 focus:ring-1">
                                     <span class="text-xs text-gray-300">{{ opt.label }}</span>
                                 </label>
                             </div>
@@ -458,15 +478,22 @@
                         <div v-else-if="field.type === 'camera'"><div class="text-[10px] text-orange-400 mb-2 font-bold" v-if="field.note"><i class="fa-solid fa-circle-info mr-1"></i> {{ field.note }}</div><div class="photo-grid"><div v-for="(p, idx) in formData[key]" :key="idx" class="photo-item group" @click.stop="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"><div class="photo-del-btn" @click.stop="removePhoto(key, idx)"><i class="fa-solid fa-times"></i></div></div><div class="photo-add-btn">
                             <input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e, key)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
                             <i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo / 照片</div></div></div></div>
-                        <div v-else-if="field.type === 'signature_pad'"><div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature(key)"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig(key)"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData[key]" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData[key]" class="h-3/4 object-contain"></div></div><button v-if="!formData[key]" @click="saveSignature(key)" class="mt-2 w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature(key)" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button></div>
+                        <div v-else-if="field.type === 'signature_pad'"><div class="sig-wrapper"><div class="sig-watermark"></div><div class="sig-tools"><div class="tool-btn" :class="{active: sigPenColor==='#000'}" @click="sigPenColor='#000'"><div class="w-3 h-3 rounded-full bg-black"></div></div><div class="tool-btn" :class="{active: sigPenColor==='#0047AB'}" @click="sigPenColor='#0047AB'"><div class="w-3 h-3 rounded-full bg-blue-700"></div></div><div class="w-px bg-gray-300 h-4 my-auto"></div><div class="tool-btn" title="Clear" @click="clearSignature(key)"><i class="fa-solid fa-eraser"></i></div><div class="tool-btn" title="Full Screen" @click="openFullScreenSig(key)"><i class="fa-solid fa-expand"></i></div></div><canvas ref="sigCanvas" class="sig-canvas" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas><div v-if="formData[key]" class="absolute inset-0 z-[5] bg-white flex items-center justify-center pointer-events-none border border-green-500/20"><img :src="formData[key]" class="h-3/4 object-contain"></div></div><button v-if="!formData[key]" @click="saveSignature(key)" class="mt-2 w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold">Confirm Signature / 确认签字</button><button v-else @click="clearSignature(key)" class="mt-2 w-full py-2 bg-transparent border border-gray-600 text-gray-400 hover:text-white rounded text-xs">Re-sign / 重签</button></div>
                     </div>
                 </div>
             </div>
-            <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3"><button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button><button @click="submitForm" :disabled="isSaveLocked.locked" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg"><i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i>{{ isSaveLocked.msg }}</button></div>
+            <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3">
+                <button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button>
+                <button @click="submitForm" :disabled="isSaveLocked.locked || isSubmitting" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg">
+                    <i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i>
+                    <i v-else-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin mr-2"></i>
+                    {{ isSaveLocked.msg }}
+                </button>
+            </div>
         </div>
     </div>
 
-    <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-blue-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear / 清除</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel / 取消</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-blue-600 text-white rounded text-sm font-bold shadow">Done / 完成</button></div></div><div class="fs-canvas-area"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
+    <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-emerald-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear / 清除</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel / 取消</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-emerald-600 text-white rounded text-sm font-bold shadow">Done / 完成</button></div></div><div class="fs-canvas-area"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
     
     <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
         <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl">
@@ -475,63 +502,133 @@
 
     <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in"><div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div>
     
-    <div v-if="currentUser.role === '01'" class="pt-2 border-t border-white/10"><div class="flex items-center justify-between"><label class="text-[10px] font-bold text-kmc-muted uppercase">Allow Staff Gallery / 允许全员相册</label><div class="relative inline-block w-8 h-4 align-middle select-none"><input type="checkbox" v-model="allowStaffGallery" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-700" :class="allowStaffGallery ? 'bg-blue-500' : ''"></label></div></div><p class="text-[9px] text-gray-500 mt-1">If enabled, role 02/03 can upload from album. (Reset on reload)</p></div>
+    <div v-if="currentUser.role === '01'" class="pt-2 border-t border-white/10"><div class="flex items-center justify-between"><label class="text-[10px] font-bold text-kmc-muted uppercase">Allow Staff Gallery / 允许全员相册</label><div class="relative inline-block w-8 h-4 align-middle select-none"><input type="checkbox" v-model="allowStaffGallery" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-700" :class="allowStaffGallery ? 'bg-emerald-500' : ''"></label></div></div><p class="text-[9px] text-gray-500 mt-1">If enabled, role 02/03 can upload from album. (Reset on reload)</p></div>
 
-    <div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-blue-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
+    <div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-emerald-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
+
+
 
 </div>
 
-<script>
-    const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
-
-    // --- Components ---
-    const Dashboard = { template: `
-        <div class="space-y-6">
+<!-- Vue Templates (must be outside #app for Vue3 compatibility) -->
+<script type="text/x-template" id="tmpl-dashboard">
+        <div class="space-y-6 animate-fade-in">
+            <!-- 管理员: 核心数据卡片 -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="!isStaff">
-                <div class="kmc-card p-4 hover:border-blue-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Fleet Size / 车队规模 <i class="fa-solid fa-truck text-blue-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.vehicles.length }}</div></div>
-                <div class="kmc-card p-4 hover:border-green-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Active Staff / 在岗人员 <i class="fa-solid fa-users text-green-500"></i></div><div class="text-3xl font-bold text-white">{{ $root.users.filter(u=>u.role.startsWith('03')).length }}</div></div>
+                <div class="kmc-card p-4 hover:border-emerald-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Fleet Size / 车队规模 <i class="fa-solid fa-truck text-emerald-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.vehicles.length }}</div></div>
+                <div class="kmc-card p-4 hover:border-green-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Active Staff / 在岗人员 <i class="fa-solid fa-users text-green-500"></i></div><div class="text-3xl font-bold text-white">{{ $root.users.filter(u=>u.role && u.role.startsWith('03')).length }}</div></div>
                 <div class="kmc-card p-4 hover:border-orange-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Total Fuel (L) / 总油耗 <i class="fa-solid fa-gas-pump text-orange-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.globalFuel.liters }}</div></div>
-                <div class="kmc-card p-4 hover:border-red-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Pending Reviews / 待审 <i class="fa-solid fa-clock text-red-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.pendingReviews }}</div></div>
+                <div class="kmc-card p-4 hover:border-yellow-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Pending Reviews / 待审 <i class="fa-solid fa-clock text-yellow-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.pendingReviews }}</div></div>
             </div>
+            <!-- 管理员: 快捷操作 -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" v-if="!isStaff">
-                <button @click="$root.openForm('shift_temp')" class="p-4 rounded-xl bg-gradient-to-br from-blue-600/20 to-blue-800/20 border border-blue-500/30 hover:border-blue-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-paper-plane"></i></div><div class="font-bold text-white text-sm">Dispatch / 调度</div><div class="text-[10px] text-kmc-muted">Quick Task / 临时</div></button>
+                <button @click="$root.openForm('shift_temp')" class="p-4 rounded-xl bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 border border-emerald-500/30 hover:border-emerald-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-paper-plane"></i></div><div class="font-bold text-white text-sm">Dispatch / 调度</div><div class="text-[10px] text-kmc-muted">Quick Task / 临时</div></button>
                 <button @click="$root.openForm('fuel')" class="p-4 rounded-xl bg-gradient-to-br from-orange-600/20 to-orange-800/20 border border-orange-500/30 hover:border-orange-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-gas-pump"></i></div><div class="font-bold text-white text-sm">Log Fuel / 加油</div><div class="text-[10px] text-kmc-muted">Add Entry / 登记</div></button>
-                <button @click="$root.openForm('vehicle')" class="p-4 rounded-xl bg-gradient-to-br from-purple-600/20 to-purple-800/20 border border-purple-500/30 hover:border-purple-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-bus"></i></div><div class="font-bold text-white text-sm">Add Vehicle / 加车</div><div class="text-[10px] text-kmc-muted">New Fleet / 新车</div></button>
+                <button @click="$root.openForm('vehicle')" class="p-4 rounded-xl bg-gradient-to-br from-teal-600/20 to-teal-800/20 border border-teal-500/30 hover:border-teal-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-bus"></i></div><div class="font-bold text-white text-sm">Add Vehicle / 加车</div><div class="text-[10px] text-kmc-muted">New Fleet / 新车</div></button>
                 <button @click="$root.openForm('staff')" class="p-4 rounded-xl bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/30 hover:border-green-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-user-plus"></i></div><div class="font-bold text-white text-sm">Add Staff / 加人</div><div class="text-[10px] text-kmc-muted">New Driver / 司机</div></button>
             </div>
+            <!-- 管理员: 实时动态 + 关注项 -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" v-if="!isStaff">
                 <div class="lg:col-span-2 kmc-card p-6 min-h-[300px]">
-                    <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-tower-broadcast text-blue-500"></i> Live Activity Feed / 实时动态</h3>
+                    <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-tower-broadcast text-emerald-500"></i> Live Activity Feed / 实时动态</h3>
                     <div class="space-y-4">
                         <div v-for="log in $root.recentLogs" :key="log.timestamp" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0">
-                            <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-blue-500'"></div>
+                            <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-emerald-500'"></div>
                             <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> <span v-if="log.price && !log.is_internal">($<b>{{ log.price }}</b>)</span> - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
                         </div>
-                        <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10">No recent activities / 暂无动态</div>
+                        <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10"><i class="fa-solid fa-inbox text-3xl mb-2 opacity-30 block"></i>No recent activities / 暂无动态</div>
                     </div>
                 </div>
                 <div class="space-y-4">
-                    <div class="kmc-card p-5 border-l-4 border-l-red-500 bg-red-900/10">
-                        <div class="text-xs font-bold text-red-400 uppercase tracking-widest mb-2">Attention Needed / 需关注</div>
-                        <div v-if="$root.pendingReviews > 0" class="flex justify-between items-center mb-2"><span class="text-white text-sm">Pending Reviews / 待评审</span><span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.pendingReviews }}</span></div>
+                    <div class="kmc-card p-5 border-l-4 border-l-yellow-500 bg-yellow-900/5">
+                        <div class="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-2">Attention Needed / 需关注</div>
+                        <div v-if="$root.pendingReviews > 0" class="flex justify-between items-center mb-2"><span class="text-white text-sm">Pending Reviews / 待评审</span><span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.pendingReviews }}</span></div>
                         <div v-if="$root.maintenanceVehicles.length > 0" class="flex justify-between items-center"><span class="text-white text-sm">Vehicles in Maint / 维修中</span><span class="bg-orange-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.maintenanceVehicles.length }}</span></div>
                         <div v-if="$root.pendingReviews === 0 && $root.maintenanceVehicles.length === 0" class="text-green-400 text-sm flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> All Systems Good / 系统正常</div>
                     </div>
                     <div class="kmc-card p-5"><div class="text-xs font-bold text-kmc-muted uppercase tracking-widest mb-3">Today's Shifts / 今日排班</div><div v-if="$root.todaysShifts.length === 0" class="text-xs text-gray-500 italic">No shifts for today / 无排班</div><div v-else class="space-y-2"><div v-for="s in $root.todaysShifts.slice(0,3)" :key="s.id" class="flex justify-between text-xs"><span class="text-white">{{ s.start_time }}</span><span class="text-gray-400 truncate w-32">{{ s.driver }}</span></div></div></div>
                 </div>
             </div>
+            <!-- 员工视图 -->
             <div class="grid grid-cols-2 gap-4" v-if="isStaff">
                 <div class="kmc-card p-5 text-center"><div class="text-[10px] text-kmc-muted uppercase font-bold">Tasks Done / 完成任务</div><div class="text-4xl font-bold text-white mt-2">{{ $root.myStats.total }}</div></div>
                 <div class="kmc-card p-5 text-center border-green-900/30"><div class="text-[10px] text-green-500 uppercase font-bold">Excellence Rate / 优秀率</div><div class="text-4xl font-bold text-green-400 mt-2">{{ $root.myStats.rate }}%</div></div>
             </div>
-            <div v-if="isStaff" class="kmc-card p-6 border-l-4 border-l-blue-500 bg-gradient-to-r from-blue-900/10 to-transparent"><h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-blue-400"></i> Next Day Tasks / 明日任务</h3><div v-if="$root.myNextTasks.length === 0" class="text-sm text-kmc-muted italic py-4">No tasks scheduled for tomorrow / 明日无任务</div><div v-for="t in $root.myNextTasks" :key="t.id" class="bg-black/20 border border-white/5 p-4 rounded-lg mb-2 flex justify-between items-center hover:bg-black/30 transition"><div><div class="font-bold text-white text-sm">{{ t.title_en }}</div><div class="text-xs text-kmc-muted">{{ t.content }}</div></div><span class="text-[10px] bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20">PENDING</span></div></div>
-        </div>`, computed: { isStaff() { return this.$root.currentUser.role.startsWith('03') } } };
+            <div v-if="isStaff" class="kmc-card p-6 border-l-4 border-l-emerald-500 bg-gradient-to-r from-emerald-900/10 to-transparent"><h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-emerald-400"></i> Next Day Tasks / 明日任务</h3><div v-if="$root.myNextTasks.length === 0" class="text-sm text-kmc-muted italic py-4">No tasks scheduled for tomorrow / 明日无任务</div><div v-for="t in $root.myNextTasks" :key="t.id" class="bg-black/20 border border-white/5 p-4 rounded-lg mb-2 flex justify-between items-center hover:bg-black/30 transition"><div><div class="font-bold text-white text-sm">{{ t.title_en }}</div><div class="text-xs text-kmc-muted">{{ t.content }}</div></div><span class="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">PENDING</span></div></div>
+        </div>
+    </script>
 
-    const Vehicles = { template: `<div><div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4"><h2 class="text-xl font-bold text-white">Fleet Management / 车辆管理</h2><div class="flex gap-2 w-full sm:w-auto"><div class="relative flex-1 sm:w-64"><i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500"></i><input v-model="$root.searchQuery" class="kmc-input pl-9 py-2" placeholder="Search Plate or Model / 搜索..."></div><button v-if="!$root.isStaff" @click="$root.openForm('vehicle')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg shadow-green-900/20 shrink-0"><i class="fa-solid fa-plus mr-2"></i> Add / 新增</button></div></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"><div v-for="v in $root.filteredVehicles" :key="v.id" class="kmc-card overflow-hidden group relative"><div class="h-40 bg-black/40 relative flex items-center justify-center overflow-hidden cursor-pointer" @click="$root.openPreview(v.archive_photos && v.archive_photos[0] ? v.archive_photos[0] : (v.photos && v.photos[0] ? v.photos[0] : null))"><img v-if="v.archive_photos && v.archive_photos[0]" :src="v.archive_photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110"><img v-else-if="v.photos && v.photos[0]" :src="v.photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110"><i v-else class="fa-solid fa-car text-5xl text-[#27272a] group-hover:text-[#3f3f46] transition"></i><div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1.5" :class="v.status === 'Active' ? 'text-green-400' : 'text-red-400'"><span class="w-1.5 h-1.5 rounded-full" :class="v.status === 'Active' ? 'bg-green-400 shadow-[0_0_8px_#4ade80]' : 'bg-red-400'"></span>{{ v.status === 'Active' ? 'Active / 运营' : (v.status === 'Maintenance' ? 'Maintenance / 维修' : 'Scrapped / 报废') }}</div></div><div class="p-5"><h3 class="font-bold text-white text-lg tracking-tight">{{ v.plate }}</h3><p class="text-xs text-kmc-muted uppercase tracking-wider mb-2">{{ v.model }} • {{ v.mileage }} KM</p><p class="text-[10px] text-gray-500 mb-4" v-if="v.responsible"><i class="fa-solid fa-user-shield mr-1"></i> {{v.responsible}}</p><div class="flex gap-2"><button @click="$root.openForm('vehicle', v)" class="flex-1 py-2 rounded bg-white/5 text-xs font-bold hover:bg-blue-500/10 hover:text-blue-400 transition border border-white/5">{{ $root.isStaff ? 'View Details / 查看详情' : 'Manage Archive / 管理档案' }}</button><button v-if="!$root.isStaff" @click="$root.deleteItem('vehicles', v.id)" class="px-3 py-2 rounded bg-white/5 text-xs hover:bg-red-500/10 hover:text-red-400 transition border border-white/5"><i class="fa-solid fa-trash"></i></button></div></div></div></div></div>` };
+<script type="text/x-template" id="tmpl-vehicles">
+        <div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <h2 class="text-xl font-bold text-white">Fleet Management / 车辆管理</h2>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <div class="relative flex-1 sm:w-64">
+                        <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-500"></i>
+                        <input v-model="$root.searchQuery" class="kmc-input pl-9 py-2" placeholder="Search Plate or Model / 搜索...">
+                    </div>
+                    <button v-if="!$root.isStaff" @click="$root.openForm('vehicle')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg shadow-green-900/20 shrink-0"><i class="fa-solid fa-plus mr-2"></i> Add / 新增</button>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div v-for="v in $root.filteredVehicles" :key="v.id" class="kmc-card overflow-hidden group relative">
+                    <div class="h-40 bg-black/40 relative flex items-center justify-center overflow-hidden cursor-pointer" @click="$root.openPreview(v.archive_photos && v.archive_photos[0] ? v.archive_photos[0] : (v.photos && v.photos[0] ? v.photos[0] : null))">
+                        <img v-if="v.archive_photos && v.archive_photos[0]" :src="v.archive_photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <img v-else-if="v.photos && v.photos[0]" :src="v.photos[0]" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
+                        <i v-else class="fa-solid fa-car text-5xl text-[#27272a] group-hover:text-[#3f3f46] transition"></i>
+                        <div class="absolute top-3 right-3 px-2 py-1 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1.5" :class="v.status === 'Active' ? 'text-green-400' : 'text-red-400'">
+                            <span class="w-1.5 h-1.5 rounded-full" :class="v.status === 'Active' ? 'bg-green-400 shadow-[0_0_8px_#4ade80]' : 'bg-red-400'"></span>{{ v.status === 'Active' ? 'Active / 运营' : (v.status === 'Maintenance' ? 'Maintenance / 维修' : 'Scrapped / 报废') }}
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="font-bold text-white text-lg tracking-tight">{{ v.plate }}</h3>
+                        <p class="text-xs text-kmc-muted uppercase tracking-wider mb-2">{{ v.model }} • {{ v.mileage }} KM</p>
+                        <p class="text-[10px] text-gray-500 mb-4" v-if="v.responsible"><i class="fa-solid fa-user-shield mr-1"></i> {{v.responsible}}</p>
+                        <div class="flex gap-2">
+                            <button @click="$root.openForm('vehicle', v)" class="flex-1 py-2 rounded bg-white/5 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-400 transition border border-white/5">{{ $root.isStaff ? 'View Details / 查看详情' : 'Manage Archive / 管理档案' }}</button>
+                            <button v-if="!$root.isStaff" @click="$root.deleteItem('vehicles', v.id)" class="px-3 py-2 rounded bg-white/5 text-xs hover:bg-red-500/10 hover:text-red-400 transition border border-white/5"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
 
-    const Staff = { template: `<div><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-white">Staff Management / 人员管理</h2><button v-if="$root.currentUser.role!=='03'" @click="$root.openForm('staff')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg">Add User / 新增</button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div v-for="u in $root.users" :key="u.id" class="kmc-card p-4 flex items-center justify-between group"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-bold text-sm text-kmc-muted">{{ u.name[0] }}</div><div><div class="font-bold text-white">{{ u.name }}</div><div class="text-xs text-kmc-muted uppercase">Role: {{ u.role }}</div></div></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition" v-if="$root.currentUser.role==='01' || ($root.currentUser.role==='02' && u.role.startsWith('03'))"><button @click="$root.openForm('staff', u)" class="text-blue-400 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button @click="$root.deleteItem('users', u.id)" class="text-red-500 hover:scale-110 transition"><i class="fa-solid fa-trash"></i></button></div></div></div></div>` };
+<script>
+    if (typeof Vue === 'undefined') {
+        document.getElementById('app').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;font-family:sans-serif;background:#050505;"><h2 style="color:#ef4444;margin-bottom:16px;">⚠ CDN Loading Error / CDN加载失败</h2><p style="color:#a1a1aa;text-align:center;max-width:400px;line-height:1.8;">Vue.js failed to load. Please download this file and open it in your browser.<br>Vue.js加载失败，请下载此文件后在浏览器中直接打开。</p></div>';
+        throw new Error('Vue.js CDN failed to load');
+    }
+    const { createApp, ref, computed, watch, onMounted, nextTick, reactive, toRefs } = Vue;
 
-    const Fuel = { template: `
+    // --- Components ---
+    const Dashboard = { 
+        template: '#tmpl-dashboard', 
+        computed: { 
+            isStaff() { return this.$root.isStaff; } 
+        } 
+    };
+
+    const Vehicles = { template: '#tmpl-vehicles' };
+
+    const Staff = { template: `<div><div class="flex justify-between items-center mb-6"><h2 class="text-xl font-bold text-white">Staff Management / 人员管理</h2><button v-if="$root.currentUser.role!=='03'" @click="$root.openForm('staff')" class="kmc-btn bg-green-600 text-white px-4 py-2 text-xs shadow-lg">Add User / 新增</button></div><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"><div v-for="u in $root.users" :key="u.id" class="kmc-card p-4 flex items-center justify-between group"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-bold text-sm text-kmc-muted">{{ u.name[0] }}</div><div><div class="font-bold text-white">{{ u.name }}</div><div class="text-xs text-kmc-muted uppercase">Role: {{ u.role }}</div></div></div><div class="flex gap-2 opacity-0 group-hover:opacity-100 transition" v-if="$root.currentUser.role==='01' || ($root.currentUser.role==='02' && u.role.startsWith('03'))"><button @click="$root.openForm('staff', u)" class="text-emerald-400 hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button><button @click="$root.deleteItem('users', u.id)" class="text-red-500 hover:scale-110 transition"><i class="fa-solid fa-trash"></i></button></div></div></div></div>` };
+
+    const Fuel = { 
+        computed: {
+            // 🚀 优化：将复杂的过滤和计算放进 computed 缓存起来
+            fuelLogs() { 
+                return (this.$root.logs || []).filter(l => l.category === 'fuel'); 
+            },
+            displayLogs() { 
+                return this.$root.isStaff 
+                    ? this.fuelLogs.filter(l => l.user_name === this.$root.currentUser.name) 
+                    : this.fuelLogs; 
+            },
+            totalCost() { 
+                return this.fuelLogs.reduce((a,b) => a + (parseFloat(b.price) || 0), 0).toFixed(0); 
+            }
+        },
+        template: `
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold text-white">Fuel Logs / 加油记录</h2>
@@ -544,15 +641,15 @@
             </div>
             <div class="bg-green-900/20 border border-green-500/30 p-4 rounded-xl">
                 <div class="text-[10px] text-green-400 font-bold uppercase">Total Cost / 总费用</div>
-                <div class="text-2xl font-bold text-white">$ {{ $root.logs.filter(l=>l.category==='fuel').reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div>
+                <div class="text-2xl font-bold text-white">$ {{ totalCost }}</div>
             </div>
         </div>
         <div class="space-y-3">
-            <div v-for="log in ($root.isStaff ? $root.logs.filter(l => l.category === 'fuel' && l.user_name === $root.currentUser.name) : $root.logs.filter(l => l.category === 'fuel'))" :key="log.id" class="kmc-card p-4 flex justify-between items-center group">
+            <div v-for="log in displayLogs" :key="log.id" class="kmc-card p-4 flex justify-between items-center group">
                 <div class="flex gap-4 items-center">
                     <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500"><i class="fa-solid fa-gas-pump"></i></div>
                     <div>
-                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.station" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.station }}</span> <span v-if="log.is_internal" class="text-[9px] text-blue-300 bg-blue-900/50 border border-blue-500/50 px-1.5 py-0.5 rounded ml-1 uppercase">INTERNAL</span></div>
+                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.station" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.station }}</span> <span v-if="log.is_internal" class="text-[9px] text-emerald-300 bg-emerald-900/50 border border-emerald-500/50 px-1.5 py-0.5 rounded ml-1 uppercase">INTERNAL</span></div>
                         <div class="text-xs text-kmc-muted">{{ new Date(log.timestamp).toLocaleString() }} • {{ log.user_name }}</div>
                     </div>
                 </div>
@@ -561,7 +658,7 @@
                     <div class="text-xs text-green-400 font-mono" v-if="log.price && !log.is_internal && !$root.isStaff">$ {{ log.price }}</div>
                 </div>
             </div>
-            <div v-if="($root.isStaff ? $root.logs.filter(l => l.category === 'fuel' && l.user_name === $root.currentUser.name) : $root.logs.filter(l => l.category === 'fuel')).length === 0" class="text-center text-gray-500 py-8">No records found / 暂无记录</div>
+            <div v-if="displayLogs.length === 0" class="text-center text-gray-500 py-8">No records found / 暂无记录</div>
         </div>
     </div>
     `};
@@ -570,38 +667,38 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold text-white">Task Config / 任务配置</h2>
-            <button v-if="!$root.isStaff" @click="$root.openForm('task_config')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-plus mr-2"></i> New Task / 新建</button>
+            <button v-if="!$root.isStaff" @click="$root.openForm('task_config')" class="kmc-btn bg-emerald-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-plus mr-2"></i> New Task / 新建</button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div v-for="t in $root.tasks" :key="t.id" class="kmc-card p-5 relative group hover:border-blue-500/50 transition flex flex-col h-full">
+            <div v-for="t in $root.tasks" :key="t.id" class="kmc-card p-5 relative group hover:border-emerald-500/50 transition flex flex-col h-full">
                 <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition z-10" v-if="!$root.isStaff">
-                    <button @click="$root.openForm('task_config', t)" class="w-8 h-8 rounded bg-white/5 hover:bg-blue-500/20 text-blue-400 flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
+                    <button @click="$root.openForm('task_config', t)" class="w-8 h-8 rounded bg-white/5 hover:bg-emerald-500/20 text-emerald-400 flex items-center justify-center"><i class="fa-solid fa-pen"></i></button>
                     <button @click="$root.deleteItem('tasks', t.id)" class="w-8 h-8 rounded bg-white/5 hover:bg-red-500/20 text-red-400 flex items-center justify-center"><i class="fa-solid fa-trash"></i></button>
                 </div>
 
                 <div class="mb-3">
                     <div class="font-bold text-lg text-white pr-16">{{ t.title_en }}</div>
-                    <div class="text-xs text-blue-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ $root.formatAssignee(t.assigned_to) }}</div>
+                    <div class="text-xs text-emerald-400 font-mono mt-1" v-if="t.assigned_to">Assign: {{ $root.formatAssignee(t.assigned_to) }}</div>
                 </div>
                 <div class="text-sm text-gray-400 line-clamp-2 mb-4 flex-1">{{ t.content }}</div>
                 
                 <div class="flex gap-2 text-[10px] uppercase font-bold text-gray-600 mb-4">
                     <span v-if="t.frequency==='one_time'" class="bg-purple-900/30 text-purple-400 px-2 py-1 rounded border border-purple-500/20">ONE-TIME</span>
-                    <span v-else class="bg-blue-900/30 text-blue-400 px-2 py-1 rounded border border-blue-500/20">DAILY</span>
+                    <span v-else class="bg-emerald-900/30 text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">DAILY</span>
                     <span v-if="t.req_photo" class="bg-gray-800 px-2 py-1 rounded text-gray-300"><i class="fa-solid fa-camera mr-1"></i> Photo</span>
                 </div>
 
                 <div v-if="!$root.isStaff && t.frequency!=='one_time' && $root.getTaskProgress(t)" class="mt-auto pt-4 border-t border-white/5">
                     <div class="flex justify-between items-end mb-1">
                         <span class="text-[10px] text-kmc-muted uppercase font-bold">Today's Progress</span>
-                        <span class="text-xs font-mono font-bold" :class="$root.getTaskProgress(t).percent===100?'text-green-400':'text-blue-400'">
+                        <span class="text-xs font-mono font-bold" :class="$root.getTaskProgress(t).percent===100?'text-green-400':'text-emerald-400'">
                             {{ $root.getTaskProgress(t).doneCount }} / {{ $root.getTaskProgress(t).total }}
                         </span>
                     </div>
                     <div class="w-full bg-gray-700/50 rounded-full h-1.5 overflow-hidden relative group/progress cursor-help">
                         <div class="h-full rounded-full transition-all duration-500" 
                              :style="{width: $root.getTaskProgress(t).percent + '%'}" 
-                             :class="$root.getTaskProgress(t).percent===100?'bg-green-500':'bg-blue-500'">
+                             :class="$root.getTaskProgress(t).percent===100?'bg-green-500':'bg-emerald-500'">
                         </div>
                         <div v-if="$root.getTaskProgress(t).pendingUsers.length > 0" class="absolute bottom-full left-0 mb-2 hidden group-hover/progress:block w-full bg-black/90 text-white text-[10px] p-2 rounded border border-white/10 z-20 shadow-xl whitespace-normal">
                             <div class="font-bold text-red-400 mb-1">Pending / 未完成:</div>
@@ -632,23 +729,47 @@
                     showRejectModal.value = false;
                 }
             };
-            return { activeTab, showRejectModal, targetLog, reason, openReject, confirmReject };
+            const translateReason = async () => {
+                if (!reason.value || reason.value.trim() === '') return;
+                const hasChinese = /[\u4e00-\u9fa5]/.test(reason.value);
+                const langPair = hasChinese ? 'zh|en' : 'en|zh-CN';
+                try {
+                    const resp = await fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(reason.value) + '&langpair=' + langPair);
+                    const data = await resp.json();
+                    if (data.responseData && data.responseData.translatedText) {
+                        reason.value = reason.value + ' (' + data.responseData.translatedText + ')';
+                        globalStore.showToast('Translated / 已翻译', '', 'success');
+                    }
+                } catch(e) { globalStore.showToast('Translation Failed / 翻译失败', '', 'error'); }
+            };
+            return { activeTab, showRejectModal, targetLog, reason, openReject, confirmReject, translateReason };
+        },
+        computed: {
+            // 🚀 优化：预先分离出任务列表，避免 template 内部频繁的三元运算和 filter
+            taskLogs() {
+                return (this.$root.logs || []).filter(l => l.category === 'task_exec');
+            },
+            displayLogs() {
+                return this.activeTab === 'pending' 
+                    ? this.taskLogs.filter(l => !l.rating) 
+                    : this.taskLogs.filter(l => l.rating);
+            }
         },
         template: `
         <div class="space-y-6">
             <div class="flex justify-between items-center">
                 <h2 class="text-xl font-bold text-white">Task Reviews / 任务评审</h2>
                 <div class="flex bg-black/40 rounded-lg p-1">
-                    <button @click="activeTab='pending'" :class="activeTab==='pending'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">Pending / 待审 <span v-if="$root.pendingReviews>0" class="ml-1 px-1.5 rounded-full bg-white text-blue-600 text-[9px]">{{$root.pendingReviews}}</span></button>
-                    <button @click="activeTab='history'" :class="activeTab==='history'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">History / 历史</button>
+                    <button @click="activeTab='pending'" :class="activeTab==='pending'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">Pending / 待审 <span v-if="$root.pendingReviews>0" class="ml-1 px-1.5 rounded-full bg-white text-emerald-600 text-[9px]">{{$root.pendingReviews}}</span></button>
+                    <button @click="activeTab='history'" :class="activeTab==='history'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="px-4 py-1.5 rounded text-xs font-bold transition">History / 历史</button>
                 </div>
             </div>
             
-            <div v-for="log in (activeTab==='pending' ? $root.logs.filter(l=>l.category==='task_exec' && !l.rating) : $root.logs.filter(l=>l.category==='task_exec' && l.rating))" :key="log.id" class="kmc-card overflow-hidden animate-fade-in">
+            <div v-for="log in displayLogs" :key="log.id" class="kmc-card overflow-hidden animate-fade-in">
                 <div class="p-4 border-b border-white/5 flex justify-between items-start bg-black/20">
                     <div>
                         <div class="font-bold text-white text-base">{{ log.title_en }}</div>
-                        <div class="text-xs text-kmc-muted mt-0.5"><i class="fa-regular fa-clock mr-1"></i> {{ new Date(log.timestamp).toLocaleString() }} • <span class="text-blue-400 font-bold">{{ log.user_name }}</span></div>
+                        <div class="text-xs text-kmc-muted mt-0.5"><i class="fa-regular fa-clock mr-1"></i> {{ new Date(log.timestamp).toLocaleString() }} • <span class="text-emerald-400 font-bold">{{ log.user_name }}</span></div>
                     </div>
                     <div v-if="log.rating" :class="log.rating==='green'?'bg-green-500/20 text-green-400 border-green-500/30': 'bg-red-500/20 text-red-400 border-red-500/30'" class="px-3 py-1 rounded text-xs font-bold uppercase border">
                         {{ log.rating === 'green' ? 'Approved / 通过' : 'Rejected / 驳回' }}
@@ -679,15 +800,20 @@
                     </div>
                 </div>
             </div>
-            <div v-if="$root.logs.filter(l => l.category === 'task_exec').length === 0" class="text-center text-gray-500 italic py-10">No records found / 暂无记录</div>
+            <div v-if="taskLogs.length === 0" class="text-center text-gray-500 italic py-10">No records found / 暂无记录</div>
 
             <div v-if="showRejectModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
                 <div class="bg-kmc-card border border-kmc-border p-5 rounded-xl w-full max-w-sm shadow-2xl animate-fade-in">
-                    <h3 class="font-bold text-white mb-2">Rejection Reason / 驳回理由</h3>
-                    <textarea v-model="reason" class="kmc-input h-24 mb-4 resize-none" placeholder="Why is this rejected? (Optional) / 请输入理由..."></textarea>
+                    <h3 class="font-bold text-white mb-2 flex items-center gap-2">Rejection Reason / 驳回理由 <span class="text-red-400 text-[10px] font-normal">(Required / 必填)</span></h3>
+                    <div class="relative mb-4">
+                        <textarea v-model="reason" class="kmc-input h-24 resize-none pr-10" placeholder="Enter reason for rejection / 请输入驳回理由..."></textarea>
+                        <div class="absolute right-2 bottom-2 w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-gray-400 hover:text-emerald-400 cursor-pointer transition border border-white/5" @click="translateReason" title="Translate / 翻译">
+                            <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                        </div>
+                    </div>
                     <div class="flex gap-2">
                         <button @click="showRejectModal=false" class="flex-1 py-2 bg-transparent border border-white/10 text-kmc-muted hover:text-white rounded text-xs">Cancel / 取消</button>
-                        <button @click="confirmReject($root)" class="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded text-xs font-bold">Confirm / 确认</button>
+                        <button @click="confirmReject($root)" :disabled="!reason.trim()" :class="reason.trim() ? 'bg-red-600 hover:bg-red-500' : 'bg-gray-700 cursor-not-allowed opacity-50'" class="flex-1 py-2 text-white rounded text-xs font-bold transition">Confirm Reject / 确认驳回</button>
                     </div>
                 </div>
             </div>
@@ -726,34 +852,151 @@
 
             return { showReportModal, openReport, downloadPDF, isGenerating, getFilterSummary };
         },
+        computed: {
+            filteredFuelLogs() {
+                const f = this.$root.statsFilters;
+                return (this.$root.logs || []).filter(l => {
+                    if (l.category !== 'fuel') return false;
+                    if (f.start && l.timestamp.split('T')[0] < f.start) return false;
+                    if (f.end && l.timestamp.split('T')[0] > f.end) return false;
+                    if (f.vehicle_id && l.entity_id !== f.vehicle_id) return false;
+                    if (f.driver && l.user_name !== f.driver) return false;
+                    return true;
+                });
+            },
+            filteredTaskLogs() {
+                const f = this.$root.statsFilters;
+                return (this.$root.logs || []).filter(l => {
+                    if (l.category !== 'task_exec') return false;
+                    if (f.start && l.timestamp.split('T')[0] < f.start) return false;
+                    if (f.end && l.timestamp.split('T')[0] > f.end) return false;
+                    if (f.driver && l.user_name !== f.driver) return false;
+                    if (f.status === 'pending' && l.rating) return false;
+                    if (f.status === 'approved' && l.rating !== 'green') return false;
+                    if (f.status === 'rejected' && l.rating !== 'red') return false;
+                    return true;
+                });
+            },
+            driverPerformanceStats() {
+                const logs = this.filteredTaskLogs;
+                const drivers = {};
+                logs.forEach(l => {
+                    if (!drivers[l.user_name]) drivers[l.user_name] = { name: l.user_name, total: 0, approved: 0, rejected: 0 };
+                    drivers[l.user_name].total++;
+                    if (l.rating === 'green') drivers[l.user_name].approved++;
+                    if (l.rating === 'red') drivers[l.user_name].rejected++;
+                });
+                return Object.values(drivers).map(d => {
+                    d.rate = d.total > 0 ? Math.round((d.approved / d.total) * 100) : 0;
+                    return d;
+                }).sort((a, b) => b.rate - a.rate);
+            }
+        },
         template: `
         <div class="space-y-6 h-full flex flex-col">
-            <div class="flex flex-col gap-4 bg-kmc-card p-4 rounded-xl border border-kmc-border sticky top-0 z-10 shadow-xl">
+            <div class="flex flex-col gap-4 bg-kmc-card p-5 rounded-xl border border-kmc-border sticky top-0 z-10 shadow-xl">
                 <div class="flex flex-wrap justify-between gap-4">
                     <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit">
-                        <button @click="$root.statsTab='fuel'" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button>
-                        <button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-blue-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
+                        <button @click="$root.statsTab='fuel'" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button>
+                        <button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
                     </div>
                     <div class="flex items-center gap-2">
                             <button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset / 重置</button>
-                            <button @click="openReport" class="kmc-btn bg-green-600 text-white shadow-lg shadow-green-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview & Export / 预览导出</button>
+                            <button @click="openReport" class="kmc-btn bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview & Export / 预览导出</button>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-white/5 pt-3">
-                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Start Date / 开始</label><input type="date" v-model="$root.statsFilters.start" class="kmc-input py-1.5 text-xs"></div>
-                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">End Date / 结束</label><input type="date" v-model="$root.statsFilters.end" class="kmc-input py-1.5 text-xs"></div>
-                    <div v-if="$root.statsTab==='fuel'"><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Vehicle / 车辆</label><select v-model="$root.statsFilters.vehicle_id" class="kmc-input py-1.5 text-xs"><option value="">All Vehicles / 全部</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option></select></div>
-                    <div><label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Driver / 司机</label><select v-model="$root.statsFilters.driver" class="kmc-input py-1.5 text-xs"><option value="">All Drivers / 全部</option><option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option></select></div>
+                <!-- 实时汇总栏 / Live Summary Bar -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='fuel'">
+                    <div class="bg-orange-500/5 border border-orange-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-orange-400 uppercase font-bold">Volume / 总升数</div>
+                        <div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div>
+                    </div>
+                    <div class="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-green-400 uppercase font-bold">Cost / 总费用</div>
+                        <div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div>
+                    </div>
+                    <div class="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-blue-400 uppercase font-bold">Records / 记录数</div>
+                        <div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.length }}</div>
+                    </div>
+                    <div class="bg-purple-500/5 border border-purple-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-purple-400 uppercase font-bold">Avg Price/L / 均价</div>
+                        <div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.length > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / Math.max(filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0), 1)).toFixed(2) : '0.00' }}</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='performance'">
+                    <div class="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-emerald-400 uppercase font-bold">Total Tasks / 总任务</div>
+                        <div class="text-lg font-bold text-white mt-0.5">{{ filteredTaskLogs.length }}</div>
+                    </div>
+                    <div class="bg-green-500/5 border border-green-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-green-400 uppercase font-bold">Approved / 已通过</div>
+                        <div class="text-lg font-bold text-white mt-0.5">{{ filteredTaskLogs.filter(l=>l.rating==='green').length }}</div>
+                    </div>
+                    <div class="bg-red-500/5 border border-red-500/20 p-3 rounded-lg">
+                        <div class="text-[9px] text-red-400 uppercase font-bold">Rejected / 已驳回</div>
+                        <div class="text-lg font-bold text-white mt-0.5">{{ filteredTaskLogs.filter(l=>l.rating==='red').length }}</div>
+                    </div>
+                </div>
+                <!-- 高级筛选面板 / Advanced Filter Panel (默认展开) -->
+                <div class="border-t border-white/5 pt-3 mt-1">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-filter text-emerald-400 text-[10px]"></i>
+                        <span class="text-[10px] text-emerald-400 uppercase font-bold tracking-wider">Advanced Filters / 高级筛选</span>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Start Date / 开始日期</label>
+                            <input type="date" v-model="$root.statsFilters.start" class="kmc-input py-2 text-xs">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">End Date / 结束日期</label>
+                            <input type="date" v-model="$root.statsFilters.end" class="kmc-input py-2 text-xs">
+                        </div>
+                        <div v-if="$root.statsTab==='fuel'">
+                            <label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Vehicle / 车辆</label>
+                            <select v-model="$root.statsFilters.vehicle_id" class="kmc-input py-2 text-xs"><option value="">All Vehicles / 全部车辆</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option></select>
+                        </div>
+                        <div v-if="$root.statsTab==='performance'">
+                            <label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Status / 状态</label>
+                            <select v-model="$root.statsFilters.status" class="kmc-input py-2 text-xs"><option value="">All Status / 全部状态</option><option value="pending">Pending / 待审</option><option value="approved">Approved / 已通过</option><option value="rejected">Rejected / 已驳回</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] text-kmc-muted uppercase font-bold mb-1">Driver / 司机</label>
+                            <select v-model="$root.statsFilters.driver" class="kmc-input py-2 text-xs"><option value="">All Drivers / 全部司机</option><option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option></select>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="flex-1 overflow-hidden relative min-h-[400px]">
                 <div v-if="$root.statsTab==='fuel'" class="space-y-4 animate-fade-in h-full overflow-y-auto pb-20">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl"><div class="text-[10px] text-orange-400 font-bold uppercase">Volume / 总升数</div><div class="text-2xl font-bold text-white">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
-                        <div class="bg-green-500/10 border border-green-500/20 p-4 rounded-xl"><div class="text-[10px] text-green-400 font-bold uppercase">Cost / 总费用</div><div class="text-2xl font-bold text-white">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
+                    <!-- 汇总已移至筛选栏 / Summary moved to filter bar above -->
+                    
+                    <div class="kmc-card overflow-hidden">
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left border-collapse min-w-[500px]">
+                                <thead class="text-[10px] uppercase text-kmc-muted border-b border-white/10 bg-white/5">
+                                    <tr>
+                                        <th class="p-4 whitespace-nowrap">Date</th>
+                                        <th class="p-4 whitespace-nowrap">Vehicle</th>
+                                        <th class="p-4 whitespace-nowrap">Driver</th>
+                                        <th class="p-4 text-right whitespace-nowrap">Liters</th>
+                                        <th class="p-4 text-right whitespace-nowrap">Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm">
+                                    <tr v-for="log in filteredFuelLogs" :key="log.id" class="border-b border-white/5 hover:bg-white/5 transition">
+                                        <td class="p-4 text-xs font-mono whitespace-nowrap">{{ log.timestamp.split('T')[0] }}</td>
+                                        <td class="p-4 font-bold text-white whitespace-nowrap">{{ $root.getPlate(log.entity_id) }}</td>
+                                        <td class="p-4 whitespace-nowrap">{{ log.user_name }}</td>
+                                        <td class="p-4 text-right text-orange-400 font-bold whitespace-nowrap">{{ log.liters }}</td>
+                                        <td class="p-4 text-right text-green-400 whitespace-nowrap">$ {{ log.price }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div class="kmc-card overflow-hidden"><table class="w-full text-left border-collapse"><thead class="text-[10px] uppercase text-kmc-muted border-b border-white/10 bg-white/5"><tr><th class="p-4">Date</th><th class="p-4">Vehicle</th><th class="p-4">Driver</th><th class="p-4 text-right">Liters</th><th class="p-4 text-right">Cost</th></tr></thead><tbody class="text-sm"><tr v-for="log in filteredFuelLogs" :key="log.id" class="border-b border-white/5 hover:bg-white/5 transition"><td class="p-4 text-xs font-mono">{{ log.timestamp.split('T')[0] }}</td><td class="p-4 font-bold text-white">{{ $root.getPlate(log.entity_id) }}</td><td class="p-4">{{ log.user_name }}</td><td class="p-4 text-right text-orange-400 font-bold">{{ log.liters }}</td><td class="p-4 text-right text-green-400">$ {{ log.price }}</td></tr></tbody></table></div>
                 </div>
                 <div v-if="$root.statsTab==='performance'" class="space-y-4 animate-fade-in h-full overflow-y-auto pb-20">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -765,16 +1008,16 @@
             <div v-if="showReportModal" class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
                 <div class="bg-[#525252] w-full max-w-6xl h-[95vh] rounded-xl flex flex-col shadow-2xl overflow-hidden border border-white/10">
                     <div class="bg-[#333] p-4 flex justify-between items-center border-b border-white/10 shrink-0">
-                        <h3 class="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-print text-blue-400"></i> Print Preview</h3>
+                        <h3 class="text-white font-bold flex items-center gap-2 text-sm uppercase tracking-wide"><i class="fa-solid fa-print text-emerald-400"></i> Print Preview</h3>
                         <div class="flex gap-3">
                             <button @click="showReportModal=false" class="px-4 py-2 rounded text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition">Close / 关闭</button>
-                            <button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                            <button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-file-pdf"></i> Download PDF</button>
                         </div>
                     </div>
                     <div class="flex-1 overflow-y-auto bg-[#525252] p-8 flex justify-center">
                         <div id="report-content" class="bg-white text-black w-[297mm] min-h-[210mm] shadow-2xl p-[15mm] flex flex-col relative box-border">
                             <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
-                                <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-blue-800 mt-1 uppercase tracking-widest">{{ $root.statsTab }} ANALYSIS REPORT</div></div>
+                                <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-emerald-800 mt-1 uppercase tracking-widest">{{ $root.statsTab }} ANALYSIS REPORT</div></div>
                                 <div class="text-right text-xs text-gray-500"><div class="font-bold text-black mb-1">FILTER APPLIED:</div><div class="bg-gray-100 px-2 py-1 rounded font-mono">{{ getFilterSummary($root) }}</div><div class="mt-1">Generated: {{ new Date().toLocaleString() }} by {{ $root.currentUser.name }}</div></div>
                             </div>
 
@@ -792,7 +1035,7 @@
                                             <td class="p-2 border-r border-gray-200 font-mono">{{ log.timestamp.split('T')[0] }}<br><span class="text-[9px] text-gray-400">{{ log.timestamp.split('T')[1].substr(0,5) }}</span></td>
                                             <td class="p-2 border-r border-gray-200 font-bold">{{ $root.getPlate(log.entity_id) }}</td>
                                             <td class="p-2 border-r border-gray-200">{{ log.user_name }}</td>
-                                            <td class="p-2 border-r border-gray-200 truncate max-w-[100px]">{{ log.station || '-' }} <span v-if="log.is_internal" class="ml-1 text-[8px] uppercase bg-blue-100 text-blue-600 px-1 rounded border border-blue-200">INTERNAL</span></td>
+                                            <td class="p-2 border-r border-gray-200 truncate max-w-[100px]">{{ log.station || '-' }} <span v-if="log.is_internal" class="ml-1 text-[8px] uppercase bg-emerald-100 text-emerald-600 px-1 rounded border border-emerald-200">INTERNAL</span></td>
                                             <td class="p-2 border-r border-gray-200 text-right font-bold text-orange-600">{{ log.liters }}</td>
                                             <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price || '-' }}</td>
                                             <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-12 h-10 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
@@ -803,11 +1046,11 @@
 
                             <div v-if="$root.statsTab==='performance'" class="space-y-8">
                                     <div>
-                                    <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-blue-800">1. Summary By Driver / 司机汇总</h3>
+                                    <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-emerald-800">1. Summary By Driver / 司机汇总</h3>
                                     <table class="w-full text-left border border-gray-300 text-xs mb-6"><thead class="bg-gray-100 text-black"><tr><th class="p-2 border border-gray-300">Rank</th><th class="p-2 border border-gray-300">Driver</th><th class="p-2 border border-gray-300 text-center">Total Tasks</th><th class="p-2 border border-gray-300 text-center">Approved</th><th class="p-2 border border-gray-300 text-center">Rejected</th><th class="p-2 border border-gray-300 text-right">Success Rate</th></tr></thead><tbody><tr v-for="(d, idx) in driverPerformanceStats" :key="d.id" class="border-b border-gray-200"><td class="p-2 border-r border-gray-200 font-bold text-center w-12">{{ idx + 1 }}</td><td class="p-2 border-r border-gray-200 font-bold">{{ d.name }}</td><td class="p-2 border-r border-gray-200 text-center">{{ d.total }}</td><td class="p-2 border-r border-gray-200 text-center text-green-700 font-bold">{{ d.approved }}</td><td class="p-2 border-r border-gray-200 text-center text-red-600">{{ d.rejected }}</td><td class="p-2 text-right font-bold">{{ d.rate }}%</td></tr></tbody></table>
                                     </div>
                                     <div>
-                                    <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-blue-800">2. Detailed Execution Log / 执行流水</h3>
+                                    <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-emerald-800">2. Detailed Execution Log / 执行流水</h3>
                                     <div class="grid grid-cols-2 gap-4">
                                         <div v-for="t in filteredTaskLogs" :key="t.id" class="border border-gray-300 p-3 rounded text-xs break-inside-avoid shadow-sm">
                                             <div class="flex justify-between mb-1 border-b border-gray-100 pb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div>
@@ -830,40 +1073,136 @@
                 </div>
             </div>
         </div>
-        `,
-        data() { return { softLimit: 3000 } },
-        computed: {
-            percentage() { return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100); }
-        },
-        methods: {
-            confirmClear() {
-                if(confirm("WARNING: This will delete ALL history logs and shift records from the cloud database.\n\nAre you sure? This cannot be undone.\n\n警告：这将从云端数据库删除所有历史日志和排班记录。\n确定吗？此操作无法撤销。")) {
-                    this.$root.handleClear();
-                }
-            }
-        }
+        `
     };
     
-    const Shifts = { template: `
+    const Shifts = { 
+        setup() {
+            const showDetail = ref(false);
+            const detailShift = ref(null);
+            const isEditing = ref(false);
+            const editForm = ref({});
+            const showDeleteConfirm = ref(false);
+            
+            const openDetail = (s) => { detailShift.value = s; editForm.value = JSON.parse(JSON.stringify(s)); showDetail.value = true; isEditing.value = false; };
+            const startEdit = () => { isEditing.value = true; };
+            const cancelEdit = () => { isEditing.value = false; editForm.value = JSON.parse(JSON.stringify(detailShift.value)); };
+            const saveEdit = async (root) => {
+                const updated = { ...editForm.value };
+                const idx = root.shifts.findIndex(x => x.id === updated.id);
+                if (idx !== -1) root.shifts[idx] = updated;
+                detailShift.value = { ...updated };
+                isEditing.value = false;
+                // Persist to Supabase / 持久化到云端
+                try {
+                    if (window._kmcSupabase) {
+                        const payload = { ...updated };
+                        delete payload.extra_data;
+                        await window._kmcSupabase.from('shifts').upsert(payload);
+                        globalStore.showToast('Saved / 已保存', 'Synced to cloud / 已同步云端', 'success');
+                    } else {
+                        globalStore.showToast('Saved / 已保存', 'Local only / 仅本地保存', 'success');
+                    }
+                } catch(e) {
+                    globalStore.showToast('Saved Locally / 本地已保存', 'Will sync later / 稍后同步', 'info');
+                }
+            };
+            const confirmDelete = (root) => {
+                root.deleteItem('shifts', detailShift.value.id);
+                showDetail.value = false;
+            };
+            
+            return { showDetail, detailShift, isEditing, editForm, openDetail, startEdit, cancelEdit, saveEdit, showDeleteConfirm, confirmDelete };
+        },
+        template: `
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold text-white">Shift Management / 排班</h2>
-            <button @click="$root.openForm('shift_fixed')" class="kmc-btn bg-blue-600 text-white px-4 py-2 text-xs shadow-lg">New Shift / 新班次</button>
+            <button @click="$root.openForm('shift_fixed')" class="kmc-btn bg-emerald-600 text-white px-4 py-2 text-xs shadow-lg">New Shift / 新班次</button>
         </div>
         <div class="space-y-3">
-             <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center">
-                <div>
+             <div v-for="s in $root.shifts" :key="s.id" class="kmc-card p-4 flex justify-between items-center cursor-pointer hover:border-emerald-500/30 transition group" @click="openDetail(s)">
+                <div class="flex-1">
                     <div class="font-bold text-white">{{ s.route || s.task_name }}</div>
                     <div class="text-xs text-kmc-muted">{{ s.start_time }} - {{ s.end_time || 'N/A' }} • {{ s.driver }}</div>
                 </div>
-                 <button @click="$root.deleteItem('shifts', s.id)" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-emerald-400 group-hover:text-emerald-300 transition"><i class="fa-solid fa-chevron-right mr-1"></i>Details / 详情</span>
+                    <button v-if="!$root.isStaff" @click.stop="showDeleteConfirm=true; detailShift=s" class="text-red-400 hover:text-red-300 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+                </div>
              </div>
-             <div v-if="$root.shifts.length === 0" class="text-center text-gray-500">No shifts configured / 暂无排班</div>
+             <div v-if="$root.shifts.length === 0" class="text-center text-gray-500 py-8 bg-white/5 rounded-xl border border-dashed border-white/10"><i class="fa-solid fa-calendar-xmark text-3xl mb-2 opacity-30"></i><br>No shifts configured / 暂无排班</div>
+        </div>
+
+        <!-- 排班详情弹窗 -->
+        <div v-if="showDetail" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
+            <div class="bg-kmc-card border border-kmc-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+                <div class="p-5 border-b border-white/5 flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-10">
+                    <h3 class="font-bold text-white uppercase tracking-wide flex items-center gap-2 text-base"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span> Shift Details / 排班详情</h3>
+                    <button @click="showDetail=false; isEditing=false" class="text-kmc-muted hover:text-white transition"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="bg-white/5 p-4 rounded-lg border border-white/5 space-y-3">
+                        <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Route / Area / 路线/区域</label>
+                            <div v-if="!isEditing" class="text-white font-bold mt-1">{{ detailShift.route || detailShift.task_name || '-' }}</div>
+                            <input v-else v-model="editForm.route" class="kmc-input mt-1" placeholder="Route / 路线">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Start Time / 开始时间</label>
+                                <div v-if="!isEditing" class="text-white mt-1">{{ detailShift.start_time || '-' }}</div>
+                                <input v-else type="time" v-model="editForm.start_time" class="kmc-input mt-1">
+                            </div>
+                            <div><label class="text-[10px] text-kmc-muted uppercase font-bold">End Time / 结束时间</label>
+                                <div v-if="!isEditing" class="text-white mt-1">{{ detailShift.end_time || 'N/A' }}</div>
+                                <input v-else type="time" v-model="editForm.end_time" class="kmc-input mt-1">
+                            </div>
+                        </div>
+                        <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Driver / 指派人员</label>
+                            <div v-if="!isEditing" class="text-white mt-1">{{ detailShift.driver || '-' }}</div>
+                            <select v-else v-model="editForm.driver" class="kmc-input mt-1">
+                                <option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Vehicle Type / 车型</label>
+                            <div v-if="!isEditing" class="text-white mt-1">{{ detailShift.vehicle_type || 'N/A' }}</div>
+                            <input v-else v-model="editForm.vehicle_type" class="kmc-input mt-1" placeholder="Vehicle type / 车型">
+                        </div>
+                        <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Standards / 执行标准</label>
+                            <div v-if="!isEditing" class="text-gray-300 text-sm mt-1">{{ detailShift.standards || 'N/A' }}</div>
+                            <textarea v-else v-model="editForm.standards" class="kmc-input h-20 resize-none mt-1" placeholder="Execution standards / 执行标准"></textarea>
+                        </div>
+                        <div><label class="text-[10px] text-kmc-muted uppercase font-bold">Notes / 备注</label>
+                            <div v-if="!isEditing" class="text-gray-300 text-sm mt-1">{{ detailShift.notes || 'N/A' }}</div>
+                            <textarea v-else v-model="editForm.notes" class="kmc-input h-16 resize-none mt-1" placeholder="Additional notes / 补充备注"></textarea>
+                        </div>
+                    </div>
+                    <!-- 管理员操作按钮 -->
+                    <div v-if="!$root.isStaff" class="flex gap-3 pt-2">
+                        <template v-if="!isEditing">
+                            <button @click="startEdit" class="kmc-btn bg-emerald-600 text-white flex-1 py-2.5 text-xs"><i class="fa-solid fa-pen mr-2"></i>Edit / 编辑</button>
+                            <button @click="showDeleteConfirm=true" class="kmc-btn bg-red-900/30 border border-red-500/30 text-red-300 flex-1 py-2.5 text-xs"><i class="fa-solid fa-trash mr-2"></i>Delete / 删除</button>
+                        </template>
+                        <template v-else>
+                            <button @click="cancelEdit" class="kmc-btn bg-transparent border border-white/10 text-kmc-muted flex-1 py-2.5 text-xs">Cancel / 取消</button>
+                            <button @click="saveEdit($root)" class="kmc-btn bg-emerald-600 text-white flex-1 py-2.5 text-xs"><i class="fa-solid fa-check mr-2"></i>Save / 保存</button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 删除确认弹窗 -->
+        <div v-if="showDeleteConfirm" class="fixed inset-0 z-[90] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-kmc-card border border-red-500/20 p-6 rounded-xl w-full max-w-sm shadow-2xl">
+                <div class="text-center mb-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-2"></i><h3 class="font-bold text-white text-lg">Confirm Delete / 确认删除</h3><p class="text-sm text-gray-400 mt-2">Are you sure you want to delete this shift? This cannot be undone.<br>确定删除该排班？此操作不可撤销。</p></div>
+                <div class="flex gap-3"><button @click="showDeleteConfirm=false" class="flex-1 py-2.5 bg-transparent border border-white/10 text-kmc-muted hover:text-white rounded-lg text-xs font-bold">Cancel / 取消</button><button @click="confirmDelete($root); showDeleteConfirm=false" class="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold">Delete / 删除</button></div>
+            </div>
         </div>
     </div>` 
     };
 
     const MyTasks = {
+    // 模板部分：替换原来的 $root.tasks.filter(...)，直接使用计算属性
     template: `
     <div class="space-y-8 animate-fade-in">
         <div>
@@ -872,10 +1211,10 @@
                 To Do / 待办与重做
             </h2>
             <div class="grid gap-3">
-                <div v-for="t in $root.tasks.filter(x => ['rework', 'todo'].includes($root.getTaskStatus(x, $root.currentUser.name)) && isAssigned(x))" 
+                <div v-for="t in todoTasks" 
                      :key="t.id" 
                      @click="$root.openTaskExec(t)"
-                     class="kmc-card p-5 cursor-pointer hover:border-blue-500 transition relative overflow-hidden"
+                     class="kmc-card p-5 cursor-pointer hover:border-emerald-500 transition relative overflow-hidden"
                      :class="$root.getTaskStatus(t, $root.currentUser.name) === 'rework' ? 'border-red-500/50 bg-red-900/10' : ''">
                     
                     <div v-if="$root.getTaskStatus(t, $root.currentUser.name) === 'rework'" class="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-bold px-2 py-1 rounded-bl">
@@ -891,28 +1230,28 @@
                     </div>
                     
                     <div class="mt-3 flex gap-2 items-center">
-                         <span v-if="t.frequency==='one_time'" class="text-[9px] border border-blue-500/50 text-blue-400 px-1.5 rounded uppercase">One-Time</span>
+                         <span v-if="t.frequency==='one_time'" class="text-[9px] border border-emerald-500/50 text-emerald-400 px-1.5 rounded uppercase">One-Time</span>
                          <span v-else class="text-[9px] border border-gray-600 text-gray-400 px-1.5 rounded uppercase">Daily</span>
                          
                          <span v-if="$root.getTaskStatus(t, $root.currentUser.name) === 'rework'" class="text-[10px] text-red-300 ml-auto">
                             <i class="fa-solid fa-arrow-rotate-left mr-1"></i> Tap to fix
                          </span>
-                         <span v-else class="text-[10px] text-blue-400 ml-auto group-hover:underline">Start Task</span>
+                         <span v-else class="text-[10px] text-emerald-400 ml-auto group-hover:underline">Start Task</span>
                     </div>
                 </div>
-                <div v-if="!hasTasks(['rework', 'todo'])" class="text-center p-6 border border-dashed border-white/10 rounded-xl text-gray-500 text-xs">
+                <div v-if="todoTasks.length === 0" class="text-center p-6 border border-dashed border-white/10 rounded-xl text-gray-500 text-xs">
                     <i class="fa-solid fa-check-circle text-2xl mb-2 text-green-500/50"></i><br>All caught up! / 暂无待办
                 </div>
             </div>
         </div>
 
-        <div v-if="hasTasks(['review'])">
+        <div v-if="reviewTasks.length > 0">
             <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
                 <span class="w-2 h-2 bg-yellow-500 rounded-full"></span> 
                 In Review / 审核中
             </h2>
             <div class="grid gap-3">
-                <div v-for="t in $root.tasks.filter(x => $root.getTaskStatus(x, $root.currentUser.name) === 'review' && isAssigned(x))" :key="t.id" class="kmc-card p-4 opacity-70">
+                <div v-for="t in reviewTasks" :key="t.id" class="kmc-card p-4 opacity-70">
                     <div class="flex justify-between items-center">
                         <div class="font-bold text-white text-sm">{{ t.title_en }}</div>
                         <span class="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded border border-yellow-500/20">WAITING</span>
@@ -928,19 +1267,40 @@
                 Completed Today / 今日已完成
             </h2>
             <div class="grid gap-3">
-                 <div v-for="t in $root.tasks.filter(x => $root.getTaskStatus(x, $root.currentUser.name) === 'done' && isAssigned(x))" :key="t.id" class="kmc-card p-4 border-l-4 border-l-green-500 bg-green-900/5">
+                 <div v-for="t in doneTasks" :key="t.id" class="kmc-card p-4 border-l-4 border-l-green-500 bg-green-900/5">
                     <div class="flex justify-between items-center">
                         <div class="font-bold text-white text-sm decoration-green-500/50">{{ t.title_en }}</div>
                         <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-black text-xs"><i class="fa-solid fa-check"></i></div>
                     </div>
                 </div>
-                 <div v-if="!hasTasks(['done'])" class="text-center p-4 text-gray-600 text-xs italic">
+                 <div v-if="doneTasks.length === 0" class="text-center p-4 text-gray-600 text-xs italic">
                     No completed tasks yet.
                 </div>
             </div>
         </div>
     </div>
     `,
+    computed: {
+        // 核心优化：利用 computed 缓存过滤结果，避免模板渲染时海量运算
+        myAssignedTasks() {
+            return this.$root.tasks.filter(t => this.isAssigned(t));
+        },
+        todoTasks() {
+            const name = this.$root.currentUser.name;
+            return this.myAssignedTasks.filter(t => {
+                const status = this.$root.getTaskStatus(t, name);
+                return status === 'rework' || status === 'todo';
+            });
+        },
+        reviewTasks() {
+            const name = this.$root.currentUser.name;
+            return this.myAssignedTasks.filter(t => this.$root.getTaskStatus(t, name) === 'review');
+        },
+        doneTasks() {
+            const name = this.$root.currentUser.name;
+            return this.myAssignedTasks.filter(t => this.$root.getTaskStatus(t, name) === 'done');
+        }
+    },
     methods: {
         isAssigned(t) {
             if (!t || !t.assigned_to) return false;
@@ -954,10 +1314,8 @@
                 } catch(e) { return assign === name; }
             }
             return false;
-        },
-        hasTasks(statuses) {
-            return this.$root.tasks.some(t => this.isAssigned(t) && statuses.includes(this.$root.getTaskStatus(t, this.$root.currentUser.name)));
         }
+        // 注：hasTasks 方法已被废弃并移除，因为可以直接检查 computed 数组的 length
     }
     };
 
@@ -992,8 +1350,8 @@
                 </div>
             </div>
 
-            <div class="kmc-card p-6 border-l-4 border-l-blue-500">
-                <h3 class="font-bold text-white mb-4"><i class="fa-solid fa-download text-blue-500 mr-2"></i> Export Options / 导出选项</h3>
+            <div class="kmc-card p-6 border-l-4 border-l-emerald-500">
+                <h3 class="font-bold text-white mb-4"><i class="fa-solid fa-download text-emerald-500 mr-2"></i> Export Options / 导出选项</h3>
                 
                 <div class="flex items-center justify-between bg-white/5 p-4 rounded-lg mb-6 border border-white/10">
                     <div>
@@ -1001,8 +1359,8 @@
                         <div class="text-[10px] text-gray-400">Photos & Signatures (Increases file size) / 照片与签字</div>
                     </div>
                     <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
-                        <input type="checkbox" id="toggle-media" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="$root.exportConfig.includeImages ? 'right-0 border-blue-500' : 'left-0 border-gray-400'" v-model="$root.exportConfig.includeImages"/>
-                        <label for="toggle-media" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer" :class="$root.exportConfig.includeImages ? 'bg-blue-500' : 'bg-gray-700'"></label>
+                        <input type="checkbox" id="toggle-media" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="$root.exportConfig.includeImages ? 'right-0 border-emerald-500' : 'left-0 border-gray-400'" v-model="$root.exportConfig.includeImages"/>
+                        <label for="toggle-media" class="toggle-label block overflow-hidden h-6 rounded-full cursor-pointer" :class="$root.exportConfig.includeImages ? 'bg-emerald-500' : 'bg-gray-700'"></label>
                     </div>
                 </div>
 
@@ -1094,6 +1452,129 @@
         }
     };
 
+    // --- 全局 Store 定义 ---
+    const globalStore = reactive({
+        users: [],
+        vehicles: [],
+        tasks: [],
+        logs: [],
+        shifts: [],
+        currentUser: null,
+        isGlobalLoading: false,
+        syncStatus: 'saved',
+        isOnline: navigator.onLine,
+        offlineQueue: [],
+        toasts: [],
+        showToast(title, msg, type='info') {
+            const id = Date.now();
+            this.toasts.push({id, title, msg, type});
+            setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 3000);
+        }
+    });
+
+    // --- Offline-First: 网络状态监听 ---
+    window.addEventListener('online', () => { 
+        globalStore.isOnline = true; 
+        globalStore.showToast('Network Restored / 网络恢复', 'Auto-syncing offline data... / 正在同步离线数据', 'success');
+    });
+    window.addEventListener('offline', () => { 
+        globalStore.isOnline = false; 
+        globalStore.syncStatus = 'error';
+        globalStore.showToast('Network Lost / 网络断开', 'Offline mode active. Data saved locally. / 离线模式已启用', 'error');
+    });
+
+    // --- Offline-First: IndexedDB 本地持久化 ---
+    const DB_NAME = 'kmc_offline_db';
+    const DB_VERSION = 1;
+    let offlineDB = null;
+
+    const initOfflineDB = () => {
+        return new Promise((resolve, reject) => {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains('cache')) db.createObjectStore('cache', { keyPath: 'key' });
+                if (!db.objectStoreNames.contains('offlineQueue')) db.createObjectStore('offlineQueue', { keyPath: 'id', autoIncrement: true });
+            };
+            req.onsuccess = (e) => { offlineDB = e.target.result; resolve(offlineDB); };
+            req.onerror = (e) => { console.error('IndexedDB Error:', e); resolve(null); };
+        });
+    };
+
+    const cacheData = async (key, data) => {
+        if (!offlineDB) return;
+        try {
+            const tx = offlineDB.transaction('cache', 'readwrite');
+            tx.objectStore('cache').put({ key, data, timestamp: Date.now() });
+        } catch(e) { console.error('Cache write error:', e); }
+    };
+
+    const getCachedData = async (key) => {
+        if (!offlineDB) return null;
+        return new Promise((resolve) => {
+            try {
+                const tx = offlineDB.transaction('cache', 'readonly');
+                const req = tx.objectStore('cache').get(key);
+                req.onsuccess = () => resolve(req.result?.data || null);
+                req.onerror = () => resolve(null);
+            } catch(e) { resolve(null); }
+        });
+    };
+
+    const addToOfflineQueue = async (action) => {
+        if (!offlineDB) return;
+        try {
+            const tx = offlineDB.transaction('offlineQueue', 'readwrite');
+            tx.objectStore('offlineQueue').add({ ...action, timestamp: Date.now() });
+            globalStore.offlineQueue.push(action);
+        } catch(e) { console.error('Queue write error:', e); }
+    };
+
+    const processOfflineQueue = async (supabase) => {
+        if (!offlineDB || !globalStore.isOnline) return;
+        try {
+            const tx = offlineDB.transaction('offlineQueue', 'readwrite');
+            const store = tx.objectStore('offlineQueue');
+            const req = store.getAll();
+            req.onsuccess = async () => {
+                const items = req.result || [];
+                if (items.length === 0) return;
+                
+                let successCount = 0;
+                let failCount = 0;
+                
+                for (const item of items) {
+                    try {
+                        if (item.type === 'upsert') {
+                            const { error } = await supabase.from(item.table).upsert(item.payload);
+                            if (error) throw error;
+                        } else if (item.type === 'delete') {
+                            const { error } = await supabase.from(item.table).delete().eq('id', item.id);
+                            if (error) throw error;
+                        }
+                        // 同步成功，删除队列项
+                        const delTx = offlineDB.transaction('offlineQueue', 'readwrite');
+                        delTx.objectStore('offlineQueue').delete(item.id);
+                        successCount++;
+                    } catch(e) {
+                        failCount++;
+                        console.error('Sync queue item failed:', e);
+                    }
+                }
+                
+                globalStore.offlineQueue = [];
+                if (successCount > 0) {
+                    globalStore.showToast('Sync Complete / 同步完成', 
+                        `${successCount} items synced${failCount > 0 ? `, ${failCount} failed` : ''} / ${successCount}条已同步${failCount > 0 ? `，${failCount}条失败` : ''}`, 
+                        failCount > 0 ? 'error' : 'success');
+                }
+            };
+        } catch(e) { console.error('Queue process error:', e); }
+    };
+
+    // 初始化 IndexedDB
+    initOfflineDB();
+
     createApp({
         components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts, StorageView, MyTasks },
         setup() {
@@ -1101,27 +1582,31 @@
             const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
             const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            window._kmcSupabase = supabase; // Expose for child components
             
-            const syncStatus = ref('saved'); 
-            const isGlobalLoading = ref(false);
-            
-            // Toast System
-            const toasts = ref([]);
+            // --- [修改] 使用 toRefs 映射全局 Store ---
+            const { 
+                users, vehicles, tasks, logs, shifts, 
+                currentUser, isGlobalLoading, syncStatus, toasts 
+            } = toRefs(globalStore);
+
+            // --- 优化：从本地安全缓存中恢复登录状态 (带容错处理) ---
+            try {
+                const savedUser = localStorage.getItem('kmc_session');
+                if (savedUser) {
+                    currentUser.value = JSON.parse(savedUser);
+                }
+            } catch (e) {
+                console.error("Session corrupted, clearing...", e);
+                localStorage.removeItem('kmc_session'); // 数据损坏则清除
+            }
+
+            // 桥接 Toast 方法（保持向下兼容）
             const showToast = (title, msg, type='info') => {
-                const id = Date.now();
-                toasts.value.push({id, title, msg, type});
-                setTimeout(() => { toasts.value = toasts.value.filter(t => t.id !== id); }, 3000);
+                globalStore.showToast(title, msg, type);
             };
 
             // 数据对象 (Data Models)
-            const users = ref([]);
-            const vehicles = ref([]);
-            const tasks = ref([]);
-            const logs = ref([]);
-            const shifts = ref([]);
-
-            // UI 状态
-            const currentUser = ref(null);
             const loginForm = ref({name:'', password:''});
             const loginError = ref('');
             const currentView = ref('dashboard');
@@ -1142,7 +1627,20 @@
             };
 
             const isTaskTranslated = ref(false); const taskContext = ref({});
-            const searchQuery = ref(''); const previewImage = ref(null);
+            
+            // --- 引入搜索防抖 (Search Debounce) ---
+            const searchQuery = ref(''); 
+            const previewImage = ref(null);
+            const debouncedQuery = ref('');
+            let searchTimeout = null;
+
+            // 监听用户输入，延迟 300 毫秒后才执行搜索过滤
+            watch(searchQuery, (newVal) => {
+                if (searchTimeout) clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    debouncedQuery.value = newVal;
+                }, 300);
+            });
 
             // 签名
             const sigCanvas = ref(null);
@@ -1150,7 +1648,7 @@
             let isDrawing = false;
             let ctx = null; let lastX = 0; let lastY = 0;
 
-            const isStaff = computed(() => currentUser.value && currentUser.value.role.startsWith('03'));
+            const isStaff = computed(() => currentUser.value && currentUser.value.role && currentUser.value.role.startsWith('03'));
 
             // Camera Permission Logic
             const allowStaffGallery = ref(false); 
@@ -1261,7 +1759,36 @@
             const fetchCloudData = async (silent = false) => {
                 if(!silent) isGlobalLoading.value = true;
                 syncStatus.value = 'syncing';
+                
+                // 如果离线，从缓存加载
+                if (!globalStore.isOnline) {
+                    try {
+                        const cachedUsers = await getCachedData('users');
+                        const cachedVehicles = await getCachedData('vehicles');
+                        const cachedTasks = await getCachedData('tasks');
+                        const cachedShifts = await getCachedData('shifts');
+                        const cachedLogs = await getCachedData('logs');
+                        
+                        if (cachedUsers) users.value = cachedUsers;
+                        if (cachedVehicles) vehicles.value = cachedVehicles;
+                        if (cachedTasks) tasks.value = cachedTasks;
+                        if (cachedShifts) shifts.value = cachedShifts;
+                        if (cachedLogs) logs.value = cachedLogs;
+                        
+                        syncStatus.value = 'error';
+                        if (!silent) showToast('Offline Mode / 离线模式', 'Loading cached data / 已加载缓存数据', 'info');
+                    } catch(e) {
+                        syncStatus.value = 'error';
+                    } finally {
+                        isGlobalLoading.value = false;
+                    }
+                    return;
+                }
+                
                 try {
+                    // 先处理离线队列
+                    await processOfflineQueue(supabase);
+                    
                     const p1 = supabase.from('app_users').select('*');
                     const p2 = supabase.from('vehicles').select('*');
                     const p3 = supabase.from('task_configs').select('*');
@@ -1289,21 +1816,59 @@
                     tasks.value = unpack(resT.data || []);
                     shifts.value = unpack(resS.data || []);
                     logs.value = unpack(resL.data || []);
+                    
+                    // 缓存数据到 IndexedDB
+                    await cacheData('users', users.value);
+                    await cacheData('vehicles', vehicles.value);
+                    await cacheData('tasks', tasks.value);
+                    await cacheData('shifts', shifts.value);
+                    await cacheData('logs', logs.value);
+
+                    // 【新增验证】：验证当前登录用户是否仍然合法 (Session Validation)
+                    if (currentUser.value) {
+                        const validUser = users.value.find(u => u.id === currentUser.value.id);
+                        if (!validUser) {
+                            currentUser.value = null;
+                            localStorage.removeItem('kmc_session');
+                            if(!silent) showToast('Session Expired', 'Your account has been removed.', 'error');
+                        } else {
+                            const safeUser = { ...validUser };
+                            delete safeUser.password;
+                            currentUser.value = safeUser;
+                            localStorage.setItem('kmc_session', JSON.stringify(safeUser));
+                        }
+                    }
 
                     syncStatus.value = 'saved';
-                    if(!silent) showToast('Sync Complete', 'Cloud Data Loaded', 'success');
+                    if(!silent) showToast('Sync Complete / 同步成功', 'Cloud Data Loaded / 云端数据已加载', 'success');
                 } catch (err) {
                     console.error('Fetch Error:', err);
                     syncStatus.value = 'error';
-                    if(!silent) showToast('Sync Failed', 'DB Connection Error', 'error');
+                    
+                    // 降级到离线缓存
+                    try {
+                        const cachedUsers = await getCachedData('users');
+                        if (cachedUsers) {
+                            users.value = cachedUsers;
+                            vehicles.value = await getCachedData('vehicles') || [];
+                            tasks.value = await getCachedData('tasks') || [];
+                            shifts.value = await getCachedData('shifts') || [];
+                            logs.value = await getCachedData('logs') || [];
+                            if(!silent) showToast('Offline Fallback / 离线回退', 'Using cached data / 使用缓存数据', 'error');
+                        } else {
+                            if(!silent) showToast('Sync Failed / 同步失败', 'No cached data available / 无可用缓存', 'error');
+                        }
+                    } catch(e2) {
+                        if(!silent) showToast('Sync Failed / 同步失败', 'DB Connection Error', 'error');
+                    }
                 } finally {
                     isGlobalLoading.value = false;
                 }
             };
 
-            // 2. 通用保存逻辑 (Upsert + JSONB Packing)
+            // 2. 通用保存逻辑 (后台静默同步 + JSONB Packing)
             const saveToTable = async (table, item, extraFields = []) => {
-                isGlobalLoading.value = true;
+                syncStatus.value = 'syncing';
                 try {
                     const payload = { ...item };
                     
@@ -1327,39 +1892,52 @@
 
                     if(typeof payload.id === 'string' && !isNaN(Number(payload.id))) payload.id = Number(payload.id);
 
+                    // 离线模式：加入队列
+                    if (!globalStore.isOnline) {
+                        await addToOfflineQueue({ type: 'upsert', table, payload });
+                        syncStatus.value = 'error';
+                        showToast('Saved Offline / 离线保存', 'Will sync when online / 联网后自动同步', 'info');
+                        return;
+                    }
+
                     const { error } = await supabase.from(table).upsert(payload);
                     if (error) throw error;
+                    
+                    // 更新缓存
+                    await cacheData(table === 'app_users' ? 'users' : (table === 'task_configs' ? 'tasks' : (table === 'app_logs' ? 'logs' : table)), 
+                        table === 'app_users' ? users.value : (table === 'vehicles' ? vehicles.value : (table === 'task_configs' ? tasks.value : (table === 'shifts' ? shifts.value : logs.value))));
                     
                     syncStatus.value = 'saved';
                 } catch (err) {
                     console.error(`Save to ${table} Error:`, err);
+                    // 保存失败时也加入离线队列
                     syncStatus.value = 'error';
-                    showToast('Save Failed', err.message, 'error');
-                    throw err; 
-                } finally {
-                    isGlobalLoading.value = false;
+                    showToast('Cloud Sync Error / 云端同步失败', 'Data saved locally / 数据已本地保存', 'error');
                 }
             };
 
-            // 3. 删除逻辑
+            // 3. 删除逻辑 (先本地消失，后云端删除)
             const deleteFromTable = async (table, id) => {
                 if(!confirm("Delete this item? / 确认删除?")) return;
-                isGlobalLoading.value = true;
+                
+                // 🚀 优化：第 1 步，直接操作本地数组，让界面上的元素瞬间消失！
+                if(table==='app_users') users.value=users.value.filter(x=>x.id!==id);
+                else if(table==='vehicles') vehicles.value=vehicles.value.filter(x=>x.id!==id); 
+                else if(table==='task_configs') tasks.value=tasks.value.filter(x=>x.id!==id); 
+                else if(table==='shifts') shifts.value=shifts.value.filter(x=>x.id!==id);
+                else if(table==='app_logs') logs.value=logs.value.filter(x=>x.id!==id);
+
+                showToast('Deleted', 'Item removed.', 'success');
+                
+                // 🚀 优化：第 2 步，后台发送删除请求到 Supabase，没有 Loading 遮罩
+                syncStatus.value = 'syncing';
                 try {
                     const { error } = await supabase.from(table).delete().eq('id', id);
                     if(error) throw error;
-
-                    if(table==='app_users') users.value=users.value.filter(x=>x.id!==id);
-                    else if(table==='vehicles') vehicles.value=vehicles.value.filter(x=>x.id!==id); 
-                    else if(table==='task_configs') tasks.value=tasks.value.filter(x=>x.id!==id); 
-                    else if(table==='shifts') shifts.value=shifts.value.filter(x=>x.id!==id);
-                    else if(table==='app_logs') logs.value=logs.value.filter(x=>x.id!==id);
-
-                    showToast('Deleted', 'Item removed.', 'success');
+                    syncStatus.value = 'saved';
                 } catch(err) {
-                    showToast('Delete Failed', err.message, 'error');
-                } finally {
-                    isGlobalLoading.value = false;
+                    syncStatus.value = 'error';
+                    showToast('Sync Error', 'Failed to delete from cloud.', 'error');
                 }
             };
 
@@ -1369,7 +1947,7 @@
             // 1. JSON Backup
             const handleExportJSON = () => {
                 let dataToExport = {
-                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v31.0" },
+                    metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v32.0" },
                     users: JSON.parse(JSON.stringify(users.value)),
                     vehicles: JSON.parse(JSON.stringify(vehicles.value)),
                     tasks: JSON.parse(JSON.stringify(tasks.value)),
@@ -1445,7 +2023,16 @@
 
             onMounted(() => { 
                 resetStatsFilters();
-                fetchCloudData(false); 
+                fetchCloudData(false);
+                
+                // 离线恢复自动同步
+                window.addEventListener('online', () => {
+                    syncStatus.value = 'syncing';
+                    setTimeout(() => fetchCloudData(true), 1000);
+                });
+                window.addEventListener('offline', () => {
+                    syncStatus.value = 'error';
+                });
             });
             
             // --- 翻译功能 ---
@@ -1529,7 +2116,11 @@
                 
                 // NEW: Task Config Validation (Updated)
                 if (modalType.value === 'task_config' && (!formData.value.title_en || !formData.value.content || !formData.value.standards)) return {locked:true, msg:'Missing Fields / 信息不全'};
+                if (modalType.value === 'task_config' && formData.value.title_en && !/[\(（]/.test(formData.value.title_en)) return {locked:true, msg:'Translate Title / 请先翻译标题'};
+                if (modalType.value === 'task_config' && (!formData.value.assigned_to || formData.value.assigned_to.length === 0)) return {locked:true, msg:'Assign Staff / 请指派人员'};
                 
+                if (modalType.value === 'task_exec' && taskContext.value && taskContext.value.req_photo && (!formData.value.photos || formData.value.photos.length < 1)) return {locked:true, msg:'Photo Required / 需要拍照'};
+                if (modalType.value === 'task_exec' && taskContext.value && taskContext.value.req_signature && !formData.value.signature) return {locked:true, msg:'Signature Required / 需要签字'};
                 if (modalType.value === 'fuel' && (!formData.value.photos || formData.value.photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
                 if (modalType.value === 'vehicle' && (!formData.value.archive_photos || formData.value.archive_photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
                 return {locked:false, msg:'Save Changes / 保存更改'};
@@ -1626,6 +2217,12 @@
                 const u = users.value.find(x => (x.name === loginForm.value.name || x.username === loginForm.value.name) && x.password === loginForm.value.password);
                 if(u) {
                     currentUser.value = u; 
+                    
+                    // 安全处理：克隆用户对象并删除密码后再存入本地
+                    const safeUser = { ...u };
+                    delete safeUser.password;
+                    localStorage.setItem('kmc_session', JSON.stringify(safeUser));
+                    
                     showToast("Welcome", `Logged in as ${u.name}`, "success");
                 } else { 
                     loginError.value = 'Invalid Credentials or Sync Pending'; 
@@ -1633,17 +2230,25 @@
                 } 
             };
             
-            const handleLogout = () => currentUser.value = null;
+            const handleLogout = () => { 
+                currentUser.value = null;
+                localStorage.removeItem('kmc_session');
+                // 可选：登出时顺便清理一下输入框缓存
+                loginForm.value.password = ''; 
+            };
+
             const factoryReset = () => { if(confirm("Clear local cache? Data is safe in cloud.")) { localStorage.clear(); location.reload(); }};
             const navigate = (v) => { currentView.value = v; isMobileMenuOpen.value = false; };
-            const navClass = (v) => currentView.value === v ? 'bg-blue-500/10 text-blue-400 font-bold' : 'text-kmc-muted hover:text-white';
+            const navClass = (v) => currentView.value === v ? 'bg-emerald-500/10 text-emerald-400 font-bold' : 'text-kmc-muted hover:text-white';
             const getPageTitle = () => currentView.value.replace('_', ' ').toUpperCase();
             
             const getPlate = (id) => vehicles.value.find(v=>v.id===id)?.plate || 'Unknown';
             const openPreview = (src) => { if(src) previewImage.value = src; };
+            
+            // 修改 filteredVehicles 的依赖目标为 debouncedQuery
             const filteredVehicles = computed(() => {
-                if(!searchQuery.value) return vehicles.value;
-                const q = searchQuery.value.toLowerCase();
+                if(!debouncedQuery.value) return vehicles.value;
+                const q = debouncedQuery.value.toLowerCase();
                 return vehicles.value.filter(v => v.plate.toLowerCase().includes(q) || (v.model && v.model.toLowerCase().includes(q)));
             });
 
@@ -1755,7 +2360,12 @@
                 showModal.value = true;
             };
 
+            const isSubmitting = ref(false);
+
             const submitForm = async () => {
+                if (isSubmitting.value) return;
+                isSubmitting.value = true;
+
                 try {
                     if (modalType.value === 'staff') { 
                         const idx = users.value.findIndex(x => x.id === formData.value.id);
@@ -1806,6 +2416,8 @@
                     showToast('Saved', 'Data synced to Supabase.', 'success');
                 } catch(e) {
                     showToast("Error", "Could not save form.", "error");
+                } finally {
+                    isSubmitting.value = false;
                 }
             };
 
@@ -1849,8 +2461,15 @@
                 const idx=users.value.findIndex(u=>u.id===currentUser.value.id); 
                 if(profileForm.value.password) users.value[idx].password=profileForm.value.password; 
                 if(profileForm.value.name) users.value[idx].name=profileForm.value.name; 
+                
                 currentUser.value=users.value[idx]; 
                 await saveToTable('app_users', currentUser.value);
+                
+                // 更新本地安全缓存 (依然要剔除密码)
+                const safeUser = { ...currentUser.value };
+                delete safeUser.password;
+                localStorage.setItem('kmc_session', JSON.stringify(safeUser));
+
                 showProfileModal.value=false; 
                 showToast("Profile Updated","","success"); 
             };
