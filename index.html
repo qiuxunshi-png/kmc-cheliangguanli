@@ -1519,43 +1519,58 @@
                 return {locked:false, msg:'Save Changes / 保存更改'};
             });
 
-            const handleCam = async (e, k) => { 
+            const handleCam = async (e, k) => {
                 const f = e.target.files[0]; if (!f) return;
-                isGlobalLoading.value = true; showToast("Uploading", "Compressing & Uploading image...", "info");
+                isGlobalLoading.value = true;
                 try {
-                    const processImage = () => {
-                        return new Promise((resolve, reject) => {
-                            const r = new FileReader();
-                            r.onload = (evt) => {
-                                const img = new Image();
-                                img.onload = () => {
-                                    // Limit to 900px max to prevent OOM on low-end Android devices
-                                    const maxWidth = 900; let w = img.width; let h = img.height;
-                                    if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
-                                    const c = document.createElement('canvas'); c.width = w; c.height = h;
-                                    const cx = c.getContext('2d'); cx.drawImage(img, 0, 0, w, h);
-                                    cx.fillStyle = "rgba(0,0,0,0.45)"; cx.fillRect(0, c.height - 28, c.width, 28);
-                                    cx.fillStyle = "white"; cx.font = "11px monospace";
-                                    cx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 8, c.height - 10);
-                                    c.toBlob((blob) => {
-                                        c.width = 0; c.height = 0; // free canvas memory
-                                        if (blob) resolve(blob); else reject(new Error("Canvas conversion failed"));
-                                    }, 'image/jpeg', 0.55); // lower quality to reduce memory
-                                    img.src = ''; // help GC
-                                }; img.onerror = reject; img.src = evt.target.result;
-                            }; r.onerror = reject; r.readAsDataURL(f);
-                        });
-                    };
-                    const imageBlob = await processImage();
-                    const fileExt = 'jpg'; const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.${fileExt}`; const filePath = `uploads/${fileName}`;
-                    const { data, error: uploadError } = await supabase.storage.from('kmc-media').upload(filePath, imageBlob, { cacheControl: '3600', upsert: false });
-                    if (uploadError) throw uploadError;
-                    const { data: { publicUrl } } = supabase.storage.from('kmc-media').getPublicUrl(filePath);
+                    // ── Compress + watermark → Base64 (no network needed) ──────────────────
+                    const base64 = await new Promise((resolve, reject) => {
+                        const r = new FileReader();
+                        r.onload = (evt) => {
+                            const img = new Image();
+                            img.onload = () => {
+                                // Max 900px to prevent OOM on low-end Android
+                                const maxWidth = 900; let w = img.width; let h = img.height;
+                                if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+                                const c = document.createElement('canvas');
+                                c.width = w; c.height = h;
+                                const cx = c.getContext('2d');
+                                cx.drawImage(img, 0, 0, w, h);
+                                // Timestamp + user watermark bar
+                                cx.fillStyle = 'rgba(0,0,0,0.45)';
+                                cx.fillRect(0, c.height - 28, c.width, 28);
+                                cx.fillStyle = 'white'; cx.font = '11px monospace';
+                                cx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 8, c.height - 10);
+                                // ── Key change: toDataURL instead of toBlob ────────────────
+                                const dataUrl = c.toDataURL('image/jpeg', 0.6);
+                                c.width = 0; c.height = 0; // free canvas memory
+                                img.src = '';              // help GC
+                                if (dataUrl) resolve(dataUrl);
+                                else reject(new Error('Canvas toDataURL failed'));
+                            };
+                            img.onerror = reject;
+                            img.src = evt.target.result;
+                        };
+                        r.onerror = reject;
+                        r.readAsDataURL(f);
+                    });
 
+                    // ── Assign Base64 directly to formData (instant display, works offline) ─
                     const singlePhotoKeys = ['photo_receipt', 'photo_pump', 'photo_odometer', 'signature'];
-                    if (singlePhotoKeys.includes(k)) { formData.value[k] = publicUrl; } else { if (!formData.value[k]) formData.value[k] = []; formData.value[k].push(publicUrl); }
-                    showToast("Success", "Photo uploaded to cloud.", "success");
-                } catch (err) { console.error("Upload failed:", err); showToast("Error", "Upload failed: " + err.message, "error"); } finally { isGlobalLoading.value = false; e.target.value = ''; }
+                    if (singlePhotoKeys.includes(k)) {
+                        formData.value[k] = base64;
+                    } else {
+                        if (!formData.value[k]) formData.value[k] = [];
+                        formData.value[k].push(base64);
+                    }
+                    showToast('📷 Photo Ready / 照片已就绪', 'Saved locally. Will sync with record. / 已本地保存，随记录同步。', 'success');
+                } catch (err) {
+                    console.error('handleCam error:', err);
+                    showToast('Error / 错误', 'Photo processing failed: ' + err.message, 'error');
+                } finally {
+                    isGlobalLoading.value = false;
+                    e.target.value = ''; // reset file input
+                }
             };
 
             const removePhoto = (k, idx) => { if(confirm('Delete photo? / 删除照片?')) formData.value[k].splice(idx, 1); };
