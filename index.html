@@ -468,8 +468,7 @@
     
     <!-- Image Preview Overlay -->
     <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
-        <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl">
-        <div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close</div>
+        <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl"><div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close</div>
     </div>
 
     <!-- Gallery Overlay -->
@@ -724,14 +723,18 @@
     <div class="space-y-6 h-full flex flex-col">
         <div class="flex flex-col gap-4 p-5 rounded-xl border border-kmc-border sticky top-0 z-10 shadow-xl" style="background:#0d0d0f;">
             <div class="flex flex-wrap justify-between gap-4">
-                <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit"><button @click="$root.statsTab='fuel'" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button><button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button></div>
+                <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit">
+                    <!-- FIX: Reset specific filters on Tab change to prevent ghost filtering -->
+                    <button @click="$root.statsTab='fuel'; $root.statsFilters.status=''" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button>
+                    <button @click="$root.statsTab='performance'; $root.statsFilters.vehicle_id=''" :class="$root.statsTab==='performance'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
+                </div>
                 <div class="flex items-center gap-2"><button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset / 重置</button><button @click="openReport" class="kmc-btn bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview & Export / 预览导出</button></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='fuel'">
                 <div class="bg-orange-500/5 border border-orange-500/20 p-3 rounded-lg"><div class="text-[9px] text-orange-400 uppercase font-bold">Volume / 总升数</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
                 <div class="bg-green-500/5 border border-green-500/20 p-3 rounded-lg"><div class="text-[9px] text-green-400 uppercase font-bold">Cost / 总费用</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
                 <div class="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg"><div class="text-[9px] text-blue-400 uppercase font-bold">Records / 记录数</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.length }}</div></div>
-                <div class="bg-purple-500/5 border border-purple-500/20 p-3 rounded-lg"><div class="text-[9px] text-purple-400 uppercase font-bold">Avg Price/L / 均价</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.length > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / Math.max(filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0), 1)).toFixed(2) : '0.00' }}</div></div>
+                <div class="bg-purple-500/5 border border-purple-500/20 p-3 rounded-lg"><div class="text-[9px] text-purple-400 uppercase font-bold">Avg Price/L / 均价</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.length > 0 && filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0) > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : '0.00' }}</div></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='performance'">
                 <div class="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-lg"><div class="text-[9px] text-emerald-400 uppercase font-bold">Total Tasks / 总任务</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredTaskLogs.length }}</div></div>
@@ -745,7 +748,11 @@
                     <div class="flex flex-col gap-1"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">End Date / 结束日期</label><input type="date" v-model="$root.statsFilters.end" class="kmc-input py-2 text-xs bg-black/30"></div>
                     <div class="flex flex-col gap-1" v-if="$root.statsTab==='fuel'"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Vehicle / 车辆</label><select v-model="$root.statsFilters.vehicle_id" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Vehicles / 全部车辆</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option></select></div>
                     <div class="flex flex-col gap-1" v-if="$root.statsTab==='performance'"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Status / 状态</label><select v-model="$root.statsFilters.status" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Status / 全部状态</option><option value="pending">Pending / 待审</option><option value="approved">Approved / 已通过</option><option value="rejected">Rejected / 已驳回</option></select></div>
-                    <div class="flex flex-col gap-1"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Driver / 司机</label><select v-model="$root.statsFilters.driver" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Drivers / 全部司机</option><option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option></select></div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">User / 经手人</label>
+                        <!-- FIX: Show all users in dropdown instead of just '03' so Managers/Directors are visible in reports -->
+                        <select v-model="$root.statsFilters.driver" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Users / 全部人员</option><option v-for="u in $root.users" :key="u.id" :value="u.name">{{ u.name }} ({{ u.role.split('-')[0].trim() }})</option></select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -790,7 +797,7 @@
             </div>
             <div v-if="$root.statsTab==='performance'" class="space-y-4 animate-fade-in h-full overflow-y-auto pb-20">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div v-for="d in driverPerformanceStats" :key="d.name" class="kmc-card p-4 border-l-4" :class="d.rate>=90?'border-green-500':'border-yellow-500'"><div class="flex justify-between items-center mb-2"><div class="font-bold text-white">{{ d.name }}</div><div class="text-xl font-bold" :class="d.rate>=90?'text-green-400':'text-yellow-400'">{{ d.rate }}%</div></div><div class="flex justify-between text-xs text-kmc-muted"><span>Total: {{d.total}}</span><span>Approved: {{d.approved}}</span><span>Rejected: {{d.rejected}}</span></div></div>
+                        <div v-for="d in driverPerformanceStats" :key="d.name" class="kmc-card p-4 border-l-4" :class="d.rate>=90?'border-green-500':'border-yellow-500'"><div class="flex justify-between items-center mb-2"><div class="font-bold text-white">{{ d.name }}</div><div class="text-xl font-bold" :class="d.rate>=90?'text-green-400':'text-yellow-400'">{{ d.rate }}%</div></div><div class="flex justify-between text-xs text-kmc-muted"><span>Total: {{d.total}}</span><span>Approved: {{d.approved}}</span><span>Rejected: {{d.rejected}}</span></div></div>
                 </div>
             </div>
         </div>
@@ -813,7 +820,8 @@
                                 <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
                                 <div class="p-3 border border-gray-300 bg-orange-50 rounded"><div class="text-[10px] text-orange-800 uppercase font-bold">Total Liters</div><div class="text-xl font-bold text-orange-600">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
                                 <div class="p-3 border border-gray-300 bg-green-50 rounded"><div class="text-[10px] text-green-800 uppercase font-bold">Total Cost</div><div class="text-xl font-bold text-green-600">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
-                                <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : 0 }}</div></div>
+                                <!-- FIX: Added NaN / divide by zero prevention -->
+                                <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length > 0 && filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0) > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : '0.00' }}</div></div>
                             </div>
                             <table class="w-full text-left border border-gray-300 text-xs">
                                 <thead class="bg-gray-800 text-white uppercase font-bold"><tr><th class="p-2 border border-gray-600">Date / 日期</th><th class="p-2 border border-gray-600">Vehicle / 车辆</th><th class="p-2 border border-gray-600">Handler / 经手人</th><th class="p-2 border border-gray-600 text-right">Liters / 升数</th><th class="p-2 border border-gray-600 text-right">Cost / 费用</th><th class="p-2 border border-gray-600 text-right">Economy / 油耗</th><th class="p-2 border border-gray-600 text-center w-24">Proof / 凭证</th></tr></thead>
@@ -825,7 +833,8 @@
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-orange-600">{{ log.liters }} L</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price ? '$ '+log.price : '-' }}</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold" :class="log.fuelEconomy > 15 ? 'text-red-600' : 'text-blue-700'">{{ log.fuelEconomy > 0 ? log.fuelEconomy + ' L/100' : '-' }}</td>
-                                        <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-12 h-10 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
+                                        <!-- FIX: Added crossorigin="anonymous" to prevent html2canvas blank rendering -->
+                                        <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" crossorigin="anonymous" class="w-12 h-10 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -843,7 +852,8 @@
                                         <div class="flex justify-between mb-1 border-b border-gray-100 pb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div>
                                         <div class="text-gray-600 mb-1">Driver: <b>{{ t.user_name }}</b></div>
                                         <div class="text-gray-500 italic mb-2 line-clamp-2" v-if="t.content">{{ t.content }}</div>
-                                        <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
+                                        <!-- FIX: Added crossorigin="anonymous" here as well -->
+                                        <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" crossorigin="anonymous" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
                                         <div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500">Status:</span><span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'PASSED':(t.rating==='red'?'REJECTED':'PENDING') }}</span></div>
                                     </div>
                                 </div>
@@ -979,12 +989,13 @@
         </div>
     </div>
 
+    <!-- Hidden PDF Template -->
     <div style="position: absolute; left: -9999px; top: 0;">
         <div id="storage-pdf-template" class="bg-white text-black p-8 w-[210mm] min-h-[297mm]">
             <div class="border-b-2 border-black pb-4 mb-6"><h1 class="text-2xl font-bold uppercase">System Data Export</h1><div class="flex justify-between text-xs text-gray-600 mt-2"><span>Generated by: {{ $root.currentUser?.name }}</span><span>Date: {{ new Date().toLocaleString() }}</span></div></div>
             <div class="mb-6 bg-gray-100 p-4 rounded text-xs"><h3 class="font-bold border-b border-gray-300 mb-2 pb-1">System Status</h3><div class="grid grid-cols-4 gap-4"><div>Vehicles: <b>{{ $root.vehicles.length }}</b></div><div>Staff: <b>{{ $root.users.length }}</b></div><div>Logs: <b>{{ $root.logs.length }}</b></div><div>Shifts: <b>{{ $root.shifts.length }}</b></div></div></div>
             <h3 class="font-bold text-sm uppercase border-b-2 border-black mb-3 pb-1">Recent Operations Log (Top 100)</h3>
-            <table class="w-full text-left border border-gray-300 text-[10px] mb-6"><thead class="bg-gray-200 font-bold"><tr><th class="p-2 border">Time</th><th class="p-2 border">Type</th><th class="p-2 border">User</th><th class="p-2 border">Details</th><th class="p-2 border text-center w-24">Proof</th></tr></thead><tbody><tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b"><td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td><td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td><td class="p-2 border">{{ log.user_name }}</td><td class="p-2 border"><div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div><div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div></td><td class="p-2 border text-center"><div v-if="$root.exportConfig.includeImages"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-10 h-10 object-cover inline-block border border-gray-300"><img v-if="log.signature" :src="log.signature" class="w-10 h-8 object-contain inline-block border border-gray-300 ml-1 filter invert"></div><span v-else class="text-gray-400 italic">Omitted</span></td></tr></tbody></table>
+            <table class="w-full text-left border border-gray-300 text-[10px] mb-6"><thead class="bg-gray-200 font-bold"><tr><th class="p-2 border">Time</th><th class="p-2 border">Type</th><th class="p-2 border">User</th><th class="p-2 border">Details</th><th class="p-2 border text-center w-24">Proof</th></tr></thead><tbody><tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b"><td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td><td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td><td class="p-2 border">{{ log.user_name }}</td><td class="p-2 border"><div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div><div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div></td><td class="p-2 border text-center"><div v-if="$root.exportConfig.includeImages"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" crossorigin="anonymous" class="w-10 h-10 object-cover inline-block border border-gray-300"><img v-if="log.signature" :src="log.signature" class="w-10 h-8 object-contain inline-block border border-gray-300 ml-1 filter invert"></div><span v-else class="text-gray-400 italic">Omitted</span></td></tr></tbody></table>
             <div class="text-center text-[10px] text-gray-400 mt-4">--- End of Report ---</div>
         </div>
     </div>
@@ -1181,7 +1192,7 @@
         });
     };
 
-    // [FIX] Clone plain JS object to bypass Proxy IndexedDB error
+    // Use plain JS objects to bypass Proxy IndexedDB error
     const cacheData = async (key, data) => {
         if (!offlineDB) return;
         try {
@@ -1202,7 +1213,6 @@
         });
     };
     
-    // [FIX] Clone action for offline queue
     const addToOfflineQueue = async (action) => {
         if (!offlineDB) return;
         try {
@@ -1457,7 +1467,6 @@
                 if (diff <= 0 || liters <= 0) return 0; return parseFloat(((liters / diff) * 100).toFixed(2));
             });
 
-            // [FIX] Ensure form locks correctly
             const isSaveLocked = computed(() => {
                 if (modalType.value === 'shift_fixed' && formData.value.standards && !isTaskTranslated.value) return {locked:true, msg:'Translate First / 请先翻译'};
                 if (modalType.value === 'task_config' && (!formData.value.title_en || !formData.value.content || !formData.value.standards)) return {locked:true, msg:'Missing Fields / 信息不全'};
@@ -1559,7 +1568,6 @@
                 else if (type === 'fuel') {
                     modalTitle.value = 'FUEL ENTRY / 加油录入';
                     modalFields.value = { entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))}, is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' }, handler: {label:'Handler / 经手人', type:'text', ph:'Enter handler name / 输入经手人姓名'}, price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, liters: {label:'Liters / 加油量 (L)', type:'number'}, mileage: {label:'Current Odometer / 当前里程 (KM)', type:'number'} };
-                    // [FIX] Explicit category added here
                     formData.value = {id:Date.now(), category: 'fuel', user_name:currentUser.value.name, photos:[], photo_receipt:null, photo_pump:null, photo_odometer:null, is_internal: false, fuelEconomy: null, price: null};
                 }
                 else if (type === 'task_config') {
@@ -1604,7 +1612,6 @@
                         const idx = shifts.value.findIndex(s => s.id === formData.value.id); if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); await saveToTable('shifts', formData.value);
                     }
                     else if (modalType.value === 'fuel') { 
-                        // [FIX] Extra Fuel Log validations and ghost data fix
                         if (!formData.value.entity_id) { showToast('Select Vehicle', 'Please choose a vehicle.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.liters) > 0)) { showToast('Enter Liters', 'Fuel amount is required.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.mileage) > 0)) { showToast('Enter Mileage', 'Odometer is required.', 'error'); isSubmitting.value = false; return; }
