@@ -940,7 +940,7 @@
         document.getElementById('app').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;font-family:sans-serif;background:#050505;"><h2 style="color:#ef4444;margin-bottom:16px;">⚠ CDN Loading Error / CDN加载失败</h2><p style="color:#a1a1aa;text-align:center;max-width:400px;line-height:1.8;">Vue.js failed to load. Please download this file and open it in your browser.<br>Vue.js加载失败，请下载此文件后在浏览器中直接打开。</p></div>';
         throw new Error('Vue.js CDN failed to load');
     }
-    const { createApp, ref, computed, watch, onMounted, nextTick, reactive, toRefs } = Vue;
+    const { createApp, ref, computed, watch, onMounted, nextTick, reactive, toRefs, toRef } = Vue;
 
     // --- Components ---
     const Dashboard = { template: '#tmpl-dashboard', computed: { isStaff() { return this.$root.isStaff; } } };
