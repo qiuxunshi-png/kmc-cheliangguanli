@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Manager</title>
+    <title>KMC Vehicle Management System V34</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,11 +31,7 @@
                         }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'], mono: ['JetBrains Mono', 'monospace'] },
-                    animation: { 
-                        'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 
-                        'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' 
-                    },
+                    animation: { 'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'slide-in': 'slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1)', 'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
                     keyframes: { 
                         fadeIn: { '0%': { opacity: '0', transform: 'translateY(10px) scale(0.98)' }, '100%': { opacity: '1', transform: 'translateY(0) scale(1)' } },
                         slideIn: { '0%': { transform: 'translateX(20px)', opacity: '0' }, '100%': { transform: 'translateX(0)', opacity: '1' } }
@@ -51,12 +47,9 @@
     </script>
 
     <style>
-        /* Global & Background */
         body { 
             background-color: #050505; color: #e4e4e7; font-family: 'Inter', sans-serif;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.06), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.06), transparent 25%);
+            background-image: radial-gradient(circle at 15% 50%, rgba(16, 185, 129, 0.06), transparent 25%), radial-gradient(circle at 85% 30%, rgba(5, 150, 105, 0.06), transparent 25%);
             background-attachment: fixed; touch-action: pan-x pan-y; -webkit-tap-highlight-color: transparent;
         }
         body::before {
@@ -64,8 +57,6 @@
             background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
             pointer-events: none;
         }
-
-        /* Scrollbar Optimization */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 99px; }
@@ -73,7 +64,6 @@
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
 
-        /* Glassmorphism Cards */
         .kmc-card { 
             background: rgba(20, 20, 23, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; 
@@ -84,12 +74,8 @@
             content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
         }
-        .kmc-card:hover { 
-            border-color: rgba(255, 255, 255, 0.1); transform: translateY(-4px); 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); 
-        }
+        .kmc-card:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); }
 
-        /* Inputs & Buttons */
         .kmc-input { 
             background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.08); 
             color: #e4e4e7; width: 100%; padding: 12px 16px; border-radius: 10px; font-size: 14px; transition: all 0.2s; 
@@ -103,7 +89,6 @@
         .kmc-btn.bg-kmc-primary { background-image: linear-gradient(to bottom right, #10b981, #059669); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
         .kmc-btn.bg-kmc-primary:hover { box-shadow: 0 6px 16px rgba(16, 185, 129, 0.5); filter: brightness(1.1); }
 
-        /* Custom Elements */
         .glass-panel { background: rgba(20, 20, 23, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
         .toggle-checkbox:checked { right: 0; border-color: #10b981; }
         .toggle-checkbox:checked + .toggle-label { background-color: #10b981; }
@@ -111,14 +96,12 @@
         .ai-btn { position: absolute; right: 8px; bottom: 8px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); color: #71717a; transition: all 0.2s; cursor: pointer; border: 1px solid rgba(255,255,255,0.05); z-index: 10; }
         .ai-btn:hover { background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.3); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
 
-        /* Photo Grid */
         .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .photo-item { aspect-ratio: 1/1; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); cursor: zoom-in; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         .photo-add-btn { aspect-ratio: 1/1; border: 2px dashed rgba(255,255,255,0.15); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #71717a; cursor: pointer; position: relative; transition: all 0.2s; background: rgba(255,255,255,0.02); }
         .photo-add-btn:hover { border-color: #10b981; color: #10b981; background: rgba(16,185,129,0.05); }
         .photo-del-btn { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; background: rgba(239, 68, 68, 0.9); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; cursor: pointer; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* Signature Canvas */
         .sig-wrapper { position: relative; width: 100%; height: 180px; background: #fff; border-radius: 12px; overflow: hidden; border: 1px solid #3f3f46; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
         .sig-canvas { width: 100%; height: 100%; cursor: crosshair; touch-action: none; position: relative; z-index: 2; }
         .sig-watermark { position: absolute; bottom: 30px; left: 20px; right: 20px; border-bottom: 2px dashed #cbd5e1; color: #cbd5e1; font-size: 20px; font-weight: bold; font-family: 'Times New Roman', serif; z-index: 1; pointer-events: none; user-select: none; }
@@ -128,174 +111,139 @@
         .tool-btn.active { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
         .fs-sig-modal { position: fixed; inset: 0; z-index: 100; background: #fff; display: flex; flex-direction: column; }
 
-        /* Merged Inputs for Config */
         .merged-input-group { border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, 0.02); transition: all 0.2s; }
         .merged-input-group:focus-within { border-color: #10b981; background: rgba(0, 0, 0, 0.3); box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.2); }
         .merged-input-divider { height: 1px; background: rgba(255, 255, 255, 0.1); width: 100%; }
 
-        /* Stats Report Adjustments */
         .stats-filter-grid label { display: block; line-height: 1.2; margin-bottom: 4px; color: #a1a1aa; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
         .stats-filter-grid input, .stats-filter-grid select { display: block; width: 100%; background-color: rgba(0,0,0,0.3); isolation: isolate; }
 
-        /* Print Settings */
-        @media print { tr, .kmc-card, .break-inside-avoid { page-break-inside: avoid; break-inside: avoid; } }
+        @media print { 
+            * { -webkit-print-color-adjust: exact !important; color-adjust: exact !important; print-color-adjust: exact !important; }
+            tr, .kmc-card, .break-inside-avoid, .pdf-card { page-break-inside: avoid; break-inside: avoid; } 
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
+        }
+        /* PDF export white bg override */
+        #report-content, #storage-pdf-template { background: #fff !important; color: #000 !important; }
+        #report-content *, #storage-pdf-template * { box-shadow: none !important; text-shadow: none !important; }
+        #report-content thead, #storage-pdf-template thead { background: #1f2937 !important; color: #fff !important; }
     </style>
 </head>
 <body class="antialiased selection:bg-kmc-primary/30 text-sm">
 
-<!-- APP ROOT -->
+<!-- ==============================================
+     APP CONTAINER
+=============================================== -->
 <div id="app" class="h-screen flex flex-col overflow-hidden text-kmc-text">
-    
-    <!-- Global Loading -->
     <div v-if="isGlobalLoading" class="fixed inset-0 z-[200] bg-black/80 backdrop-blur-[2px] flex flex-col items-center justify-center">
         <div class="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4 shadow-glow"></div>
         <div class="text-white font-bold tracking-widest animate-pulse text-xs">PROCESSING / 处理中</div>
     </div>
 
-    <!-- Global Toasts -->
     <div class="fixed top-4 right-4 z-[300] flex flex-col gap-2 pointer-events-none">
         <div v-for="toast in toasts" :key="toast.id" class="pointer-events-auto bg-[#18181b] border-l-4 p-4 rounded-xl shadow-2xl min-w-[300px] animate-slide-in flex items-start gap-3 border border-white/5 backdrop-blur-md" :class="toast.type==='success'?'border-l-green-500':(toast.type==='error'?'border-l-red-500':'border-l-emerald-500')">
             <i class="mt-0.5 fa-solid" :class="toast.type==='success'?'fa-check-circle text-green-500':(toast.type==='error'?'fa-triangle-exclamation text-red-500':'fa-info-circle text-emerald-500')"></i>
-            <div>
-                <div class="text-white font-bold text-sm">{{ toast.title }}</div>
-                <div class="text-xs text-gray-400 mt-1">{{ toast.msg }}</div>
-            </div>
+            <div><div class="text-white font-bold text-sm">{{ toast.title }}</div><div class="text-xs text-gray-400 mt-1">{{ toast.msg }}</div></div>
         </div>
     </div>
 
-    <!-- Login Screen -->
     <div v-if="!currentUser" class="flex-1 flex items-center justify-center relative">
         <div class="w-full max-w-md p-10 glass-panel rounded-2xl shadow-2xl relative z-10 mx-4 border border-white/10 animate-fade-in">
             <div class="text-center mb-10">
                 <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
-                <h1 class="text-3xl font-bold text-white tracking-tight mb-2">KMC Vehicle Manager</h1>
-                <p class="text-kmc-muted text-xs font-mono uppercase tracking-[0.2em]">Cloud Edition V33.0</p>
+                <h1 class="text-2xl font-bold text-white tracking-tight leading-tight">KMC Vehicle Management</h1>
+                <p class="text-emerald-400 text-sm font-medium tracking-wider mt-1">KMC 车辆管理系统</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[0.2em] mt-2 opacity-60">Cloud Edition V34.0</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-6">
-                <div>
-                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
-                    <input v-model="loginForm.name" type="text" class="kmc-input" placeholder="admin">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Password / 密码</label>
-                    <input v-model="loginForm.password" type="password" class="kmc-input" placeholder="666666">
-                </div>
+                <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label><input v-model="loginForm.name" type="text" class="kmc-input" placeholder="admin"></div>
+                <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Password / 密码</label><input v-model="loginForm.password" type="password" class="kmc-input" placeholder="666666"></div>
                 <button type="submit" class="kmc-btn bg-kmc-primary text-white w-full py-4 text-sm shadow-lg mt-4">Login System / 登录系统</button>
             </form>
             <div class="mt-6 text-center">
                 <p class="text-[10px] text-red-400 font-mono bg-red-500/10 p-3 rounded border border-red-500/20 mb-4" v-if="loginError"><i class="fa-solid fa-triangle-exclamation mr-1"></i> {{ loginError }}</p>
-                <p class="text-[10px] text-gray-600 italic">Default: admin / 666666</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Dashboard Application -->
     <div v-else class="flex h-full">
-        <!-- Sidebar Navigation -->
         <aside :class="['border-r border-kmc-border flex flex-col transition-all duration-300 z-40 bg-black/40 backdrop-blur-xl', isMobileMenuOpen ? 'fixed inset-0 w-full z-50 bg-black/90' : 'hidden md:flex w-64']">
             <div class="p-6 border-b border-kmc-border">
-                <div class="flex items-center justify-between mb-1 md:hidden">
-                    <span class="text-xs font-bold text-kmc-muted">MENU</span>
-                    <button @click="isMobileMenuOpen=false" class="text-white"><i class="fa-solid fa-times text-lg"></i></button>
-                </div>
+                <div class="flex items-center justify-between mb-1 md:hidden"><span class="text-xs font-bold text-kmc-muted">MENU</span><button @click="isMobileMenuOpen=false" class="text-white"><i class="fa-solid fa-times text-lg"></i></button></div>
                 <div class="flex items-center gap-3 cursor-pointer group" @click="openProfileModal">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-600 to-green-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white/10 group-hover:scale-105 transition">{{ currentUser.name.charAt(0).toUpperCase() }}</div>
-                    <div class="flex-1 overflow-hidden">
-                        <h2 class="font-bold text-sm text-white truncate group-hover:text-emerald-400 transition">{{ currentUser.name }}</h2>
-                        <div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div>
-                    </div>
+                    <div class="flex-1 overflow-hidden"><h2 class="font-bold text-sm text-white truncate group-hover:text-emerald-400 transition">{{ currentUser.name }}</h2><div class="flex items-center gap-2 mt-0.5"><span class="text-[9px] text-kmc-muted bg-white/5 px-1.5 py-0.5 rounded border border-white/5 uppercase">{{ currentUser.role }}</span></div></div>
                 </div>
             </div>
             <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                 <div class="px-3 mb-2 mt-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Operations / 操作</div>
-                <a @click="navigate('dashboard')" :class="navClass('dashboard')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard / 仪表盘</a>
+                <a @click="navigate('dashboard')" :class="navClass('dashboard')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard / 仪表盘</a>
                 
                 <template v-if="currentUser.role.startsWith('03')">
-                    <a @click="navigate('my_tasks')" :class="navClass('my_tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-clipboard-check w-5 text-center"></i> My Tasks / 我的任务</a>
-                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
+                    <a @click="navigate('my_tasks')" :class="navClass('my_tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-clipboard-check w-5 text-center"></i> My Tasks / 我的任务</a>
+                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
                 </template>
                 <template v-else>
-                    <a @click="navigate('vehicles')" :class="navClass('vehicles')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-car w-5 text-center"></i> Fleet / 车辆档案</a>
-                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
-                    <a @click="navigate('tasks')" :class="navClass('tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-list-check w-5 text-center"></i> Config / 任务配置</a>
-                    <a @click="navigate('reports')" :class="navClass('reports')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-file-signature w-5 text-center"></i> Reviews / 评审</a>
+                    <a @click="navigate('vehicles')" :class="navClass('vehicles')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-car w-5 text-center"></i> Fleet / 车辆档案</a>
+                    <a @click="navigate('fuel')" :class="navClass('fuel')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-gas-pump w-5 text-center text-orange-500"></i> Fuel Log / 加油记录</a>
+                    <a @click="navigate('tasks')" :class="navClass('tasks')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-list-check w-5 text-center"></i> Config / 任务配置</a>
+                    <a @click="navigate('reports')" :class="navClass('reports')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-file-signature w-5 text-center"></i> Reviews / 评审</a>
                     
                     <div class="px-3 mb-2 mt-6 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">Admin / 管理</div>
-                    <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-chart-line w-5 text-center text-emerald-400"></i> Stats / 统计报表</a>
-                    <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
-                    <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
-                    <a @click="navigate('storage')" :class="navClass('storage')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5"><i class="fa-solid fa-server w-5 text-center"></i> Storage / 存储管理</a>
+                    <a @click="navigate('statistics')" :class="navClass('statistics')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-chart-line w-5 text-center text-emerald-400"></i> Stats / 统计报表</a>
+                    <a @click="navigate('staff')" :class="navClass('staff')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-users-gear w-5 text-center"></i> Staff / 人员</a>
+                    <a @click="navigate('shifts')" :class="navClass('shifts')" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:bg-white/5 active:scale-95"><i class="fa-solid fa-calendar-days w-5 text-center"></i> Shifts / 排班</a>
                 </template>
-                
                 <div v-if="currentUser.role === '01'" class="mt-4 pt-4 border-t border-kmc-border/50 space-y-1">
                     <div class="px-3 mb-2 text-[10px] font-bold text-kmc-muted uppercase tracking-widest opacity-60">System / 系统</div>
                     <a @click="factoryReset" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium cursor-pointer hover:bg-red-500/10 text-red-400 hover:text-red-300"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i> Clear Local / 清除缓存</a>
                 </div>
             </nav>
-            <div class="p-4 border-t border-kmc-border bg-black/20">
-                <button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button>
-            </div>
+            <div class="p-4 border-t border-kmc-border bg-black/20"><button @click="handleLogout" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg border border-kmc-border text-xs text-kmc-muted hover:text-white hover:bg-red-500/10 transition-all"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out / 退出</button></div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full relative overflow-hidden">
-            <!-- Header Bar -->
             <header class="h-16 border-b border-kmc-border bg-black/40 backdrop-blur-md flex items-center justify-between px-6 shrink-0 z-20">
                 <div class="flex items-center gap-4">
                     <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10"><i class="fa-solid fa-bars text-lg"></i></button>
                     <h1 class="font-bold text-sm tracking-wide text-white uppercase flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-500 shadow-glow-green"></span> {{ getPageTitle() }}</h1>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button @click="fetchCloudData(false)" :disabled="syncStatus==='syncing'" class="text-[10px] font-mono flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition" :class="syncStatus==='error'?'text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20':(syncStatus==='syncing'?'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 animate-pulse cursor-wait':'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 cursor-pointer')" :title="syncStatus==='error' ? 'Click to retry / 点击重试' : (lastSyncTime ? 'Last sync: ' + lastSyncTime.toLocaleTimeString() + ' / 上次同步: ' + lastSyncTime.toLocaleTimeString() : 'Click to sync / 点击同步')">
-                        <i class="fa-solid" :class="syncStatus==='syncing'?'fa-spinner fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud-arrow-up')"></i> 
-                        <span class="hidden sm:inline">{{ syncStatus === 'syncing' ? 'Syncing... / 同步中...' : (syncStatus === 'error' ? 'Disconnected / 连接断开' : 'Cloud Active / 云端连接') }}</span>
+                    <button @click="fetchCloudData(false)" :disabled="syncStatus==='syncing'" class="text-[10px] font-mono flex items-center gap-2 px-2.5 py-1.5 rounded-lg border transition active:scale-95" :class="syncStatus==='error'?'text-red-400 bg-red-500/10 border-red-500/20 hover:bg-red-500/20':(syncStatus==='syncing'?'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 cursor-wait':'text-emerald-400 bg-emerald-500/10 border-emerald-500/20 hover:bg-emerald-500/20 cursor-pointer')" :title="syncStatus==='error' ? 'Offline / Click to retry - 离线/点击重试' : (lastSyncTime ? 'Last sync: ' + lastSyncTime.toLocaleTimeString() : 'Click to sync')">
+                        <i class="fa-solid" :class="syncStatus==='syncing'?'fa-arrows-rotate fa-spin':(syncStatus==='error'?'fa-triangle-exclamation':'fa-cloud-arrow-up')"></i> 
+                        <span class="hidden sm:inline">{{ syncStatus === 'syncing' ? 'Syncing... / 同步中...' : (syncStatus === 'error' ? 'Offline / 离线模式' : 'Cloud Active / 云端连接') }}</span>
                     </button>
-                    <span v-if="lastSyncTime && syncStatus !== 'syncing'" class="text-[9px] text-gray-600 font-mono hidden lg:block" :title="'Last synced / 上次同步: ' + lastSyncTime.toLocaleString()">
-                        <i class="fa-solid fa-clock mr-0.5"></i>{{ lastSyncTime.toLocaleTimeString() }}
-                    </span>
+                    <span v-if="lastSyncTime && syncStatus !== 'syncing'" class="text-[9px] text-gray-600 font-mono hidden lg:block" :title="'Last synced / 上次同步: ' + lastSyncTime.toLocaleString()"><i class="fa-solid fa-clock mr-0.5"></i>{{ lastSyncTime.toLocaleTimeString() }}</span>
                     <div v-if="!isStaff" class="flex items-center gap-1.5 text-[10px] font-mono">
-                        <span v-if="pendingReviews > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 animate-pulse" :title="'Pending Reviews / 待审核: ' + pendingReviews + ' items'">
-                            <i class="fa-solid fa-clock"></i> <span class="hidden sm:inline">{{ pendingReviews }} Pending / 待审</span><span class="sm:hidden">{{ pendingReviews }}</span>
-                        </span>
-                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Reviews Done / 审核全部完成">
-                            <i class="fa-solid fa-check-circle"></i><span class="hidden sm:inline ml-1">All Clear / 全部完成</span>
-                        </span>
+                        <span v-if="pendingReviews > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 animate-pulse" :title="'Pending Reviews / 待审核: ' + pendingReviews + ' items'"><i class="fa-solid fa-clock"></i> <span class="hidden sm:inline">{{ pendingReviews }} Pending / 待审</span><span class="sm:hidden">{{ pendingReviews }}</span></span>
+                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Reviews Done / 审核全部完成"><i class="fa-solid fa-check-circle"></i><span class="hidden sm:inline ml-1">All Clear / 全部完成</span></span>
                     </div>
                     <div v-if="isStaff" class="flex items-center gap-1.5 text-[10px] font-mono">
-                        <span v-if="myNextTasks.length > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400" :title="myNextTasks.length + ' tasks pending / 待办任务'">
-                            <i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">{{ myNextTasks.length }} Tasks / 待办</span><span class="sm:hidden">{{ myNextTasks.length }}</span>
-                        </span>
-                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Tasks Done / 全部任务完成">
-                            <i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline ml-1">All Done / 全部完成</span>
-                        </span>
+                        <span v-if="myNextTasks.length > 0" class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400" :title="myNextTasks.length + ' tasks pending / 待办任务'"><i class="fa-solid fa-list-check"></i> <span class="hidden sm:inline">{{ myNextTasks.length }} Tasks / 待办</span><span class="sm:hidden">{{ myNextTasks.length }}</span></span>
+                        <span v-else class="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400" title="All Tasks Done / 全部任务完成"><i class="fa-solid fa-circle-check"></i><span class="hidden sm:inline ml-1">All Done / 全部完成</span></span>
                     </div>
-                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1.5 rounded-lg hover:bg-gray-800 transition cursor-default">
-                        <i class="fa-solid fa-database mr-1 text-emerald-500"></i> {{ totalRecords }} Items
-                    </span>
+                    <span class="text-[10px] text-gray-500 font-mono hidden md:block border border-gray-800 bg-gray-900/10 px-2 py-1.5 rounded-lg hover:bg-gray-800 transition cursor-default"><i class="fa-solid fa-database mr-1 text-emerald-500"></i> {{ totalRecords }} Items</span>
                 </div>
             </header>
-            
-            <!-- Dynamic Component Router -->
             <div class="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 scroll-smooth" id="main-scroll">
                 <component :is="currentViewComponent"></component>
             </div>
         </main>
     </div>
 
-    <!-- ==========================================
-         MODALS & OVERLAYS 
-    =========================================== -->
-    
-    <!-- Main Form Modal -->
-    <div v-if="showModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in">
-        <div class="bg-kmc-card border border-kmc-border rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+    <!-- Modals and Overlays -->
+    <div v-if="showModal" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4 animate-fade-in">
+        <div class="bg-kmc-card border border-kmc-border rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
+             style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
             <div class="p-5 border-b border-[#27272a] flex justify-between items-center sticky top-0 bg-black/80 backdrop-blur-xl z-10">
                 <h3 class="text-lg font-bold text-white uppercase tracking-wide flex items-center gap-2"><span class="w-1 h-5 bg-emerald-500 rounded-full"></span> {{ modalTitle }}</h3>
                 <button @click="showModal=false" class="text-kmc-muted hover:text-white transition"><i class="fa-solid fa-times"></i></button>
             </div>
             
             <div class="p-6 space-y-5">
-                <!-- Template: Task Execution -->
                 <div v-if="modalType === 'task_exec'" class="space-y-5">
                     <div v-if="$root.getRejectReason(taskContext)" class="bg-red-500/20 border-l-4 border-red-500 p-4 rounded animate-pulse mb-4">
                         <div class="flex items-start gap-3"><i class="fa-solid fa-triangle-exclamation text-red-500 mt-0.5 text-lg"></i><div><div class="text-xs font-bold text-red-400 uppercase tracking-wider mb-1">Fix Required / 需整改</div><div class="text-sm text-white font-bold">{{ $root.getRejectReason(taskContext) }}</div></div></div>
@@ -321,7 +269,6 @@
                     </div>
                 </div>
 
-                <!-- Template: Fuel Entry -->
                 <div v-else-if="modalType === 'fuel'" class="space-y-5">
                     <div>
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Select Vehicle / 选择车辆 <span class="text-red-400">*</span></label>
@@ -351,6 +298,7 @@
                                 <span class="w-2 h-2 rounded-full" :class="formData.photo_odometer?'bg-green-400':'bg-orange-500/40'"></span>
                             </div>
                         </div>
+                        <p class="text-[10px] text-yellow-500/80 mb-2 flex items-center gap-1"><i class="fa-solid fa-circle-info"></i> Please ensure photos are clear and without glare / 请确保照片清晰、无反光、字迹可辨</p>
                         <div class="grid gap-2" :class="formData.is_internal ? 'grid-cols-2' : 'grid-cols-3'">
                             <div v-if="!formData.is_internal" class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_receipt?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_receipt?'fa-check-circle':'fa-receipt'"></i><div>① Receipt</div><div class="text-gray-500 normal-case">加油票据</div></div>
@@ -375,7 +323,6 @@
                     </div>
                 </div>
 
-                <!-- Template: Task Config -->
                 <div v-else-if="modalType === 'task_config'" class="space-y-6">
                     <div class="bg-white/5 p-3 rounded-lg border border-white/10"><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Frequency / 频率</label><select v-model="formData.frequency" class="kmc-input"><option value="daily">Daily Routine / 每日例行 (00:00 重置)</option><option value="one_time">One-Time / 单次工单 (完成后消失)</option></select></div>
                     <div class="merged-input-group">
@@ -384,7 +331,7 @@
                         <div class="relative group"><div class="px-4 pt-3 flex justify-between items-center"><label class="text-[10px] font-bold text-kmc-muted uppercase">Description / 详细描述 (必填)</label><div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('content')" title="Translate"><i v-if="translating==='content'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i><i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i></div></div><textarea v-model="formData.content" class="w-full bg-transparent border-none text-gray-300 px-4 py-2 h-20 resize-none focus:ring-0 placeholder-gray-600 text-sm" placeholder="描述具体需要做什么..."></textarea></div>
                     </div>
                     <div class="merged-input-group">
-                        <div class="relative group"><div class="px-4 pt-3 flex justify-between items-center"><label class="text-[10px] font-bold text-kmc-muted uppercase">Standards / 执行标准 (必填)</label><div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('standards')" title="Translate"><i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i><i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i></div></div><textarea v-model="formData.standards" class="w-full bg-transparent border-none text-gray-300 px-4 py-2 h-24 resize-none focus:ring-0 placeholder-gray-600 text-sm" placeholder="例如: 必须拍照，压力值需在 2.5-2.8 之间..."></textarea></div>
+                        <div class="relative group"><div class="px-4 pt-3 flex justify-between items-center"><label class="text-[10px] font-bold text-kmc-muted uppercase">Standards / 执行标准 (必填)</label><div class="ai-btn" style="position:static; width:24px; height:24px;" @click="translate('standards')" title="Translate"><i v-if="translating==='standards'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i><i v-else class="fa-solid fa-wand-magic-sparkles text-xs"></i></div></div><textarea v-model="formData.standards" class="w-full bg-transparent border-none text-gray-300 px-4 py-2 h-24 resize-none focus:ring-0 placeholder-gray-600 text-sm" placeholder="例如: 必须拍照，压力值需在 2.5-2.8 之间..."></textarea><p class="px-4 pb-2 text-[10px] text-gray-500 italic"><i class="fa-solid fa-circle-info mr-1 text-emerald-500/50"></i>Be specific and measurable / 标准应具体可量化，便于工人执行与审核</p></div>
                     </div>
                     <div class="flex gap-4 p-2 bg-black/20 rounded-lg border border-white/5">
                         <div class="flex items-center gap-2 cursor-pointer select-none" @click="formData.req_photo = !formData.req_photo"><div class="w-5 h-5 border rounded flex items-center justify-center transition-colors" :class="formData.req_photo ? 'bg-emerald-600 border-emerald-600' : 'border-gray-500 bg-transparent'"><i v-if="formData.req_photo" class="fa-solid fa-check text-xs text-white"></i></div><span class="text-xs text-gray-300">Require Photo / 强制拍照</span></div>
@@ -400,7 +347,6 @@
                     </div>
                 </div>
 
-                <!-- Template: Default Generic Form Renderer -->
                 <div v-else class="space-y-4">
                     <div v-for="(field, key) in modalFields" :key="key">
                         <div v-if="!field.showIf || field.showIf(formData)">
@@ -440,8 +386,8 @@
                         </div>
                     </div>
                 </div>
+
             </div>
-            
             <div class="mt-8 pt-5 border-t border-[#27272a] flex gap-3">
                 <button @click="showModal=false" class="kmc-btn bg-transparent border border-kmc-border text-kmc-muted hover:text-white flex-1 py-3 text-sm">Cancel / 取消</button>
                 <button @click="submitForm" :disabled="isSaveLocked.locked || isSubmitting" class="kmc-btn bg-kmc-primary text-white flex-1 py-3 text-sm shadow-lg"><i v-if="isSaveLocked.locked" class="fa-solid fa-lock mr-2"></i><i v-else-if="isSubmitting" class="fa-solid fa-circle-notch fa-spin mr-2"></i>{{ isSaveLocked.msg }}</button>
@@ -449,29 +395,13 @@
         </div>
     </div>
 
-    <!-- Fullscreen Signature Overlay -->
-    <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800">
-        <div class="fs-header p-4 border-b flex justify-between items-center">
-            <h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-emerald-600"></i>Sign Below / 请签字</h3>
-            <div class="flex gap-2">
-                <div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div>
-                <button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear</button>
-                <button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel</button>
-                <button @click="saveFullScreenSig" class="px-4 py-1 bg-emerald-600 text-white rounded text-sm font-bold shadow">Done</button>
-            </div>
-        </div>
-        <div class="flex-1 relative bg-white">
-            <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div>
-            <canvas ref="fullSigCanvas" class="w-full h-full block relative z-10" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas>
-        </div>
-    </div>
+    <!-- Fullscreen Signature & Gallery Overlays -->
+    <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header p-4 border-b flex justify-between items-center"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-emerald-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-emerald-600 text-white rounded text-sm font-bold shadow">Done</button></div></div><div class="flex-1 relative bg-white"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block relative z-10" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
     
-    <!-- Image Preview Overlay -->
     <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
         <img :src="previewImage" class="max-w-full max-h-full object-contain rounded shadow-2xl"><div class="absolute top-5 right-5 text-white/50 text-xs uppercase tracking-widest pointer-events-none">Click anywhere to close</div>
     </div>
 
-    <!-- Gallery Overlay -->
     <div v-if="vehicleGallery.active" id="kmc-gallery-overlay" @touchstart="onGalleryTouchStart" @touchend="onGalleryTouchEnd" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:9999;background:#000;display:flex;flex-direction:column;">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.08);background:rgba(10,10,10,0.95);flex-shrink:0;">
             <div style="display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;font-size:13px;"><i class="fa-solid fa-images" style="color:#34d399;"></i> Vehicle Photos <span style="color:#6b7280;font-weight:400;font-size:11px;margin-left:4px;">{{ vehicleGallery.index + 1 }} / {{ vehicleGallery.images.length }}</span></div>
@@ -487,77 +417,47 @@
         </div>
     </div>
 
-    <!-- Profile Settings Modal -->
-    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
-        <div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl">
-            <h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3>
-            <div class="space-y-4">
-                <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div>
-                <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div>
-                <div v-if="currentUser.role === '01'" class="pt-2 border-t border-white/10">
-                    <div class="flex items-center justify-between"><label class="text-[10px] font-bold text-kmc-muted uppercase">Allow Staff Gallery / 允许全员相册</label><div class="relative inline-block w-8 h-4 align-middle select-none"><input type="checkbox" v-model="allowStaffGallery" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-700" :class="allowStaffGallery ? 'bg-emerald-500' : ''"></label></div></div>
-                    <p class="text-[9px] text-gray-500 mt-1">If enabled, role 02/03 can upload from album. (Reset on reload)</p>
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button>
-                    <button @click="updateProfile" class="kmc-btn bg-emerald-600 text-white flex-1 py-2 text-xs">Update / 更新</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <div v-if="showProfileModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in"><div class="bg-kmc-card border border-kmc-border p-6 rounded-2xl w-full max-w-sm m-4 shadow-2xl"><h3 class="font-bold text-white mb-4">Profile Settings / 个人设置</h3><div class="space-y-4"><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">Name / 姓名</label><input v-model="profileForm.name" class="kmc-input" :disabled="currentUser.role!=='01'"></div><div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1">New Password / 新密码</label><input v-model="profileForm.password" class="kmc-input" placeholder="Min 4 chars / 至少4位"></div><div v-if="currentUser.role === '01'" class="pt-2 border-t border-white/10"><div class="flex items-center justify-between"><label class="text-[10px] font-bold text-kmc-muted uppercase">Allow Staff Gallery / 允许全员相册</label><div class="relative inline-block w-8 h-4 align-middle select-none"><input type="checkbox" v-model="allowStaffGallery" class="toggle-checkbox absolute block w-4 h-4 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label class="toggle-label block overflow-hidden h-4 rounded-full bg-gray-700" :class="allowStaffGallery ? 'bg-emerald-500' : ''"></label></div></div><p class="text-[9px] text-gray-500 mt-1">If enabled, role 02/03 can upload from album. (Reset on reload)</p></div><div class="flex gap-3 pt-2"><button @click="showProfileModal=false" class="kmc-btn bg-transparent border border-white/10 flex-1 py-2 text-xs">Cancel / 取消</button><button @click="updateProfile" class="kmc-btn bg-emerald-600 text-white flex-1 py-2 text-xs">Update / 更新</button></div></div></div></div>
 </div>
 
 <!-- ==============================================
-     VUE TEMPLATES (Extracted for readability)
+     VUE TEMPLATES
 =============================================== -->
 <script type="text/x-template" id="tmpl-dashboard">
     <div class="space-y-6 animate-fade-in">
-        <!-- TOP 4 CARDS: Added cursor-pointer and @click navigation -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4" v-if="!isStaff">
-            <div @click="$root.navigate('vehicles')" class="kmc-card p-4 hover:border-emerald-500/50 transition group cursor-pointer"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Fleet Size / 车队规模 <i class="fa-solid fa-truck text-emerald-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.vehicles.length }}</div></div>
-            <div @click="$root.navigate('staff')" class="kmc-card p-4 hover:border-green-500/50 transition group cursor-pointer"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Active Staff / 在岗人员 <i class="fa-solid fa-users text-green-500"></i></div><div class="text-3xl font-bold text-white">{{ $root.users.filter(u=>u.role && u.role.startsWith('03')).length }}</div></div>
-            <div @click="$root.navigate('fuel')" class="kmc-card p-4 hover:border-orange-500/50 transition group cursor-pointer"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Total Fuel (L) / 总油耗 <i class="fa-solid fa-gas-pump text-orange-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.globalFuel.liters }}</div></div>
-            <div @click="$root.navigate('reports')" class="kmc-card p-4 hover:border-yellow-500/50 transition group cursor-pointer"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Pending Reviews / 待审 <i class="fa-solid fa-clock text-yellow-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.pendingReviews }}</div></div>
+            <div class="kmc-card p-4 hover:border-emerald-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Fleet Size / 车队规模 <i class="fa-solid fa-truck text-emerald-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.vehicles.length }}</div></div>
+            <div class="kmc-card p-4 hover:border-green-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Active Staff / 在岗人员 <i class="fa-solid fa-users text-green-500"></i></div><div class="text-3xl font-bold text-white">{{ $root.users.filter(u=>u.role && u.role.startsWith('03')).length }}</div></div>
+            <div class="kmc-card p-4 hover:border-orange-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Total Fuel (L) / 总油耗 <i class="fa-solid fa-gas-pump text-orange-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.globalFuel.liters }}</div></div>
+            <div class="kmc-card p-4 hover:border-yellow-500/50 transition group"><div class="text-[10px] text-kmc-muted uppercase font-bold flex justify-between">Pending Reviews / 待审 <i class="fa-solid fa-clock text-yellow-500"></i></div><div class="text-2xl font-bold text-white mt-1">{{ $root.pendingReviews }}</div></div>
         </div>
-        
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" v-if="!isStaff">
             <button @click="$root.openForm('shift_temp')" class="p-4 rounded-xl bg-gradient-to-br from-emerald-600/20 to-emerald-800/20 border border-emerald-500/30 hover:border-emerald-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-paper-plane"></i></div><div class="font-bold text-white text-sm">Dispatch / 调度</div><div class="text-[10px] text-kmc-muted">Quick Task / 临时</div></button>
             <button @click="$root.openForm('fuel')" class="p-4 rounded-xl bg-gradient-to-br from-orange-600/20 to-orange-800/20 border border-orange-500/30 hover:border-orange-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-gas-pump"></i></div><div class="font-bold text-white text-sm">Log Fuel / 加油</div><div class="text-[10px] text-kmc-muted">Add Entry / 登记</div></button>
             <button @click="$root.openForm('vehicle')" class="p-4 rounded-xl bg-gradient-to-br from-teal-600/20 to-teal-800/20 border border-teal-500/30 hover:border-teal-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-bus"></i></div><div class="font-bold text-white text-sm">Add Vehicle / 加车</div><div class="text-[10px] text-kmc-muted">New Fleet / 新车</div></button>
             <button @click="$root.openForm('staff')" class="p-4 rounded-xl bg-gradient-to-br from-green-600/20 to-green-800/20 border border-green-500/30 hover:border-green-500 transition text-left group"><div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mb-2 group-hover:scale-110 transition"><i class="fa-solid fa-user-plus"></i></div><div class="font-bold text-white text-sm">Add Staff / 加人</div><div class="text-[10px] text-kmc-muted">New Driver / 司机</div></button>
         </div>
-        
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" v-if="!isStaff">
-            <!-- LIVE FEED: Added click to target pages -->
             <div class="lg:col-span-2 kmc-card p-6 min-h-[300px]">
                 <h3 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-tower-broadcast text-emerald-500"></i> Live Activity Feed / 实时动态</h3>
                 <div class="space-y-4">
-                    <div v-for="log in $root.recentLogs" :key="log.timestamp" @click="log.category==='fuel' ? $root.navigate('fuel') : $root.navigate('reports')" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0 cursor-pointer hover:bg-white/5 p-2 rounded transition">
+                    <div v-for="log in $root.recentLogs" :key="log.timestamp" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0">
                         <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-emerald-500'"></div>
                         <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> <span v-if="log.price && !log.is_internal">($<b>{{ log.price }}</b>)</span> - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
                     </div>
                     <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10"><i class="fa-solid fa-inbox text-3xl mb-2 opacity-30 block"></i>No recent activities / 暂无动态</div>
                 </div>
             </div>
-            
             <div class="space-y-4">
-                <!-- ATTENTION NEEDED: Items are clickable individually -->
                 <div class="kmc-card p-5 border-l-4 border-l-yellow-500 bg-yellow-900/5">
                     <div class="text-xs font-bold text-yellow-400 uppercase tracking-widest mb-2">Attention Needed / 需关注</div>
-                    <div v-if="$root.pendingReviews > 0" @click="$root.navigate('reports')" class="flex justify-between items-center mb-2 cursor-pointer hover:bg-white/5 p-1 -ml-1 rounded transition"><span class="text-white text-sm">Pending Reviews / 待评审</span><span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.pendingReviews }}</span></div>
-                    <div v-if="$root.maintenanceVehicles.length > 0" @click="$root.navigate('vehicles')" class="flex justify-between items-center cursor-pointer hover:bg-white/5 p-1 -ml-1 rounded transition"><span class="text-white text-sm">Vehicles in Maint / 维修中</span><span class="bg-orange-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.maintenanceVehicles.length }}</span></div>
+                    <div v-if="$root.pendingReviews > 0" class="flex justify-between items-center mb-2"><span class="text-white text-sm">Pending Reviews / 待评审</span><span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.pendingReviews }}</span></div>
+                    <div v-if="$root.maintenanceVehicles.length > 0" class="flex justify-between items-center"><span class="text-white text-sm">Vehicles in Maint / 维修中</span><span class="bg-orange-500 text-black text-xs font-bold px-2 py-0.5 rounded-full">{{ $root.maintenanceVehicles.length }}</span></div>
                     <div v-if="$root.pendingReviews === 0 && $root.maintenanceVehicles.length === 0" class="text-green-400 text-sm flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> All Systems Good / 系统正常</div>
                 </div>
-                
-                <!-- TODAYS SHIFTS: Clickable card -->
-                <div @click="$root.navigate('shifts')" class="kmc-card p-5 cursor-pointer hover:border-emerald-500/30 transition group">
-                    <div class="flex justify-between items-center mb-3"><div class="text-xs font-bold text-kmc-muted uppercase tracking-widest group-hover:text-emerald-400 transition">Today's Shifts / 今日排班</div><i class="fa-solid fa-chevron-right text-[10px] text-gray-500 group-hover:text-emerald-400 transition"></i></div>
-                    <div v-if="$root.todaysShifts.length === 0" class="text-xs text-gray-500 italic">No shifts for today / 无排班</div>
-                    <div v-else class="space-y-2"><div v-for="s in $root.todaysShifts.slice(0,3)" :key="s.id" class="flex justify-between text-xs"><span class="text-white">{{ s.start_time }}</span><span class="text-gray-400 truncate w-32 text-right">{{ s.driver }}</span></div></div>
-                </div>
+                <div class="kmc-card p-5"><div class="text-xs font-bold text-kmc-muted uppercase tracking-widest mb-3">Today's Shifts / 今日排班</div><div v-if="$root.todaysShifts.length === 0" class="text-xs text-gray-500 italic">No shifts for today / 无排班</div><div v-else class="space-y-2"><div v-for="s in $root.todaysShifts.slice(0,3)" :key="s.id" class="flex justify-between text-xs"><span class="text-white">{{ s.start_time }}</span><span class="text-gray-400 truncate w-32">{{ s.driver }}</span></div></div></div>
             </div>
         </div>
-        
         <div class="grid grid-cols-2 gap-4" v-if="isStaff">
             <div class="kmc-card p-5 text-center"><div class="text-[10px] text-kmc-muted uppercase font-bold">Tasks Done / 完成任务</div><div class="text-4xl font-bold text-white mt-2">{{ $root.myStats.total }}</div></div>
             <div class="kmc-card p-5 text-center border-green-900/30"><div class="text-[10px] text-green-500 uppercase font-bold">Excellence Rate / 优秀率</div><div class="text-4xl font-bold text-green-400 mt-2">{{ $root.myStats.rate }}%</div></div>
@@ -588,8 +488,8 @@
                     <p class="text-xs text-kmc-muted uppercase tracking-wider mb-2">{{ v.model }} • {{ v.mileage }} KM</p>
                     <p class="text-[10px] text-gray-500 mb-4" v-if="v.responsible"><i class="fa-solid fa-user-shield mr-1"></i> {{v.responsible}}</p>
                     <div class="flex gap-2">
-                        <button @click="$root.openForm('vehicle', v)" class="flex-1 py-2 rounded bg-white/5 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-400 transition border border-white/5">{{ $root.isStaff ? 'View Details / 查看详情' : 'Manage Archive / 管理档案' }}</button>
-                        <button v-if="!$root.isStaff" @click="$root.deleteItem('vehicles', v.id)" class="px-3 py-2 rounded bg-white/5 text-xs hover:bg-red-500/10 hover:text-red-400 transition border border-white/5"><i class="fa-solid fa-trash"></i></button>
+                        <button @click="$root.openForm('vehicle', v)" class="flex-1 py-3 rounded bg-white/5 text-xs font-bold hover:bg-emerald-500/10 hover:text-emerald-400 transition border border-white/5 active:scale-95">{{ $root.isStaff ? 'View Details / 查看详情' : 'Manage Archive / 管理档案' }}</button>
+                        <button v-if="!$root.isStaff || $root.currentUser.role === '01'" @click="$root.deleteItem('vehicles', v.id)" class="px-4 py-3 rounded bg-white/5 text-xs hover:bg-red-500/10 hover:text-red-400 transition border border-white/5 active:scale-95"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -622,7 +522,7 @@
     <div class="space-y-6">
         <div class="flex justify-between items-center">
             <h2 class="text-xl font-bold text-white">Fuel Logs / 加油记录</h2>
-            <button @click="$root.openForm('fuel')" class="kmc-btn bg-orange-600 text-white px-4 py-2 text-xs shadow-lg"><i class="fa-solid fa-gas-pump mr-2"></i> Add Entry / 登记</button>
+            <button @click="$root.openForm('fuel')" class="kmc-btn bg-orange-600 text-white px-4 py-2 text-xs shadow-lg active:scale-95"><i class="fa-solid fa-gas-pump mr-2"></i> Add Entry / 登记</button>
         </div>
         <div class="grid grid-cols-2 gap-4" v-if="!$root.isStaff">
             <div class="bg-orange-900/20 border border-orange-500/30 p-4 rounded-xl"><div class="text-[10px] text-orange-400 font-bold uppercase">Total Liters / 总油量</div><div class="text-2xl font-bold text-white">{{ $root.globalFuel.liters }} L</div></div>
@@ -638,9 +538,12 @@
                         <div v-if="log.fuelEconomy > 0" class="text-[10px] mt-0.5" :class="log.fuelEconomy > 15 ? 'text-red-400' : (log.fuelEconomy > 10 ? 'text-yellow-400' : 'text-green-400')"><i class="fa-solid fa-gauge-simple-high mr-1"></i>{{ log.fuelEconomy }} L/100km</div>
                     </div>
                 </div>
-                <div class="text-right">
+                <div class="text-right flex flex-col items-end gap-1">
                     <div class="font-bold text-white">{{ log.liters }} L</div>
                     <div class="text-xs text-green-400 font-mono" v-if="log.price && !log.is_internal && !$root.isStaff">$ {{ log.price }}</div>
+                    <div class="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition" v-if="$root.currentUser.role === '01'">
+                        <button @click="$root.deleteItem('app_logs', log.id)" class="w-7 h-7 flex items-center justify-center rounded bg-red-500/10 hover:bg-red-500/30 text-red-400 transition active:scale-95"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                    </div>
                 </div>
             </div>
             <div v-if="displayLogs.length === 0" class="text-center text-gray-500 py-8">No records found / 暂无记录</div>
@@ -710,8 +613,15 @@
                 <div v-if="log.rating === 'red' && log.feedback" class="bg-red-500/10 border border-red-500/20 p-3 rounded text-xs text-red-300"><i class="fa-solid fa-circle-exclamation mr-1"></i> <b>Rejection Reason / 驳回理由:</b> {{ log.feedback }}</div>
                 <div v-if="log.photos && log.photos.length" class="flex gap-2 overflow-x-auto pb-2"><div v-for="(p, idx) in log.photos" :key="idx" class="w-20 h-20 shrink-0 rounded overflow-hidden border border-white/10 cursor-zoom-in" @click="$root.openPreview(p)"><img :src="p" class="w-full h-full object-cover"></div></div>
                 <div v-if="log.signature" class="border border-white/10 bg-white rounded p-2 max-w-[200px]"><img :src="log.signature" class="w-full h-16 object-contain filter invert"></div>
-                <div v-if="!log.rating && !$root.isStaff" class="flex gap-3 pt-2 border-t border-white/5"><button @click="$root.approveLog(log)" class="flex-1 py-2 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-bold transition"><i class="fa-solid fa-check mr-1"></i> Approve / 通过</button><button @click="openReject(log)" class="flex-1 py-2 bg-red-900/50 hover:bg-red-900 border border-red-500/30 text-red-300 rounded text-xs font-bold transition"><i class="fa-solid fa-xmark mr-1"></i> Reject / 驳回</button></div>
-                <div v-else-if="log.rating && !$root.isStaff" class="pt-2 border-t border-white/5 text-right"><button @click="$root.undoLog(log)" class="text-xs text-kmc-muted hover:text-white underline"><i class="fa-solid fa-rotate-left mr-1"></i>Re-evaluate / 重新判定</button></div>
+                <div v-if="!log.rating && !$root.isStaff" class="flex gap-3 pt-2 border-t border-white/5">
+                    <button @click="$root.approveLog(log)" class="flex-1 py-2.5 bg-green-600 hover:bg-green-500 text-white rounded text-xs font-bold transition active:scale-95"><i class="fa-solid fa-check mr-1"></i> Approve / 通过</button>
+                    <button @click="openReject(log)" class="flex-1 py-2.5 bg-red-900/50 hover:bg-red-900 border border-red-500/30 text-red-300 rounded text-xs font-bold transition active:scale-95"><i class="fa-solid fa-xmark mr-1"></i> Reject / 驳回</button>
+                    <button v-if="$root.currentUser.role === '01'" @click="$root.deleteItem('app_logs', log.id)" class="px-3 py-2.5 bg-transparent border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded text-xs transition active:scale-95"><i class="fa-solid fa-trash"></i></button>
+                </div>
+                <div v-else-if="log.rating && !$root.isStaff" class="pt-2 border-t border-white/5 flex items-center justify-between">
+                    <button @click="$root.undoLog(log)" class="text-xs text-kmc-muted hover:text-white underline"><i class="fa-solid fa-rotate-left mr-1"></i>Re-evaluate / 重新判定</button>
+                    <button v-if="$root.currentUser.role === '01'" @click="$root.deleteItem('app_logs', log.id)" class="text-xs text-red-400 hover:text-red-300"><i class="fa-solid fa-trash mr-1"></i>Delete / 删除</button>
+                </div>
             </div>
         </div>
         <div v-if="displayLogs.length === 0" class="text-center text-gray-500 italic py-10 bg-white/5 rounded-xl border border-dashed border-white/10"><i class="fa-solid fa-inbox text-3xl mb-2 opacity-30 block"></i>No records found / 暂无记录</div>
@@ -736,17 +646,14 @@
     <div class="space-y-6 h-full flex flex-col">
         <div class="flex flex-col gap-4 p-5 rounded-xl border border-kmc-border sticky top-0 z-10 shadow-xl" style="background:#0d0d0f;">
             <div class="flex flex-wrap justify-between gap-4">
-                <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit">
-                    <button @click="$root.statsTab='fuel'; $root.statsFilters.status=''" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button>
-                    <button @click="$root.statsTab='performance'; $root.statsFilters.vehicle_id=''" :class="$root.statsTab==='performance'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button>
-                </div>
+                <div class="flex p-1 bg-black/40 rounded-lg w-full sm:w-fit"><button @click="$root.statsTab='fuel'" :class="$root.statsTab==='fuel'?'bg-orange-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-gas-pump mr-2"></i> Fuel / 油耗</button><button @click="$root.statsTab='performance'" :class="$root.statsTab==='performance'?'bg-emerald-600 text-white shadow':'text-kmc-muted hover:text-white'" class="flex-1 sm:flex-none px-6 py-2.5 rounded-md text-xs font-bold transition-all"><i class="fa-solid fa-users-gear mr-2"></i> Performance / 绩效</button></div>
                 <div class="flex items-center gap-2"><button @click="$root.resetStatsFilters" class="kmc-btn bg-white/5 border border-white/10 text-kmc-muted hover:text-white py-2 px-4 text-xs"><i class="fa-solid fa-rotate-right mr-1"></i> Reset / 重置</button><button @click="openReport" class="kmc-btn bg-emerald-600 text-white shadow-lg shadow-emerald-900/20 py-2 px-4 text-xs"><i class="fa-solid fa-print mr-2"></i> Preview & Export / 预览导出</button></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='fuel'">
                 <div class="bg-orange-500/5 border border-orange-500/20 p-3 rounded-lg"><div class="text-[9px] text-orange-400 uppercase font-bold">Volume / 总升数</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
                 <div class="bg-green-500/5 border border-green-500/20 p-3 rounded-lg"><div class="text-[9px] text-green-400 uppercase font-bold">Cost / 总费用</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
                 <div class="bg-blue-500/5 border border-blue-500/20 p-3 rounded-lg"><div class="text-[9px] text-blue-400 uppercase font-bold">Records / 记录数</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredFuelLogs.length }}</div></div>
-                <div class="bg-purple-500/5 border border-purple-500/20 p-3 rounded-lg"><div class="text-[9px] text-purple-400 uppercase font-bold">Avg Price/L / 均价</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.length > 0 && filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0) > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : '0.00' }}</div></div>
+                <div class="bg-purple-500/5 border border-purple-500/20 p-3 rounded-lg"><div class="text-[9px] text-purple-400 uppercase font-bold">Avg Price/L / 均价</div><div class="text-lg font-bold text-white mt-0.5">$ {{ filteredFuelLogs.length > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / Math.max(filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0), 1)).toFixed(2) : '0.00' }}</div></div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-white/5 pt-4" v-if="$root.statsTab==='performance'">
                 <div class="bg-emerald-500/5 border border-emerald-500/20 p-3 rounded-lg"><div class="text-[9px] text-emerald-400 uppercase font-bold">Total Tasks / 总任务</div><div class="text-lg font-bold text-white mt-0.5">{{ filteredTaskLogs.length }}</div></div>
@@ -760,10 +667,7 @@
                     <div class="flex flex-col gap-1"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">End Date / 结束日期</label><input type="date" v-model="$root.statsFilters.end" class="kmc-input py-2 text-xs bg-black/30"></div>
                     <div class="flex flex-col gap-1" v-if="$root.statsTab==='fuel'"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Vehicle / 车辆</label><select v-model="$root.statsFilters.vehicle_id" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Vehicles / 全部车辆</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }}</option></select></div>
                     <div class="flex flex-col gap-1" v-if="$root.statsTab==='performance'"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Status / 状态</label><select v-model="$root.statsFilters.status" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Status / 全部状态</option><option value="pending">Pending / 待审</option><option value="approved">Approved / 已通过</option><option value="rejected">Rejected / 已驳回</option></select></div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">User / 经手人</label>
-                        <select v-model="$root.statsFilters.driver" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Users / 全部人员</option><option v-for="u in $root.users" :key="u.id" :value="u.name">{{ u.name }} ({{ u.role.split('-')[0].trim() }})</option></select>
-                    </div>
+                    <div class="flex flex-col gap-1"><label class="text-[9px] text-kmc-muted uppercase font-bold leading-tight">Driver / 司机</label><select v-model="$root.statsFilters.driver" class="kmc-input py-2 text-xs bg-black/30"><option value="">All Drivers / 全部司机</option><option v-for="u in $root.users.filter(x=>x.role.startsWith('03'))" :key="u.id" :value="u.name">{{ u.name }}</option></select></div>
                 </div>
             </div>
         </div>
@@ -820,7 +724,7 @@
                     <div class="flex gap-3"><button @click="showReportModal=false" class="px-4 py-2 rounded text-xs font-bold text-gray-300 hover:text-white hover:bg-white/10 transition">Close / 关闭</button><button @click="downloadPDF" :disabled="isGenerating" class="px-6 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-2"><i v-if="isGenerating" class="fa-solid fa-spinner fa-spin"></i><i v-else class="fa-solid fa-file-pdf"></i> Download PDF</button></div>
                 </div>
                 <div class="flex-1 overflow-y-auto bg-[#525252] p-8 flex justify-center">
-                    <div id="report-content" class="bg-white text-black w-[297mm] min-h-[210mm] shadow-2xl p-[15mm] flex flex-col relative box-border">
+                    <div id="report-content" class="bg-white text-black w-[210mm] min-h-[297mm] shadow-2xl p-[15mm] flex flex-col relative box-border">
                         <div class="border-b-2 border-black pb-4 mb-6 flex justify-between items-end">
                             <div><h1 class="text-3xl font-bold tracking-tight uppercase text-black">KMC Vehicle Manager</h1><div class="text-sm font-bold text-emerald-800 mt-1 uppercase tracking-widest">{{ $root.statsTab }} ANALYSIS REPORT</div></div>
                             <div class="text-right text-xs text-gray-500"><div class="font-bold text-black mb-1">FILTER APPLIED:</div><div class="bg-gray-100 px-2 py-1 rounded font-mono">{{ getFilterSummary($root) }}</div><div class="mt-1">Generated: {{ new Date().toLocaleString() }} by {{ $root.currentUser.name }}</div></div>
@@ -831,7 +735,7 @@
                                 <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Records</div><div class="text-xl font-bold">{{ filteredFuelLogs.length }}</div></div>
                                 <div class="p-3 border border-gray-300 bg-orange-50 rounded"><div class="text-[10px] text-orange-800 uppercase font-bold">Total Liters</div><div class="text-xl font-bold text-orange-600">{{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1) }} L</div></div>
                                 <div class="p-3 border border-gray-300 bg-green-50 rounded"><div class="text-[10px] text-green-800 uppercase font-bold">Total Cost</div><div class="text-xl font-bold text-green-600">$ {{ filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(0) }}</div></div>
-                                <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L</div><div class="text-xl font-bold">$ {{ filteredFuelLogs.length > 0 && filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0) > 0 ? (filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0) / filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0)).toFixed(2) : '0.00' }}</div></div>
+                                <div class="p-3 border border-gray-300 bg-gray-50 rounded"><div class="text-[10px] text-gray-500 uppercase font-bold">Avg Price/L</div><div class="text-xl font-bold">$ {{ (() => { const totalL = filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.liters)||0),0); const totalC = filteredFuelLogs.reduce((a,b)=>a+(parseFloat(b.price)||0),0); return totalL > 0 ? (totalC/totalL).toFixed(2) : '0.00'; })() }}</div></div>
                             </div>
                             <table class="w-full text-left border border-gray-300 text-xs">
                                 <thead class="bg-gray-800 text-white uppercase font-bold"><tr><th class="p-2 border border-gray-600">Date / 日期</th><th class="p-2 border border-gray-600">Vehicle / 车辆</th><th class="p-2 border border-gray-600">Handler / 经手人</th><th class="p-2 border border-gray-600 text-right">Liters / 升数</th><th class="p-2 border border-gray-600 text-right">Cost / 费用</th><th class="p-2 border border-gray-600 text-right">Economy / 油耗</th><th class="p-2 border border-gray-600 text-center w-24">Proof / 凭证</th></tr></thead>
@@ -843,7 +747,7 @@
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-orange-600">{{ log.liters }} L</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price ? '$ '+log.price : '-' }}</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold" :class="log.fuelEconomy > 15 ? 'text-red-600' : 'text-blue-700'">{{ log.fuelEconomy > 0 ? log.fuelEconomy + ' L/100' : '-' }}</td>
-                                        <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" crossorigin="anonymous" class="w-12 h-10 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
+                                        <td class="p-2 text-center"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-24 h-24 object-cover border border-gray-300 mx-auto block rounded-sm"><span v-else class="text-gray-300">-</span></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -856,13 +760,27 @@
                                 </div>
                                 <div>
                                 <h3 class="font-bold border-b-2 border-gray-300 mb-3 pb-1 uppercase text-sm text-emerald-800">2. Detailed Execution Log / 执行流水</h3>
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div v-for="t in filteredTaskLogs" :key="t.id" class="border border-gray-300 p-3 rounded text-xs break-inside-avoid shadow-sm">
-                                        <div class="flex justify-between mb-1 border-b border-gray-100 pb-1"><span class="font-bold text-black">{{ t.title_en }}</span><span class="font-mono text-gray-500">{{ new Date(t.timestamp).toLocaleDateString() }}</span></div>
-                                        <div class="text-gray-600 mb-1">Driver: <b>{{ t.user_name }}</b></div>
-                                        <div class="text-gray-500 italic mb-2 line-clamp-2" v-if="t.content">{{ t.content }}</div>
-                                        <div class="flex gap-2 mb-2" v-if="t.photos && t.photos.length"><img v-for="p in t.photos.slice(0,2)" :src="p" crossorigin="anonymous" class="w-10 h-10 object-cover border border-gray-200 rounded-sm"></div>
-                                        <div class="border-t border-gray-100 pt-1 mt-1 flex justify-between items-center"><span class="text-gray-500">Status:</span><span class="font-bold uppercase text-[10px] px-1.5 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'PASSED':(t.rating==='red'?'REJECTED':'PENDING') }}</span></div>
+                                <div class="grid grid-cols-1 gap-3">
+                                    <div v-for="t in filteredTaskLogs" :key="t.id" class="border border-gray-300 rounded text-xs break-inside-avoid pdf-card" style="page-break-inside:avoid;">
+                                        <div class="flex items-stretch">
+                                            <!-- Left: text content -->
+                                            <div class="flex-1 p-3 min-w-0">
+                                                <div class="flex justify-between items-start mb-1.5 border-b border-gray-100 pb-1.5">
+                                                    <span class="font-bold text-black text-sm leading-tight pr-2">{{ t.title_en }}</span>
+                                                    <span class="font-mono text-gray-400 text-[10px] shrink-0">{{ new Date(t.timestamp).toLocaleDateString() }}</span>
+                                                </div>
+                                                <div class="text-gray-600 mb-1.5">Driver / 执行人: <b class="text-black">{{ t.user_name }}</b></div>
+                                                <div class="text-gray-500 mb-2 whitespace-pre-wrap break-words leading-snug" v-if="t.content">{{ t.content }}</div>
+                                                <div class="flex justify-between items-center pt-1.5 border-t border-gray-100">
+                                                    <span class="text-gray-400 text-[10px]">Result / 结果:</span>
+                                                    <span class="font-bold uppercase text-[10px] px-2 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'✓ PASSED':(t.rating==='red'?'✗ REJECTED':'⏳ PENDING') }}</span>
+                                                </div>
+                                            </div>
+                                            <!-- Right: photos -->
+                                            <div v-if="t.photos && t.photos.length" class="shrink-0 p-2 border-l border-gray-200 flex flex-col gap-2 justify-start items-center bg-gray-50">
+                                                <img v-for="p in t.photos.slice(0,2)" :key="p" :src="p" class="w-28 h-28 object-cover border border-gray-200 rounded-sm">
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 </div>
@@ -997,22 +915,18 @@
         </div>
     </div>
 
-    <!-- Hidden PDF Template -->
     <div style="position: absolute; left: -9999px; top: 0;">
         <div id="storage-pdf-template" class="bg-white text-black p-8 w-[210mm] min-h-[297mm]">
             <div class="border-b-2 border-black pb-4 mb-6"><h1 class="text-2xl font-bold uppercase">System Data Export</h1><div class="flex justify-between text-xs text-gray-600 mt-2"><span>Generated by: {{ $root.currentUser?.name }}</span><span>Date: {{ new Date().toLocaleString() }}</span></div></div>
             <div class="mb-6 bg-gray-100 p-4 rounded text-xs"><h3 class="font-bold border-b border-gray-300 mb-2 pb-1">System Status</h3><div class="grid grid-cols-4 gap-4"><div>Vehicles: <b>{{ $root.vehicles.length }}</b></div><div>Staff: <b>{{ $root.users.length }}</b></div><div>Logs: <b>{{ $root.logs.length }}</b></div><div>Shifts: <b>{{ $root.shifts.length }}</b></div></div></div>
             <h3 class="font-bold text-sm uppercase border-b-2 border-black mb-3 pb-1">Recent Operations Log (Top 100)</h3>
-            <table class="w-full text-left border border-gray-300 text-[10px] mb-6"><thead class="bg-gray-200 font-bold"><tr><th class="p-2 border">Time</th><th class="p-2 border">Type</th><th class="p-2 border">User</th><th class="p-2 border">Details</th><th class="p-2 border text-center w-24">Proof</th></tr></thead><tbody><tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b"><td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td><td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td><td class="p-2 border">{{ log.user_name }}</td><td class="p-2 border"><div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div><div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div></td><td class="p-2 border text-center"><div v-if="$root.exportConfig.includeImages"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" crossorigin="anonymous" class="w-10 h-10 object-cover inline-block border border-gray-300"><img v-if="log.signature" :src="log.signature" class="w-10 h-8 object-contain inline-block border border-gray-300 ml-1 filter invert"></div><span v-else class="text-gray-400 italic">Omitted</span></td></tr></tbody></table>
+            <table class="w-full text-left border border-gray-300 text-[10px] mb-6"><thead class="bg-gray-200 font-bold"><tr><th class="p-2 border">Time</th><th class="p-2 border">Type</th><th class="p-2 border">User</th><th class="p-2 border">Details</th><th class="p-2 border text-center w-24">Proof</th></tr></thead><tbody><tr v-for="log in $root.logs.slice(0, 100)" :key="log.id" class="border-b"><td class="p-2 border font-mono">{{ new Date(log.timestamp).toLocaleDateString() }}<br>{{ new Date(log.timestamp).toLocaleTimeString() }}</td><td class="p-2 border uppercase font-bold">{{ log.category === 'fuel' ? 'Refuel' : 'Task' }}</td><td class="p-2 border">{{ log.user_name }}</td><td class="p-2 border"><div v-if="log.category==='fuel'">{{ $root.getPlate(log.entity_id) }} - {{ log.liters }}L</div><div v-else>{{ log.title_en }} <span v-if="log.rating" :class="log.rating==='green'?'text-green-600':'text-red-600'">[{{ log.rating }}]</span></div></td><td class="p-2 border text-center"><div v-if="$root.exportConfig.includeImages"><img v-if="log.photos && log.photos[0]" :src="log.photos[0]" class="w-20 h-20 object-cover inline-block border border-gray-300"><img v-if="log.signature" :src="log.signature" class="w-20 h-16 object-contain inline-block border border-gray-300 ml-1 filter invert"></div><span v-else class="text-gray-400 italic">Omitted</span></td></tr></tbody></table>
             <div class="text-center text-[10px] text-gray-400 mt-4">--- End of Report ---</div>
         </div>
     </div>
 </div>
 </script>
 
-<!-- ==============================================
-     VUE & APP LOGIC
-=============================================== -->
 <script>
     if (typeof Vue === 'undefined') {
         document.getElementById('app').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;color:#fff;font-family:sans-serif;background:#050505;"><h2 style="color:#ef4444;margin-bottom:16px;">⚠ CDN Loading Error / CDN加载失败</h2><p style="color:#a1a1aa;text-align:center;max-width:400px;line-height:1.8;">Vue.js failed to load. Please download this file and open it in your browser.<br>Vue.js加载失败，请下载此文件后在浏览器中直接打开。</p></div>';
@@ -1020,6 +934,7 @@
     }
     const { createApp, ref, computed, watch, onMounted, nextTick, reactive, toRefs } = Vue;
 
+    // --- Components ---
     const Dashboard = { template: '#tmpl-dashboard', computed: { isStaff() { return this.$root.isStaff; } } };
     const Vehicles = { template: '#tmpl-vehicles' };
     const Staff = { template: '#tmpl-staff' };
@@ -1069,9 +984,35 @@
             const showReportModal = ref(false); const isGenerating = ref(false);
             const openReport = () => { showReportModal.value = true; };
             const downloadPDF = () => {
-                isGenerating.value = true; const element = document.getElementById('report-content');
-                const opt = { margin: 5, filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
-                html2pdf().set(opt).from(element).save().then(() => { isGenerating.value = false; });
+                isGenerating.value = true;
+                const element = document.getElementById('report-content');
+                // Force white background for print
+                const originalBg = element.style.background;
+                element.style.background = '#fff';
+                const opt = { 
+                    margin: [8, 8, 8, 8], 
+                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.97 }, 
+                    html2canvas: { 
+                        scale: 2, useCORS: true, logging: false, allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        onclone: (doc) => {
+                            // Force white bg on cloned element
+                            const el = doc.getElementById('report-content');
+                            if (el) { el.style.background = '#fff'; el.style.color = '#000'; }
+                        }
+                    }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
+                    pagebreak: { mode: ['css', 'legacy'], avoid: ['.break-inside-avoid', 'tr', '.pdf-card'] } 
+                };
+                // Wait for all images to load
+                const imgs = element.querySelectorAll('img');
+                const imgPromises = Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; }));
+                Promise.all(imgPromises).then(() => {
+                    html2pdf().set(opt).from(element).save()
+                        .then(() => { isGenerating.value = false; element.style.background = originalBg; })
+                        .catch(() => { isGenerating.value = false; element.style.background = originalBg; });
+                });
             };
             const getFilterSummary = (root) => {
                 const f = root.statsFilters; const vName = f.vehicle_id ? root.vehicles.find(v=>v.id===f.vehicle_id)?.plate : 'All Vehicles';
@@ -1169,10 +1110,10 @@
         template: '#tmpl-storage',
         data() { return { softLimit: 3000 } },
         computed: { percentage() { return Math.min(Math.round((this.$root.totalRecords / this.softLimit) * 100), 100); } },
-        methods: { confirmClear() { if(confirm("WARNING: This will delete ALL history logs and shift records from the cloud database.\n\nAre you sure?\n\n警告：这将从云端数据库删除所有历史记录。不可撤销。")) { this.$root.handleClear(); } } }
+        methods: { confirmClear() { if(confirm("WARNING: This will delete ALL history logs and shift records from the cloud database.\n\nAre you sure? This cannot be undone.\n\n警告：这将从云端数据库删除所有历史日志和排班记录。\n确定吗？此操作无法撤销。")) { this.$root.handleClear(); } } }
     };
 
-    // --- Global Store & IndexedDB ---
+    // --- 全局 Store 定义 ---
     const globalStore = reactive({
         users: [], vehicles: [], tasks: [], logs: [], shifts: [],
         currentUser: null, isGlobalLoading: false, syncStatus: 'saved', isOnline: navigator.onLine,
@@ -1183,9 +1124,17 @@
         }
     });
 
-    window.addEventListener('online', () => { globalStore.isOnline = true; globalStore.showToast('Network Restored', 'Auto-syncing offline data...', 'success'); });
-    window.addEventListener('offline', () => { globalStore.isOnline = false; globalStore.syncStatus = 'error'; globalStore.showToast('Network Lost', 'Offline mode active.', 'error'); });
+    window.addEventListener('online', () => { 
+        globalStore.isOnline = true; 
+        globalStore.showToast('🌐 Network Restored / 网络已恢复', 'Auto-syncing offline data... / 正在同步离线数据...', 'success'); 
+    });
+    window.addEventListener('offline', () => { 
+        globalStore.isOnline = false; 
+        globalStore.syncStatus = 'error'; 
+        globalStore.showToast('⚠ Offline Mode / 离线模式', 'Data saved locally. Will sync when connected. / 数据已本地保存，联网后自动同步。', 'error'); 
+    });
 
+    // --- IndexedDB ---
     const DB_NAME = 'kmc_offline_db'; const DB_VERSION = 1; let offlineDB = null;
     const initOfflineDB = () => {
         return new Promise((resolve, reject) => {
@@ -1200,7 +1149,7 @@
         });
     };
 
-    // Use plain JS objects to bypass Proxy IndexedDB error
+    // [FIX] Strip Vue Proxy before IndexedDB Put
     const cacheData = async (key, data) => {
         if (!offlineDB) return;
         try {
@@ -1209,7 +1158,6 @@
             tx.objectStore('cache').put({ key, data: plainData, timestamp: Date.now() });
         } catch(e) { console.error('Cache write error:', e); }
     };
-    
     const getCachedData = async (key) => {
         if (!offlineDB) return null;
         return new Promise((resolve) => {
@@ -1220,7 +1168,6 @@
             } catch(e) { resolve(null); }
         });
     };
-    
     const addToOfflineQueue = async (action) => {
         if (!offlineDB) return;
         try {
@@ -1230,12 +1177,12 @@
             globalStore.offlineQueue.push(action);
         } catch(e) { console.error('Queue write error:', e); }
     };
-    
     const processOfflineQueue = async (supabase) => {
         if (!offlineDB || !globalStore.isOnline) return;
         try {
             const tx = offlineDB.transaction('offlineQueue', 'readwrite');
-            const req = tx.objectStore('offlineQueue').getAll();
+            const store = tx.objectStore('offlineQueue');
+            const req = store.getAll();
             req.onsuccess = async () => {
                 const items = req.result || []; if (items.length === 0) return;
                 let successCount = 0; let failCount = 0;
@@ -1248,13 +1195,13 @@
                     } catch(e) { failCount++; console.error('Sync queue item failed:', e); }
                 }
                 globalStore.offlineQueue = [];
-                if (successCount > 0) globalStore.showToast('Sync Complete / 同步完成', `${successCount} synced, ${failCount} failed`, failCount > 0 ? 'error' : 'success');
+                if (successCount > 0) globalStore.showToast('☁ Sync Complete / 同步完成', `${successCount} records synced${failCount > 0 ? ', '+failCount+' failed' : ''} / ${successCount}条已同步${failCount > 0 ? '，'+failCount+'条失败' : ''}`, failCount > 0 ? 'error' : 'success');
             };
         } catch(e) { console.error('Queue process error:', e); }
     };
     initOfflineDB();
 
-    // --- Main Vue App ---
+    // --- Vue App ---
     createApp({
         components: { Dashboard, Vehicles, Fuel, Tasks, Reports, Staff, Stats, Shifts, StorageView, MyTasks },
         setup() {
@@ -1343,12 +1290,9 @@
                         supabase.from('app_users').select('*'), supabase.from('vehicles').select('*'), supabase.from('task_configs').select('*'), supabase.from('shifts').select('*'), supabase.from('app_logs').select('*').order('timestamp', { ascending: false }).limit(200)
                     ]);
                     if(resU.error) throw resU.error; if(resV.error) throw resV.error; if(resT.error) throw resT.error; if(resL.error) throw resL.error; if(resS.error) throw resS.error;
-                    
                     const unpack = (list) => list.map(item => ({ ...item, ...item.extra_data }));
                     users.value = unpack(resU.data || []); vehicles.value = unpack(resV.data || []); tasks.value = unpack(resT.data || []); shifts.value = unpack(resS.data || []); logs.value = unpack(resL.data || []);
-                    
                     await cacheData('users', users.value); await cacheData('vehicles', vehicles.value); await cacheData('tasks', tasks.value); await cacheData('shifts', shifts.value); await cacheData('logs', logs.value);
-                    
                     if (currentUser.value) {
                         const validUser = users.value.find(u => u.id === currentUser.value.id);
                         if (!validUser) { currentUser.value = null; localStorage.removeItem('kmc_session'); if(!silent) showToast('Session Expired', 'Account removed.', 'error'); } 
@@ -1364,12 +1308,8 @@
 
             const saveToTable = async (table, item) => {
                 syncStatus.value = 'syncing';
-                const payload = { ...item };
-                
-                const cacheKey = table === 'app_users' ? 'users' : (table === 'task_configs' ? 'tasks' : (table === 'app_logs' ? 'logs' : table));
-                const cacheDataRef = table === 'app_users' ? users.value : (table === 'vehicles' ? vehicles.value : (table === 'task_configs' ? tasks.value : (table === 'shifts' ? shifts.value : logs.value)));
-
                 try {
+                    const payload = { ...item };
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'], 'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
                         'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'], 'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature', 'liters', 'price', 'mileage', 'title_en', 'content', 'task_id', 'frequency'],
@@ -1379,28 +1319,17 @@
                     for (const key in payload) { if (!cols.includes(key) && key !== 'extra_data' && key !== 'id' && key !== 'created_at') { payload.extra_data[key] = payload[key]; delete payload[key]; } }
                     if(typeof payload.id === 'string' && !isNaN(Number(payload.id))) payload.id = Number(payload.id);
 
-                    // If offline initially, just queue it
                     if (!globalStore.isOnline) {
                         await addToOfflineQueue({ type: 'upsert', table, payload });
-                        await cacheData(cacheKey, cacheDataRef);
                         syncStatus.value = 'error'; 
-                        showToast('Saved Offline', 'Will sync when online', 'info'); 
+                        showToast('✅ Saved Offline / 离线已保存', 'Will auto-sync when network is restored. / 联网后将自动同步到云端。', 'info'); 
                         return;
                     }
-                    
                     const { error } = await supabase.from(table).upsert(payload);
                     if (error) throw error;
-                    
-                    await cacheData(cacheKey, cacheDataRef);
+                    await cacheData(table === 'app_users' ? 'users' : (table === 'task_configs' ? 'tasks' : (table === 'app_logs' ? 'logs' : table)), table === 'app_users' ? users.value : (table === 'vehicles' ? vehicles.value : (table === 'task_configs' ? tasks.value : (table === 'shifts' ? shifts.value : logs.value))));
                     syncStatus.value = 'saved';
-                } catch (err) { 
-                    console.error(`Save to ${table} Error:`, err); 
-                    syncStatus.value = 'error'; 
-                    // [CRITICAL FIX]: If network drops DURING upload, STILL queue it!
-                    await addToOfflineQueue({ type: 'upsert', table, payload });
-                    await cacheData(cacheKey, cacheDataRef);
-                    showToast('Network Error', 'Data saved locally. Will retry automatically.', 'warning'); 
-                }
+                } catch (err) { console.error(`Save to ${table} Error:`, err); syncStatus.value = 'error'; showToast('Cloud Sync Error', 'Data saved locally', 'error'); }
             };
 
             const deleteFromTable = async (table, id) => {
@@ -1413,7 +1342,7 @@
 
             const exportConfig = ref({ includeImages: true }); 
             const handleExportJSON = () => {
-                let dataToExport = { metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v32.0" }, users: JSON.parse(JSON.stringify(users.value)), vehicles: JSON.parse(JSON.stringify(vehicles.value)), tasks: JSON.parse(JSON.stringify(tasks.value)), shifts: JSON.parse(JSON.stringify(shifts.value)), logs: JSON.parse(JSON.stringify(logs.value)) };
+                let dataToExport = { metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v34.0" }, users: JSON.parse(JSON.stringify(users.value)), vehicles: JSON.parse(JSON.stringify(vehicles.value)), tasks: JSON.parse(JSON.stringify(tasks.value)), shifts: JSON.parse(JSON.stringify(shifts.value)), logs: JSON.parse(JSON.stringify(logs.value)) };
                 if (!exportConfig.value.includeImages) {
                     const stripMedia = (item) => { if (item.photos) delete item.photos; if (item.archive_photos) delete item.archive_photos; if (item.signature) delete item.signature; return item; };
                     dataToExport.vehicles = dataToExport.vehicles.map(stripMedia); dataToExport.logs = dataToExport.logs.map(stripMedia);
@@ -1422,13 +1351,27 @@
                 const a = document.createElement('a'); a.href = url; a.download = `KMC_Backup_${exportConfig.value.includeImages ? 'Full' : 'TextOnly'}_${new Date().toISOString().split('T')[0]}.json`;
                 a.click(); URL.revokeObjectURL(url); showToast("Exported", `JSON Backup downloaded.`, "success");
             };
-            
             const handleExportPDF = () => {
-                isGlobalLoading.value = true; const element = document.getElementById('report-content');
-                const opt = { margin: 10, filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, image: { type: 'jpeg', quality: 0.95 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } };
-                setTimeout(() => { html2pdf().set(opt).from(element).save().then(() => { isGlobalLoading.value = false; showToast("Success", "PDF Report Generated", "success"); }).catch(err => { isGlobalLoading.value = false; showToast("Error", "PDF Generation failed", "error"); }); }, 100);
+                isGlobalLoading.value = true; const element = document.getElementById('storage-pdf-template');
+                element.style.display = 'block';
+                const opt = { 
+                    margin: 10, 
+                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.95 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true, backgroundColor: '#ffffff' }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
+                    pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', '.break-inside-avoid'] } 
+                };
+                const imgs = element.querySelectorAll('img');
+                const imgPromises = Array.from(imgs).map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; }));
+                Promise.all(imgPromises).then(() => {
+                    setTimeout(() => { 
+                        html2pdf().set(opt).from(element).save()
+                            .then(() => { isGlobalLoading.value = false; showToast("Success", "PDF Report Generated / 报表已导出", "success"); })
+                            .catch(err => { isGlobalLoading.value = false; showToast("Error", "PDF Generation failed / 导出失败", "error"); }); 
+                    }, 200);
+                });
             };
-            
             const handleClear = async () => {
                 isGlobalLoading.value = true;
                 try { const { error: err1 } = await supabase.from('app_logs').delete().neq('id', 0); const { error: err2 } = await supabase.from('shifts').delete().neq('id', 0); if(err1) throw err1; if(err2) throw err2; logs.value = []; shifts.value = []; showToast("Cleared", "History logs and shifts deleted.", "success"); } 
@@ -1501,6 +1444,7 @@
                 if (modalType.value === 'task_exec' && taskContext.value && taskContext.value.req_signature && !formData.value.signature) return {locked:true, msg:'Signature Required / 需要签字'};
                 if (modalType.value === 'vehicle' && (!formData.value.archive_photos || formData.value.archive_photos.length < 1)) return {locked:true, msg:'Photo Required / 必须拍照'};
                 
+                // [FIX] Ensure Fuel form locks correctly until completely filled
                 if (modalType.value === 'fuel') {
                     if (!formData.value.entity_id) return {locked:true, msg:'Select Vehicle / 请选择车辆'};
                     if (!formData.value.liters || parseFloat(formData.value.liters) <= 0) return {locked:true, msg:'Enter Liters / 请输入油量'};
@@ -1523,12 +1467,19 @@
                             r.onload = (evt) => {
                                 const img = new Image();
                                 img.onload = () => {
-                                    const maxWidth = 1000; let w = img.width; let h = img.height;
-                                    if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
-                                    const c = document.createElement('canvas'); c.width = w; c.height = h; const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-                                    ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.fillRect(0, c.height - 30, c.width, 30); ctx.fillStyle = "white"; ctx.font = "12px monospace";
-                                    ctx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 10, c.height - 10);
-                                    c.toBlob((blob) => { if (blob) resolve(blob); else reject(new Error("Canvas conversion failed")); }, 'image/jpeg', 0.6);
+                                    // Limit to 900px max to prevent OOM on low-end Android devices
+                                    const maxWidth = 900; let w = img.width; let h = img.height;
+                                    if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+                                    const c = document.createElement('canvas'); c.width = w; c.height = h;
+                                    const cx = c.getContext('2d'); cx.drawImage(img, 0, 0, w, h);
+                                    cx.fillStyle = "rgba(0,0,0,0.45)"; cx.fillRect(0, c.height - 28, c.width, 28);
+                                    cx.fillStyle = "white"; cx.font = "11px monospace";
+                                    cx.fillText(`${new Date().toLocaleDateString()} | ${currentUser.value.name}`, 8, c.height - 10);
+                                    c.toBlob((blob) => {
+                                        c.width = 0; c.height = 0; // free canvas memory
+                                        if (blob) resolve(blob); else reject(new Error("Canvas conversion failed"));
+                                    }, 'image/jpeg', 0.55); // lower quality to reduce memory
+                                    img.src = ''; // help GC
                                 }; img.onerror = reject; img.src = evt.target.result;
                             }; r.onerror = reject; r.readAsDataURL(f);
                         });
@@ -1587,12 +1538,13 @@
                 }
                 else if (type === 'vehicle') {
                     modalTitle.value = data ? 'Edit Vehicle / 编辑车辆' : 'Add Vehicle / 新增车辆'; const locked = isStaff.value;
-                    modalFields.value = { plate: {label:'Plate / 车牌', type:'text', locked: true}, model: {label:'Model / 车型', type:'editable_select', options:[...new Set(vehicles.value.map(v=>v.model))].map(m=>({val:m,label:m})), locked: true}, status: {label:'Status / 状态', type:'select', options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}], disabled: locked}, mileage: {label:'Current Mileage / 当前里程', type:'number', locked: true}, responsible: {label:'Person in Charge / 责任人', type:'text', locked: true}, archive_photos: {label:'Archive Photos / 档案照片 (Required)', type:'camera', note: 'Front, Side, Rear / 前、侧、后'} };
+                    modalFields.value = { plate: {label:'Plate / 车牌', type:'text', locked: true}, model: {label:'Model / 车型', type:'editable_select', options:[...new Set(vehicles.value.map(v=>v.model))].map(m=>({val:m,label:m})), locked: true}, status: {label:'Status / 状态', type:'select', options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}], disabled: locked}, mileage: {label:'Current Mileage / 当前里程', type:'number', locked: true}, responsible: {label:'Person in Charge / 责任人', type:'text', locked: true}, archive_photos: {label:'Archive Photos / 档案照片 (Required)', type:'camera', note: 'Please take Front, Side, Rear views. Ensure good lighting. / 请拍摄车辆前、侧、后三面，保证光线充足、车牌清晰。'} };
                     if(!data) formData.value = { id:Date.now(), status:'Active', mileage:0, archive_photos:[] }; if(!formData.value.archive_photos) formData.value.archive_photos = [];
                 }
                 else if (type === 'fuel') {
                     modalTitle.value = 'FUEL ENTRY / 加油录入';
                     modalFields.value = { entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))}, is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' }, handler: {label:'Handler / 经手人', type:'text', ph:'Enter handler name / 输入经手人姓名'}, price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, liters: {label:'Liters / 加油量 (L)', type:'number'}, mileage: {label:'Current Odometer / 当前里程 (KM)', type:'number'} };
+                    // [FIX] Ensure ghost record bug is avoided by defaulting explicit category and nullifying price explicitly
                     formData.value = {id:Date.now(), category: 'fuel', user_name:currentUser.value.name, photos:[], photo_receipt:null, photo_pump:null, photo_odometer:null, is_internal: false, fuelEconomy: null, price: null};
                 }
                 else if (type === 'task_config') {
@@ -1640,13 +1592,13 @@
                         if (!formData.value.entity_id) { showToast('Select Vehicle', 'Please choose a vehicle.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.liters) > 0)) { showToast('Enter Liters', 'Fuel amount is required.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.mileage) > 0)) { showToast('Enter Mileage', 'Odometer is required.', 'error'); isSubmitting.value = false; return; }
-                        const v = vehicles.value.find(x => x.id === formData.value.entity_id); 
-                        if (!v) { showToast('Vehicle Not Found', '', 'error'); isSubmitting.value = false; return; }
-                        if (parseFloat(formData.value.mileage) <= parseFloat(v.mileage || 0)) { showToast("Mileage Error", "New mileage must be greater.", "error"); isSubmitting.value = false; return; } 
+                        const v = vehicles.value.find(x => x.id === formData.value.entity_id); if (!v) { showToast('Vehicle Not Found', '', 'error'); isSubmitting.value = false; return; }
+                        if(parseFloat(formData.value.mileage) <= parseFloat(v.mileage || 0)) { showToast("Mileage Error", "New mileage must be greater.", "error"); isSubmitting.value = false; return; } 
                         
                         const prevMileage = parseFloat(v.mileage || 0); const mileageDiff = parseFloat(formData.value.mileage) - prevMileage; const liters = parseFloat(formData.value.liters) || 0;
                         if (mileageDiff > 0 && liters > 0) { formData.value.fuelEconomy = parseFloat(((liters / mileageDiff) * 100).toFixed(2)); }
                         
+                        // [FIX] Avoid Ghost Record: Force category, timestamp, clean up internal price
                         formData.value.timestamp = new Date().toISOString(); 
                         formData.value.category = 'fuel';
                         if (formData.value.is_internal) formData.value.price = null;
@@ -1678,8 +1630,14 @@
             const openTaskExec = (t) => {
                 taskContext.value = t;
                 const existingLog = (logs.value||[]).find(l => l.category === 'task_exec' && l.user_name === currentUser.value.name && (l.task_id === t.id || l.title_en === t.title_en) && l.timestamp.startsWith(new Date().toISOString().split('T')[0]));
-                if (existingLog && existingLog.rating !== 'red') { formData.value = JSON.parse(JSON.stringify(existingLog)); } 
-                else { formData.value = { id: Date.now(), category: 'task_exec', task_id: t.id, title_en: t.title_en, user_name: currentUser.value.name, entity_id: t.id, content: '', photos: [], signature: null, frequency: t.frequency }; }
+                if (existingLog && existingLog.rating !== 'red') {
+                    formData.value = JSON.parse(JSON.stringify(existingLog));
+                } else {
+                    formData.value = {
+                        id: Date.now(), category: 'task_exec', task_id: t.id, title_en: t.title_en,
+                        user_name: currentUser.value.name, entity_id: t.id, content: '', photos: [], signature: null, frequency: t.frequency
+                    };
+                }
                 modalType.value = 'task_exec'; modalTitle.value = 'Execute Task / 执行任务: ' + t.title_en; isTaskTranslated.value = false; showModal.value = true;
             };
 
@@ -1725,7 +1683,7 @@
                 switch(currentView.value) {
                     case 'dashboard': return Dashboard; case 'vehicles': return Vehicles; case 'fuel': return Fuel;
                     case 'tasks': return Tasks; case 'reports': return Reports; case 'staff': return Staff;
-                    case 'statistics': return Stats; case 'shifts': return Shifts; case 'storage': return StorageView;
+                    case 'statistics': return Stats; case 'shifts': return Shifts;
                     case 'my_tasks': return MyTasks; default: return Dashboard;
                 }
             });
