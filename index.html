@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35</title>
+    <title>KMC Vehicle Management V35.1</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.1</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -389,7 +389,7 @@
                                         <span class="photo-sync-badge" :class="p.startsWith('idb__')?'bg-yellow-500/80 text-black':'bg-green-500/80 text-white'">{{ p.startsWith('idb__')?'LOCAL':'CLOUD' }}</span>
                                         <div class="photo-del-btn" @click.stop="removePhoto(key,idx)"><i class="fa-solid fa-times"></i></div>
                                     </div>
-                                    <div class="photo-add-btn"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,key)" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo</div></div>
+                                    <div class="photo-add-btn"><input type="file" accept="image/*" :capture="field.allowAlbum ? undefined : getCaptureMode" @change="e=>handleCam(e,key)" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-2xl mb-1"></i><div class="text-[9px] uppercase font-bold">Add Photo</div></div>
                                 </div>
                             </div>
                             <div v-else-if="field.type==='signature_pad'">
@@ -886,7 +886,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.0
+//  KMC Vehicle Management System V35.1
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -1621,7 +1621,7 @@ const app = createApp({
                 if (taskContext.value.req_signature&&!formData.value.signature) return {locked:true,msg:'Signature required / 需要签字'};
                 return {locked:false,msg:'Submit / 提交任务'};
             }
-            if (t==='vehicle'&&formData.value.id&&!(formData.value.archive_photos?.length>0)) return {locked:true,msg:'Photo required / 必须拍照'};
+            // 移除了车辆档案强制拍照限制
             if (t==='fuel') {
                 if (!formData.value.entity_id) return {locked:true,msg:'Select vehicle / 选择车辆'};
                 if (!(parseFloat(formData.value.liters)>0)) return {locked:true,msg:'Enter liters / 输入油量'};
@@ -1643,7 +1643,7 @@ const app = createApp({
                 if (!data) formData.value={id:genUUID(),role:'03',password:'666666'};
             } else if (type==='vehicle') {
                 modalTitle.value=data?'Edit Vehicle / 编辑车辆':'Add Vehicle / 新增车辆';
-                modalFields.value={ plate:{label:'Plate / 车牌',type:'text',locked:true}, model:{label:'Model / 车型',type:'editable_select',locked:true,options:[...new Set(vehicles.value.map(v=>v.model))].filter(Boolean).map(m=>({val:m,label:m}))}, status:{label:'Status / 状态',type:'select',disabled:isStaff.value,options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}]}, mileage:{label:'Mileage / 里程',type:'number',locked:true}, responsible:{label:'In Charge / 责任人',type:'text',locked:true}, archive_photos:{label:'Archive Photos / 档案照片 (Required)',type:'camera',note:'Front · Side · Rear – plate must be clear / 前侧后三面，车牌清晰'} };
+                modalFields.value={ plate:{label:'Plate / 车牌',type:'text',locked:true}, model:{label:'Model / 车型',type:'editable_select',locked:true,options:[...new Set(vehicles.value.map(v=>v.model))].filter(Boolean).map(m=>({val:m,label:m}))}, status:{label:'Status / 状态',type:'select',disabled:isStaff.value,options:[{val:'Active',label:'Active / 运营'},{val:'Maintenance',label:'Maintenance / 维修'},{val:'Scrapped',label:'Scrapped / 报废'}]}, mileage:{label:'Mileage / 里程',type:'number',locked:true}, responsible:{label:'In Charge / 责任人',type:'text',locked:true}, archive_photos:{label:'Archive Photos / 档案照片 (Optional)',type:'camera',allowAlbum:true,note:'Front · Side · Rear – plate must be clear / 前侧后三面，车牌清晰'} };
                 if (!data) formData.value={id:genUUID(),status:'Active',mileage:0,archive_photos:[]};
                 if (!formData.value.archive_photos) formData.value.archive_photos=[];
             } else if (type==='fuel') {
