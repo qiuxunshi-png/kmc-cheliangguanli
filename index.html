@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management System V34.1</title>
+    <title>KMC Vehicle Management System V34.2</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -152,7 +152,7 @@
                 <div class="w-20 h-20 bg-gradient-to-br from-emerald-500 to-green-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-glow"><i class="fa-solid fa-truck-shield text-4xl text-white"></i></div>
                 <h1 class="text-2xl font-bold text-white tracking-tight leading-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium tracking-wider mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[0.2em] mt-2 opacity-60">Cloud Edition V34.1</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[0.2em] mt-2 opacity-60">Cloud Edition V34.2</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-6">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label><input v-model="loginForm.name" type="text" class="kmc-input" placeholder="admin"></div>
@@ -236,6 +236,7 @@
         </main>
     </div>
 
+    <!-- Modals and Overlays -->
     <div v-if="showModal" class="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-4 animate-fade-in">
         <div class="bg-kmc-card border border-kmc-border rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col"
              style="-webkit-overflow-scrolling: touch; overscroll-behavior: contain;">
@@ -275,14 +276,16 @@
                         <label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Select Vehicle / 选择车辆 <span class="text-red-400">*</span></label>
                         <select v-model="formData.entity_id" class="kmc-input"><option value="">-- Select / 请选择 --</option><option v-for="v in $root.vehicles" :key="v.id" :value="v.id">{{ v.plate }} ({{ v.mileage }} KM)</option></select>
                     </div>
-                    <div class="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 cursor-pointer hover:border-white/10 transition" @click="formData.is_internal = !formData.is_internal">
-                        <span class="text-sm font-medium text-gray-300">Internal Station / 内部油站</span>
-                        <div class="relative inline-block w-10 h-5 align-middle select-none"><input type="checkbox" v-model="formData.is_internal" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" :class="formData.is_internal ? 'right-0 border-green-500' : 'left-0 border-gray-400'"/><label class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-700"></label></div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Total Cost ($) / 总费用</label><input v-model="formData.price" type="number" step="0.01" class="kmc-input" placeholder="0.00"></div>
+                        <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Liters / 加油量 (L) <span class="text-red-400">*</span></label><input v-model="formData.liters" type="number" step="0.1" class="kmc-input" placeholder="0.0"></div>
                     </div>
-                    <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Handler / 经手人</label><input v-model="formData.handler" type="text" class="kmc-input" placeholder="Enter handler name / 输入经手人姓名"></div>
-                    <div v-if="!formData.is_internal"><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Total Cost ($) / 总费用</label><input v-model="formData.price" type="number" step="0.01" class="kmc-input" placeholder="0.00"></div>
-                    <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Liters / 加油量 (L) <span class="text-red-400">*</span></label><input v-model="formData.liters" type="number" step="0.1" class="kmc-input" placeholder="0.0"></div>
-                    <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Current Odometer / 当前里程 (KM) <span class="text-red-400">*</span></label><input v-model="formData.mileage" type="number" class="kmc-input" placeholder="0"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Current Odometer / 当前里程 <span class="text-red-400">*</span></label><input v-model="formData.mileage" type="number" class="kmc-input" placeholder="0"></div>
+                        <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-1.5 ml-1">Handler / 经手人</label><input v-model="formData.handler" type="text" class="kmc-input" placeholder="Enter name / 输入姓名"></div>
+                    </div>
                     
                     <div v-if="formData.entity_id && formData.liters > 0 && formData.mileage > 0" class="bg-orange-500/10 border border-orange-500/20 p-4 rounded-xl">
                         <div class="text-[10px] text-orange-400 font-bold uppercase mb-1">Estimated Fuel Economy / 预计油耗</div>
@@ -294,32 +297,38 @@
                         <div class="flex items-center justify-between mb-3">
                             <div class="text-[10px] font-bold text-kmc-muted uppercase flex items-center gap-2"><i class="fa-solid fa-camera-retro text-orange-400"></i> Evidence Photos / 凭证照片</div>
                             <div class="flex gap-1">
-                                <span v-if="!formData.is_internal" class="w-2 h-2 rounded-full" :class="formData.photo_receipt?'bg-green-400':'bg-orange-500/40'"></span>
+                                <span class="w-2 h-2 rounded-full" :class="formData.photo_receipt?'bg-green-400':'bg-orange-500/40'"></span>
                                 <span class="w-2 h-2 rounded-full" :class="formData.photo_pump?'bg-green-400':'bg-orange-500/40'"></span>
                                 <span class="w-2 h-2 rounded-full" :class="formData.photo_odometer?'bg-green-400':'bg-orange-500/40'"></span>
                             </div>
                         </div>
-                        <p class="text-[10px] text-yellow-500/80 mb-2 flex items-center gap-1"><i class="fa-solid fa-circle-info"></i> Please ensure photos are clear and without glare / 请确保照片清晰、无反光、字迹可辨</p>
-                        <div class="grid gap-2" :class="formData.is_internal ? 'grid-cols-2' : 'grid-cols-3'">
-                            <div v-if="!formData.is_internal" class="flex flex-col gap-1">
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_receipt?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_receipt?'fa-check-circle':'fa-receipt'"></i><div>① Receipt</div><div class="text-gray-500 normal-case">加油票据</div></div>
                                 <div v-if="formData.photo_receipt" class="relative"><div class="aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="$root.openPreview(formData.photo_receipt)"><img :src="formData.photo_receipt" class="w-full h-full object-cover"></div><button @click.stop="formData.photo_receipt=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow-lg"><i class="fa-solid fa-xmark"></i></button></div>
                                 <div v-else class="aspect-square relative rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:border-orange-400 hover:bg-orange-500/5" :class="formData.photo_receipt?'border-green-500/40':'border-orange-500/30 bg-orange-500/5'"><input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e,'photo_receipt')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_pump?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_pump?'fa-check-circle':'fa-gas-pump'"></i><div>{{ formData.is_internal ? '①' : '②' }} Pump</div><div class="text-gray-500 normal-case">油机显示</div></div>
+                                <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_pump?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_pump?'fa-check-circle':'fa-gas-pump'"></i><div>② Pump</div><div class="text-gray-500 normal-case">油机显示</div></div>
                                 <div v-if="formData.photo_pump" class="relative"><div class="aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="$root.openPreview(formData.photo_pump)"><img :src="formData.photo_pump" class="w-full h-full object-cover"></div><button @click.stop="formData.photo_pump=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow-lg"><i class="fa-solid fa-xmark"></i></button></div>
                                 <div v-else class="aspect-square relative rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:border-orange-400 hover:bg-orange-500/5" :class="formData.photo_pump?'border-green-500/40':'border-orange-500/30 bg-orange-500/5'"><input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e,'photo_pump')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
-                                <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_odometer?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_odometer?'fa-check-circle':'fa-gauge-simple-high'"></i><div>{{ formData.is_internal ? '②' : '③' }} Odometer</div><div class="text-gray-500 normal-case">里程表</div></div>
+                                <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_odometer?'text-green-400':'text-orange-400'"><i class="fa-solid fa-xs" :class="formData.photo_odometer?'fa-check-circle':'fa-gauge-simple-high'"></i><div>③ Odometer</div><div class="text-gray-500 normal-case">里程表</div></div>
                                 <div v-if="formData.photo_odometer" class="relative"><div class="aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="$root.openPreview(formData.photo_odometer)"><img :src="formData.photo_odometer" class="w-full h-full object-cover"></div><button @click.stop="formData.photo_odometer=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow-lg"><i class="fa-solid fa-xmark"></i></button></div>
                                 <div v-else class="aspect-square relative rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-all hover:border-orange-400 hover:bg-orange-500/5" :class="formData.photo_odometer?'border-green-500/40':'border-orange-500/30 bg-orange-500/5'"><input type="file" accept="image/*" :capture="$root.getCaptureMode" @change="(e)=>handleCam(e,'photo_odometer')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                         </div>
-                        <div class="mt-2 text-center text-[10px]" :class="( (!formData.is_internal && !formData.photo_receipt) || !formData.photo_pump || !formData.photo_odometer) ? 'text-orange-400' : 'text-green-400'">
-                            <span v-if="(!formData.is_internal && !formData.photo_receipt) || !formData.photo_pump || !formData.photo_odometer"><i class="fa-solid fa-circle-info mr-1"></i>{{ [(!formData.is_internal && !formData.photo_receipt) ? 'Receipt' : '', !formData.photo_pump ? 'Pump' : '', !formData.photo_odometer ? 'Odometer' : ''].filter(Boolean).join(', ') }} still required / 尚未上传</span>
-                            <span v-else><i class="fa-solid fa-check-circle mr-1"></i> All required photos uploaded / 照片已传齐</span>
+                        <div class="mt-2 text-center text-[10px] text-gray-500">
+                            <i class="fa-solid fa-circle-info mr-1"></i> Photos are optional but recommended / 照片为选填，但建议尽量提供完整凭证
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-end mb-1.5 ml-1"><label class="block text-[10px] font-bold text-kmc-muted uppercase">Remarks / 备注 (Optional)</label></div>
+                        <div class="relative group">
+                            <textarea v-model="formData.remarks" class="kmc-input h-20 resize-none pr-10" placeholder="E.g., Missing photos due to fuel truck... / 选填，如因加油车补油无法提供全部照片等情况的说明"></textarea>
+                            <div class="ai-btn" @click="translate('remarks')" title="One-Click Translate"><i v-if="translating==='remarks'" class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i><i v-else class="fa-solid fa-wand-magic-sparkles"></i></div>
                         </div>
                     </div>
                 </div>
@@ -396,6 +405,7 @@
         </div>
     </div>
 
+    <!-- Fullscreen Signature & Gallery Overlays -->
     <div v-if="isSigFullScreen" class="fs-sig-modal text-gray-800"><div class="fs-header p-4 border-b flex justify-between items-center"><h3 class="font-bold text-lg"><i class="fa-solid fa-signature mr-2 text-emerald-600"></i>Sign Below / 请签字</h3><div class="flex gap-2"><div class="flex gap-2 bg-gray-100 p-1 rounded-lg mr-2"><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#000' }" @click="sigPenColor='#000'"><div class="w-4 h-4 bg-black rounded-full"></div></div><div class="w-8 h-8 rounded flex items-center justify-center cursor-pointer" :class="{ 'bg-white shadow': sigPenColor==='#0047AB' }" @click="sigPenColor='#0047AB'"><div class="w-4 h-4 bg-blue-700 rounded-full"></div></div></div><button @click="clearFullScreenSig" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm hover:bg-gray-200">Clear</button><button @click="isSigFullScreen=false" class="px-3 py-1 text-red-500 text-sm">Cancel</button><button @click="saveFullScreenSig" class="px-4 py-1 bg-emerald-600 text-white rounded text-sm font-bold shadow">Done</button></div></div><div class="flex-1 relative bg-white"><div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none"><span class="text-6xl font-bold text-gray-200 rotate-[-15deg]">SIGNATURE</span></div><canvas ref="fullSigCanvas" class="w-full h-full block relative z-10" @mousedown="startSign" @mousemove="drawSign" @mouseup="endSign" @mouseleave="endSign" @touchstart="startSign" @touchmove="drawSign" @touchend="endSign"></canvas></div></div>
     
     <div v-if="previewImage" class="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4 cursor-zoom-out" @click="previewImage=null">
@@ -440,7 +450,7 @@
                 <div class="space-y-4">
                     <div v-for="log in $root.recentLogs" :key="log.timestamp" class="flex gap-4 items-start pb-4 border-b border-white/5 last:border-0 last:pb-0">
                         <div class="mt-1 w-2 h-2 rounded-full shrink-0" :class="log.category==='fuel'?'bg-orange-500':'bg-emerald-500'"></div>
-                        <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> <span v-if="log.price && !log.is_internal">($<b>{{ log.price }}</b>)</span> - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
+                        <div><div class="text-xs text-kmc-muted mb-0.5">{{ new Date(log.timestamp).toLocaleString() }} • <span class="text-white font-bold">{{ log.user_name }}</span></div><div class="text-sm text-gray-300"><span v-if="log.category==='fuel'">Refuel / 加油: <b>{{ log.liters }}L</b> <span v-if="log.price">($<b>{{ log.price }}</b>)</span> - {{ $root.getPlate(log.entity_id) }}</span><span v-else>Task / 任务: <b>{{ log.title_en }}</b></span></div></div>
                     </div>
                     <div v-if="$root.recentLogs.length === 0" class="text-center text-kmc-muted italic py-10"><i class="fa-solid fa-inbox text-3xl mb-2 opacity-30 block"></i>No recent activities / 暂无动态</div>
                 </div>
@@ -526,18 +536,19 @@
             <div class="bg-green-900/20 border border-green-500/30 p-4 rounded-xl"><div class="text-[10px] text-green-400 font-bold uppercase">Total Cost / 总费用</div><div class="text-2xl font-bold text-white">$ {{ totalCost }}</div></div>
         </div>
         <div class="space-y-3">
-            <div v-for="log in displayLogs" :key="log.id" class="kmc-card p-4 flex justify-between items-center group">
-                <div class="flex gap-4 items-center">
-                    <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500"><i class="fa-solid fa-gas-pump"></i></div>
+            <div v-for="log in displayLogs" :key="log.id" class="kmc-card p-4 flex justify-between items-start group">
+                <div class="flex gap-4 items-start">
+                    <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 shrink-0"><i class="fa-solid fa-gas-pump"></i></div>
                     <div>
-                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.handler" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.handler }}</span> <span v-if="log.is_internal" class="text-[9px] text-emerald-300 bg-emerald-900/50 border border-emerald-500/50 px-1.5 py-0.5 rounded ml-1 uppercase">INTERNAL</span></div>
-                        <div class="text-xs text-kmc-muted">{{ new Date(log.timestamp).toLocaleString() }} • {{ log.user_name }}</div>
-                        <div v-if="log.fuelEconomy > 0" class="text-[10px] mt-0.5" :class="log.fuelEconomy > 15 ? 'text-red-400' : (log.fuelEconomy > 10 ? 'text-yellow-400' : 'text-green-400')"><i class="fa-solid fa-gauge-simple-high mr-1"></i>{{ log.fuelEconomy }} L/100km</div>
+                        <div class="font-bold text-white text-sm">{{ $root.getPlate(log.entity_id) }} <span v-if="log.handler" class="text-[10px] text-gray-500 bg-gray-800 px-1 rounded ml-2">{{ log.handler }}</span></div>
+                        <div class="text-xs text-kmc-muted mb-1">{{ new Date(log.timestamp).toLocaleString() }} • {{ log.user_name }}</div>
+                        <div v-if="log.fuelEconomy > 0" class="text-[10px]" :class="log.fuelEconomy > 15 ? 'text-red-400' : (log.fuelEconomy > 10 ? 'text-yellow-400' : 'text-green-400')"><i class="fa-solid fa-gauge-simple-high mr-1"></i>{{ log.fuelEconomy }} L/100km</div>
+                        <div v-if="log.remarks" class="text-[10px] text-gray-400 mt-2 bg-white/5 p-2 rounded border border-white/5 whitespace-pre-wrap"><i class="fa-solid fa-comment-dots mr-1"></i>{{ log.remarks }}</div>
                     </div>
                 </div>
                 <div class="text-right flex flex-col items-end gap-1">
                     <div class="font-bold text-white">{{ log.liters }} L</div>
-                    <div class="text-xs text-green-400 font-mono" v-if="log.price && !log.is_internal && !$root.isStaff">$ {{ log.price }}</div>
+                    <div class="text-xs text-green-400 font-mono" v-if="log.price">$ {{ log.price }}</div>
                     <div class="flex gap-1 mt-1 opacity-0 group-hover:opacity-100 transition" v-if="$root.currentUser.role === '01'">
                         <button @click="$root.deleteItem('app_logs', log.id)" class="w-7 h-7 flex items-center justify-center rounded bg-red-500/10 hover:bg-red-500/30 text-red-400 transition active:scale-95"><i class="fa-solid fa-trash text-[10px]"></i></button>
                     </div>
@@ -740,7 +751,7 @@
                                     <tr v-for="(log, idx) in filteredFuelLogs" :key="log.id" :class="idx%2===0?'bg-white':'bg-gray-50'" class="border-b border-gray-200">
                                         <td class="p-2 border-r border-gray-200 font-mono">{{ log.timestamp.split('T')[0] }}<br><span class="text-[9px] text-gray-400">{{ log.timestamp.split('T')[1].substr(0,5) }}</span></td>
                                         <td class="p-2 border-r border-gray-200 font-bold">{{ $root.getPlate(log.entity_id) }}</td>
-                                        <td class="p-2 border-r border-gray-200">{{ log.handler || log.user_name }} <span v-if="log.is_internal" class="ml-1 text-[8px] uppercase bg-emerald-100 text-emerald-600 px-1 rounded border border-emerald-200">INTERNAL</span></td>
+                                        <td class="p-2 border-r border-gray-200">{{ log.handler || log.user_name }}</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-orange-600">{{ log.liters }} L</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold text-green-600">{{ log.price ? '$ '+log.price : '-' }}</td>
                                         <td class="p-2 border-r border-gray-200 text-right font-bold" :class="log.fuelEconomy > 15 ? 'text-red-600' : 'text-blue-700'">{{ log.fuelEconomy > 0 ? log.fuelEconomy + ' L/100' : '-' }}</td>
@@ -760,6 +771,7 @@
                                 <div class="grid grid-cols-1 gap-3">
                                     <div v-for="t in filteredTaskLogs" :key="t.id" class="border border-gray-300 rounded text-xs break-inside-avoid pdf-card" style="page-break-inside:avoid;">
                                         <div class="flex items-stretch">
+                                            <!-- Left: text content -->
                                             <div class="flex-1 p-3 min-w-0">
                                                 <div class="flex justify-between items-start mb-1.5 border-b border-gray-100 pb-1.5">
                                                     <span class="font-bold text-black text-sm leading-tight pr-2">{{ t.title_en }}</span>
@@ -772,6 +784,7 @@
                                                     <span class="font-bold uppercase text-[10px] px-2 py-0.5 rounded" :class="t.rating==='green'?'bg-green-100 text-green-700':(t.rating==='red'?'bg-red-100 text-red-700':'bg-yellow-100 text-yellow-600')">{{ t.rating==='green'?'✓ PASSED':(t.rating==='red'?'✗ REJECTED':'⏳ PENDING') }}</span>
                                                 </div>
                                             </div>
+                                            <!-- Right: photos -->
                                             <div v-if="t.photos && t.photos.length" class="shrink-0 p-2 border-l border-gray-200 flex flex-col gap-2 justify-start items-center bg-gray-50">
                                                 <img v-for="p in t.photos.slice(0,2)" :key="p" :src="p" crossorigin="anonymous" class="w-28 h-28 object-cover border border-gray-200 rounded-sm">
                                             </div>
@@ -929,6 +942,14 @@
     }
     const { createApp, ref, computed, watch, onMounted, nextTick, reactive, toRefs, toRef } = Vue;
 
+    // --- 本地时区格式化工具 (解决UTC时间偏移Bug) ---
+    const getLocalYYYYMMDD = (dateObj = new Date()) => {
+        const year = dateObj.getFullYear();
+        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     // --- Components ---
     const Dashboard = { template: '#tmpl-dashboard', computed: { isStaff() { return this.$root.isStaff; } } };
     const Vehicles = { template: '#tmpl-vehicles' };
@@ -967,7 +988,10 @@
                 if (this.historyFilter.status === 'approved') logs = logs.filter(l => l.rating === 'green');
                 else if (this.historyFilter.status === 'rejected') logs = logs.filter(l => l.rating === 'red');
                 if (this.historyFilter.driver) logs = logs.filter(l => l.user_name === this.historyFilter.driver);
-                if (this.historyFilter.date) logs = logs.filter(l => l.timestamp && l.timestamp.startsWith(this.historyFilter.date));
+                if (this.historyFilter.date) logs = logs.filter(l => {
+                    const localDate = l.timestamp ? getLocalYYYYMMDD(new Date(l.timestamp)) : '';
+                    return localDate === this.historyFilter.date;
+                });
                 return logs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
             },
             displayLogs() { return this.activeTab === 'pending' ? this.pendingLogs : this.historyLogs; }
@@ -1031,7 +1055,7 @@
 
                 const opt = { 
                     margin: [8, 8, 8, 8], 
-                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
+                    filename: `KMC_Report_${getLocalYYYYMMDD(new Date())}.pdf`, 
                     image: { type: 'jpeg', quality: 0.97 }, 
                     html2canvas: { 
                         scale: 2, useCORS: true, logging: false, allowTaint: true,
@@ -1066,8 +1090,11 @@
                 const f = this.$root.statsFilters;
                 return (this.$root.logs || []).filter(l => {
                     if (l.category !== 'fuel') return false;
-                    if (f.start && l.timestamp.split('T')[0] < f.start) return false;
-                    if (f.end && l.timestamp.split('T')[0] > f.end) return false;
+                    
+                    const logLocalStr = l.timestamp ? getLocalYYYYMMDD(new Date(l.timestamp)) : '';
+                    if (f.start && logLocalStr < f.start) return false;
+                    if (f.end && logLocalStr > f.end) return false;
+                    
                     if (f.vehicle_id && l.entity_id !== f.vehicle_id) return false;
                     if (f.driver && l.user_name !== f.driver) return false;
                     return true;
@@ -1077,8 +1104,11 @@
                 const f = this.$root.statsFilters;
                 return (this.$root.logs || []).filter(l => {
                     if (l.category !== 'task_exec') return false;
-                    if (f.start && l.timestamp.split('T')[0] < f.start) return false;
-                    if (f.end && l.timestamp.split('T')[0] > f.end) return false;
+                    
+                    const logLocalStr = l.timestamp ? getLocalYYYYMMDD(new Date(l.timestamp)) : '';
+                    if (f.start && logLocalStr < f.start) return false;
+                    if (f.end && logLocalStr > f.end) return false;
+                    
                     if (f.driver && l.user_name !== f.driver) return false;
                     if (f.status === 'pending' && l.rating) return false;
                     if (f.status === 'approved' && l.rating !== 'green') return false;
@@ -1220,7 +1250,6 @@
         try {
             const tx = offlineDB.transaction('offlineQueue', 'readwrite');
             const plainAction = JSON.parse(JSON.stringify(action));
-            // 确保 offline queue 具备唯一 ID
             plainAction.id = plainAction.id || generateUUID();
             tx.objectStore('offlineQueue').put({ ...plainAction, timestamp: Date.now() });
             globalStore.offlineQueue.push(action);
@@ -1257,8 +1286,8 @@
             // [SECURITY WARNING]: 
             // 在生产环境中，前端不应暴露具有宽泛权限的 API Keys。
             // 务必在 Supabase 后台开启 Row Level Security (RLS) 策略，保障数据层面的读写安全。
-            const supabaseUrl = 'https://sksxyzswxfrdxrlfbmdd.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNrc3h5enN3eGZyZHhybGZibWRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2MDg3NTUsImV4cCI6MjA4NTE4NDc1NX0.K4Q-xMxKsooQ6ppeBRvjR72xG5lV8Vj3zLBVRsYxUGE';
+            const supabaseUrl = 'https://asizrzuuwcgrygkdttgt.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzaXpyenV1d2Nncnlna2R0dGd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MTA0NDEsImV4cCI6MjA4NzI4NjQ0MX0.tirvZUOw7Ci99qr_llOtaPtPHg6_vrJwtiIqy0cSpZc';
             const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
             window._kmcSupabase = supabase; 
             
@@ -1285,8 +1314,14 @@
             const loginForm = ref({name:'', password:''}); const loginError = ref(''); const currentView = ref('dashboard'); const isMobileMenuOpen = ref(false);
             const showModal = ref(false); const modalTitle = ref(''); const modalType = ref(''); const modalFields = ref({}); const formData = ref({}); const translating = ref(null);
             const showProfileModal = ref(false); const profileForm = ref({});
+            
+            // 全局时间过滤初始化 (时区修复)
             const statsTab = ref('fuel'); const statsFilters = ref({ start:'', end:'', vehicle_id:'', driver:'', status:'' });
-            const resetStatsFilters = () => { const today = new Date().toISOString().split('T')[0]; const lastMonth = new Date(Date.now() - 30*24*60*60*1000).toISOString().split('T')[0]; statsFilters.value = { start: lastMonth, end: today, vehicle_id: '', driver: '', status: '' }; };
+            const resetStatsFilters = () => { 
+                const today = getLocalYYYYMMDD(new Date()); 
+                const lastMonth = getLocalYYYYMMDD(new Date(Date.now() - 30*24*60*60*1000)); 
+                statsFilters.value = { start: lastMonth, end: today, vehicle_id: '', driver: '', status: '' }; 
+            };
 
             const isTaskTranslated = ref(false); const taskContext = ref({});
             const searchQuery = ref(''); const previewImage = ref(null); const vehicleGallery = ref({ active: false, images: [], index: 0 }); const lastSyncTime = ref(null);
@@ -1313,8 +1348,11 @@
                 userLogs.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)); const lastLog = userLogs[0]; 
                 if (lastLog.rating === 'red') return 'rework';
                 if (t.frequency === 'one_time') return lastLog.rating === 'green' ? 'done' : 'review';
-                const todayStr = new Date().toISOString().split('T')[0];
-                if (lastLog.timestamp.split('T')[0] !== todayStr) return 'todo'; 
+                
+                const todayStr = getLocalYYYYMMDD(new Date());
+                const logLocalStr = lastLog.timestamp ? getLocalYYYYMMDD(new Date(lastLog.timestamp)) : '';
+                if (logLocalStr !== todayStr) return 'todo'; 
+                
                 if (!lastLog.rating) return 'review';
                 return 'done'; 
             };
@@ -1330,9 +1368,13 @@
                 if(Array.isArray(t.assigned_to)) assignees = t.assigned_to;
                 else if (typeof t.assigned_to === 'string') { try { assignees = JSON.parse(t.assigned_to); } catch(e){ assignees = [t.assigned_to]; } }
                 if(!Array.isArray(assignees) || assignees.length === 0) return null; 
-                const todayStr = new Date().toISOString().split('T')[0];
+                
+                const todayStr = getLocalYYYYMMDD(new Date());
                 const statusMap = assignees.map(user => {
-                    const hasLog = (logs.value||[]).some(l => l.category === 'task_exec' && l.user_name === user && (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en)) && l.timestamp.startsWith(todayStr) && l.rating !== 'red' );
+                    const hasLog = (logs.value||[]).some(l => {
+                        const lStr = l.timestamp ? getLocalYYYYMMDD(new Date(l.timestamp)) : '';
+                        return l.category === 'task_exec' && l.user_name === user && (l.task_id === t.id || (!l.task_id && l.title_en === t.title_en)) && lStr === todayStr && l.rating !== 'red';
+                    });
                     return { user, done: hasLog };
                 });
                 const total = assignees.length; const doneCount = statusMap.filter(x => x.done).length; const pendingUsers = statusMap.filter(x => !x.done).map(x => x.user);
@@ -1373,26 +1415,38 @@
 
             const saveToTable = async (table, item) => {
                 syncStatus.value = 'syncing';
+                
+                // 1. 深度克隆并剥离 Vue 的 Proxy 响应式外壳，防止拦截器干扰
+                const payload = JSON.parse(JSON.stringify(item));
+                
+                // 2. 强力清洗器：强制将空白的数字字段转为 null，防止 Postgres 崩溃
+                const numFields = ['liters', 'price', 'mileage'];
+                numFields.forEach(k => {
+                    if (payload[k] === '' || payload[k] === null || payload[k] === undefined) {
+                        payload[k] = null;
+                    } else if (!isNaN(Number(payload[k]))) {
+                        payload[k] = Number(payload[k]);
+                    }
+                });
+
                 if (globalStore.isLocalMode) {
-                    const payload = { ...item };
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'], 'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
-                        'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'], 'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature', 'liters', 'price', 'mileage', 'title_en', 'content', 'task_id', 'frequency'],
+                        'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'], 'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature', 'liters', 'price', 'mileage', 'title_en', 'content', 'task_id', 'frequency', 'remarks'],
                         'shifts': ['id', 'type', 'date', 'start_time', 'end_time', 'driver', 'route', 'vehicle_type', 'standards']
                     };
                     const cols = standardCols[table] || []; payload.extra_data = {};
                     for (const key in payload) { if (!cols.includes(key) && key !== 'extra_data' && key !== 'id' && key !== 'created_at') { payload.extra_data[key] = payload[key]; delete payload[key]; } }
                     await addToOfflineQueue({ type: 'upsert', table, payload });
                     syncStatus.value = 'error';
-                    showToast('💾 已秒存本地 / Saved Locally', '本地优先模式 — 切回云端同步时将自动上传 / Local-first mode — will auto-upload when you switch back.', 'warning');
+                    showToast('💾 已秒存本地 / Saved Locally', '本地优先模式 — 切回云端同步时将自动上传', 'warning');
                     return;
                 }
                 
                 try {
-                    const payload = { ...item };
                     const standardCols = {
                         'app_users': ['id', 'name', 'username', 'password', 'role'], 'vehicles': ['id', 'plate', 'model', 'status', 'mileage', 'responsible', 'archive_photos', 'photos'],
-                        'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'], 'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature', 'liters', 'price', 'mileage', 'title_en', 'content', 'task_id', 'frequency'],
+                        'task_configs': ['id', 'title_en', 'content', 'standards', 'remarks', 'req_photo', 'req_signature', 'assigned_to'], 'app_logs': ['id', 'timestamp', 'category', 'user_name', 'entity_id', 'rating', 'feedback', 'photos', 'signature', 'liters', 'price', 'mileage', 'title_en', 'content', 'task_id', 'frequency', 'remarks'],
                         'shifts': ['id', 'type', 'date', 'start_time', 'end_time', 'driver', 'route', 'vehicle_type', 'standards']
                     };
                     const cols = standardCols[table] || []; payload.extra_data = {};
@@ -1401,14 +1455,23 @@
                     if (!globalStore.isOnline) {
                         await addToOfflineQueue({ type: 'upsert', table, payload });
                         syncStatus.value = 'error'; 
-                        showToast('✅ Saved Offline / 离线已保存', 'Will auto-sync when network is restored. / 联网后将自动同步到云端。', 'info'); 
+                        showToast('✅ Saved Offline / 离线已保存', '联网后将自动同步到云端。', 'info'); 
                         return;
                     }
+                    
+                    // 执行云端推送
                     const { error } = await supabase.from(table).upsert(payload);
-                    if (error) throw error;
+                    if (error) throw error; // 如果出错直接抛给 Catch，不再静默执行
+                    
                     await cacheData(table === 'app_users' ? 'users' : (table === 'task_configs' ? 'tasks' : (table === 'app_logs' ? 'logs' : table)), table === 'app_users' ? users.value : (table === 'vehicles' ? vehicles.value : (table === 'task_configs' ? tasks.value : (table === 'shifts' ? shifts.value : logs.value))));
                     syncStatus.value = 'saved';
-                } catch (err) { console.error(`Save to ${table} Error:`, err); syncStatus.value = 'error'; showToast('Cloud Sync Error', 'Data saved locally', 'error'); }
+                } catch (err) { 
+                    console.error(`Save to ${table} Error:`, err); 
+                    syncStatus.value = 'error'; 
+                    // 将真实的后端报错显示出来，以便快速定位
+                    showToast('Cloud Sync Error', err.message || 'Data format rejected by server', 'error'); 
+                    throw err; // 将错误向上抛出，阻止前台显示 Success
+                }
             };
 
             const deleteFromTable = async (table, id) => {
@@ -1428,13 +1491,13 @@
 
             const exportConfig = ref({ includeImages: true }); 
             const handleExportJSON = () => {
-                let dataToExport = { metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v34.1" }, users: JSON.parse(JSON.stringify(users.value)), vehicles: JSON.parse(JSON.stringify(vehicles.value)), tasks: JSON.parse(JSON.stringify(tasks.value)), shifts: JSON.parse(JSON.stringify(shifts.value)), logs: JSON.parse(JSON.stringify(logs.value)) };
+                let dataToExport = { metadata: { date: new Date().toISOString(), exported_by: currentUser.value.name, version: "v34.2" }, users: JSON.parse(JSON.stringify(users.value)), vehicles: JSON.parse(JSON.stringify(vehicles.value)), tasks: JSON.parse(JSON.stringify(tasks.value)), shifts: JSON.parse(JSON.stringify(shifts.value)), logs: JSON.parse(JSON.stringify(logs.value)) };
                 if (!exportConfig.value.includeImages) {
                     const stripMedia = (item) => { if (item.photos) delete item.photos; if (item.archive_photos) delete item.archive_photos; if (item.signature) delete item.signature; return item; };
                     dataToExport.vehicles = dataToExport.vehicles.map(stripMedia); dataToExport.logs = dataToExport.logs.map(stripMedia);
                 }
                 const blob = new Blob([JSON.stringify(dataToExport, null, 2)], {type: 'application/json'}); const url = URL.createObjectURL(blob);
-                const a = document.createElement('a'); a.href = url; a.download = `KMC_Backup_${exportConfig.value.includeImages ? 'Full' : 'TextOnly'}_${new Date().toISOString().split('T')[0]}.json`;
+                const a = document.createElement('a'); a.href = url; a.download = `KMC_Backup_${exportConfig.value.includeImages ? 'Full' : 'TextOnly'}_${getLocalYYYYMMDD(new Date())}.json`;
                 a.click(); URL.revokeObjectURL(url); showToast("Exported", `JSON Backup downloaded.`, "success");
             };
             const handleExportPDF = async () => {
@@ -1460,7 +1523,7 @@
 
                 const opt = { 
                     margin: 10, 
-                    filename: `KMC_Report_${new Date().toISOString().split('T')[0]}.pdf`, 
+                    filename: `KMC_Report_${getLocalYYYYMMDD(new Date())}.pdf`, 
                     image: { type: 'jpeg', quality: 0.95 }, 
                     html2canvas: { scale: 2, useCORS: true, logging: false, allowTaint: true, backgroundColor: '#ffffff' }, 
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }, 
@@ -1552,9 +1615,6 @@
                     if (!formData.value.entity_id) return {locked:true, msg:'Select Vehicle / 请选择车辆'};
                     if (!formData.value.liters || parseFloat(formData.value.liters) <= 0) return {locked:true, msg:'Enter Liters / 请输入油量'};
                     if (!formData.value.mileage || parseFloat(formData.value.mileage) <= 0) return {locked:true, msg:'Enter Mileage / 请输入里程'};
-                    if (!formData.value.is_internal && !formData.value.photo_receipt) return {locked:true, msg:'① Receipt Missing / 缺少油票'};
-                    if (!formData.value.photo_pump) return {locked:true, msg:'② Pump Missing / 缺少油机照片'};
-                    if (!formData.value.photo_odometer) return {locked:true, msg:'③ Odometer Missing / 缺少里程照片'};
                     return {locked:false, msg:'Submit Fuel Entry / 提交加油记录'};
                 }
                 return {locked:false, msg:'Save Changes / 保存更改'};
@@ -1648,8 +1708,8 @@
                 }
                 else if (type === 'fuel') {
                     modalTitle.value = 'FUEL ENTRY / 加油录入';
-                    modalFields.value = { entity_id: {label:'Select Vehicle / 选择车辆', type:'select', options: vehicles.value.map(v=>({val:v.id, label:v.plate}))}, is_internal: { label: 'Internal Station / 内部油站', type: 'checkbox' }, handler: {label:'Handler / 经手人', type:'text', ph:'Enter handler name / 输入经手人姓名'}, price: {label:'Total Cost ($) / 总费用', type:'number', showIf: (d) => !d.is_internal}, liters: {label:'Liters / 加油量 (L)', type:'number'}, mileage: {label:'Current Odometer / 当前里程 (KM)', type:'number'} };
-                    formData.value = {id: generateUUID(), category: 'fuel', user_name:currentUser.value.name, photos:[], photo_receipt:null, photo_pump:null, photo_odometer:null, is_internal: false, fuelEconomy: null, price: null};
+                    // 彻底移除内外油站的区别，统一保留备注字段
+                    formData.value = {id: generateUUID(), category: 'fuel', user_name:currentUser.value.name, photos:[], photo_receipt:null, photo_pump:null, photo_odometer:null, remarks: '', fuelEconomy: null, price: null};
                 }
                 else if (type === 'task_config') {
                     modalTitle.value = 'TASK CONFIG / 任务配置'; const myRole = currentUser.value.role; let targetRoles = [];
@@ -1670,7 +1730,7 @@
                         if(!data) formData.value = {id: generateUUID(), type:'temp'};
                     } else {
                         modalFields.value = { date: {label:'Date / 日期', type:'date'}, vehicle_type: { label:'Bus Type / 车型', type:'editable_select', ph: 'Select...', options: [{val:'Big Bus', label:'Big Bus'}, {val:'Medium Bus', label:'Medium Bus'}] }, route: { label:'Route / 路线', type:'editable_select', ph: 'Select...', options: [{val:'Morning Commute', label:'Morning Commute'}], translate: true }, driver: {label:'Driver / 司机', type:'select', options: users.value.filter(u=>u.role.startsWith('03')).map(u=>({val:u.name, label:u.name}))}, start_time: {label:'Start Time / 开始', type:'time'}, end_time: {label:'End Time / 结束', type:'time'}, standards: {label:'Rules / 规则', type:'textarea', translate: true} };
-                        if(!data) formData.value = {id: generateUUID(), type:'fixed', date: new Date().toISOString().split('T')[0]};
+                        if(!data) formData.value = {id: generateUUID(), type:'fixed', date: getLocalYYYYMMDD(new Date())};
                     }
                 }
                 showModal.value = true;
@@ -1693,6 +1753,7 @@
                         const idx = shifts.value.findIndex(s => s.id === formData.value.id); if(idx !== -1) shifts.value[idx] = {...formData.value}; else shifts.value.push({...formData.value}); await saveToTable('shifts', formData.value);
                     }
                     else if (modalType.value === 'fuel') { 
+                        // 加油记录不再校验照片是否上传，只做金额、油量、里程等数字校验
                         if (!formData.value.entity_id) { showToast('Select Vehicle', 'Please choose a vehicle.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.liters) > 0)) { showToast('Enter Liters', 'Fuel amount is required.', 'error'); isSubmitting.value = false; return; }
                         if (!(parseFloat(formData.value.mileage) > 0)) { showToast('Enter Mileage', 'Odometer is required.', 'error'); isSubmitting.value = false; return; }
@@ -1704,17 +1765,19 @@
                         
                         formData.value.timestamp = new Date().toISOString(); 
                         formData.value.category = 'fuel';
-                        if (formData.value.is_internal) formData.value.price = null;
                         
                         v.mileage = parseFloat(formData.value.mileage);
+                        // 有什么照片就传什么照片，没有也不报错
                         const combinedPhotos = []; 
-                        if (formData.value.photo_receipt && !formData.value.is_internal) combinedPhotos.push(formData.value.photo_receipt); 
+                        if (formData.value.photo_receipt) combinedPhotos.push(formData.value.photo_receipt); 
                         if (formData.value.photo_pump) combinedPhotos.push(formData.value.photo_pump);
                         if (formData.value.photo_odometer) combinedPhotos.push(formData.value.photo_odometer);
                         formData.value.photos = combinedPhotos;
                         
                         const idx = logs.value.findIndex(x => x.id === formData.value.id); 
                         if(idx !== -1) logs.value[idx] = {...formData.value}; else logs.value.unshift({...formData.value}); 
+                        
+                        // 等待数据全部通过校验再抛给接口
                         await saveToTable('app_logs', formData.value);
                         await saveToTable('vehicles', v);
                     } else if (modalType.value === 'task_exec') {
@@ -1723,16 +1786,28 @@
                         if(idx !== -1) logs.value[idx] = {...formData.value}; else logs.value.unshift({...formData.value});
                         await saveToTable('app_logs', formData.value);
                     }
+                    
+                    // 只有 saveToTable 不抛出异常时，才会执行下面这两句
                     showToast('Success', 'Saved successfully', 'success');
                     showModal.value = false;
-                } catch(e) { console.error(e); showToast('Error', 'Save failed', 'error'); } finally { isSubmitting.value = false; }
+                } catch(e) { 
+                    console.error("Submit Exception:", e); 
+                    // 这里不关闭弹窗，保留用户刚刚填写的表单，便于重试或修改
+                } finally { 
+                    isSubmitting.value = false; 
+                }
             };
 
             const deleteItem = deleteFromTable;
 
             const openTaskExec = (t) => {
                 taskContext.value = t;
-                const existingLog = (logs.value||[]).find(l => l.category === 'task_exec' && l.user_name === currentUser.value.name && (l.task_id === t.id || l.title_en === t.title_en) && l.timestamp.startsWith(new Date().toISOString().split('T')[0]));
+                const todayStr = getLocalYYYYMMDD(new Date());
+                const existingLog = (logs.value||[]).find(l => {
+                    const lStr = l.timestamp ? getLocalYYYYMMDD(new Date(l.timestamp)) : '';
+                    return l.category === 'task_exec' && l.user_name === currentUser.value.name && (l.task_id === t.id || l.title_en === t.title_en) && lStr === todayStr;
+                });
+                
                 if (existingLog && existingLog.rating !== 'red') {
                     formData.value = JSON.parse(JSON.stringify(existingLog));
                 } else {
@@ -1761,7 +1836,10 @@
 
             const recentLogs = computed(() => (logs.value || []).slice(0, 15));
             const maintenanceVehicles = computed(() => (vehicles.value || []).filter(v => v.status === 'Maintenance'));
-            const todaysShifts = computed(() => { const today = new Date().toISOString().split('T')[0]; return (shifts.value || []).filter(s => s.type === 'fixed' || s.date === today); });
+            const todaysShifts = computed(() => { 
+                const today = getLocalYYYYMMDD(new Date()); 
+                return (shifts.value || []).filter(s => s.type === 'fixed' || s.date === today); 
+            });
             const pendingReviews = computed(() => (logs.value || []).filter(l => l.category === 'task_exec' && !l.rating).length);
             const globalFuel = computed(() => { const fLogs = (logs.value || []).filter(l => l.category === 'fuel'); return { liters: fLogs.reduce((a, b) => a + (parseFloat(b.liters) || 0), 0).toFixed(1), cost: fLogs.reduce((a, b) => a + (parseFloat(b.price) || 0), 0).toFixed(2) }; });
 
