@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.4</title>
+    <title>KMC Vehicle Management V35.5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.4</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.5</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -318,17 +318,17 @@
                             <div v-if="!formData.is_internal" class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_receipt?'text-green-400':'text-orange-400'">① Receipt / 票据</div>
                                 <div v-if="formData.photo_receipt" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_receipt)"><img :src="resolvePhotoSrc(formData.photo_receipt)" class="w-full h-full object-cover"><button @click.stop="formData.photo_receipt=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_receipt')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" @change="e=>handleCam(e,'photo_receipt')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_pump?'text-green-400':'text-orange-400'">{{ formData.is_internal?'①':'②' }} Pump / 油机</div>
                                 <div v-if="formData.photo_pump" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_pump)"><img :src="resolvePhotoSrc(formData.photo_pump)" class="w-full h-full object-cover"><button @click.stop="formData.photo_pump=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_pump')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" @change="e=>handleCam(e,'photo_pump')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_odometer?'text-green-400':'text-orange-400'">{{ formData.is_internal?'②':'③' }} Odometer / 里程</div>
                                 <div v-if="formData.photo_odometer" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_odometer)"><img :src="resolvePhotoSrc(formData.photo_odometer)" class="w-full h-full object-cover"><button @click.stop="formData.photo_odometer=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_odometer')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" @change="e=>handleCam(e,'photo_odometer')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                         </div>
                     </div>
@@ -904,7 +904,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.4
+//  KMC Vehicle Management System V35.5
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
