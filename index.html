@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.6</title>
+    <title>KMC Vehicle Management V35.7</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.6</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.7</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -904,7 +904,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.6
+//  KMC Vehicle Management System V35.7
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -1056,6 +1056,23 @@ const PhotoSys = {
         const id = 'idb__' + genUUID();
         await KDB.savePhoto(id, { base64, uploaded: false, ts: Date.now(), user: userName });
         return id;
+    },
+
+    // Resolve a photo key to a displayable src
+    async resolve(key) {
+        if (!key) return '';
+        if (key.startsWith('http') || key.startsWith('data:')) return key;
+        if (key.startsWith('idb__')) {
+            try {
+                const rec = await KDB.getPhoto(key);
+                if (rec && rec.base64) return rec.base64;
+                // If not found locally, fetch from cloud
+                return `${CFG.SUPABASE_URL}/storage/v1/object/public/${CFG.STORAGE_BUCKET}/records/${key.replace('idb__', '')}.jpg`;
+            } catch { 
+                return `${CFG.SUPABASE_URL}/storage/v1/object/public/${CFG.STORAGE_BUCKET}/records/${key.replace('idb__', '')}.jpg`; 
+            }
+        }
+        return key;
     },
 
     // Upload all unsynced photos to Supabase Storage
@@ -1390,7 +1407,8 @@ const app = createApp({
 
         const previewPhoto = async (key) => {
             previewImage.value = key;
-            previewImageSrc.value = await PhotoSys.resolve(key);
+            // First check if it's already cached from rendering the thumbnail
+            previewImageSrc.value = photoCache[key] || await PhotoSys.resolve(key);
         };
 
         // ── Network ──────────────────────────────────────────────────
