@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.3</title>
+    <title>KMC Vehicle Management V35.4</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.3</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.4</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -318,17 +318,17 @@
                             <div v-if="!formData.is_internal" class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_receipt?'text-green-400':'text-orange-400'">① Receipt / 票据</div>
                                 <div v-if="formData.photo_receipt" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_receipt)"><img :src="resolvePhotoSrc(formData.photo_receipt)" class="w-full h-full object-cover"><button @click.stop="formData.photo_receipt=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_receipt')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="allowStaffGallery||currentUser.role==='01'?undefined:getCaptureMode" @change="e=>handleCam(e,'photo_receipt')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_pump?'text-green-400':'text-orange-400'">{{ formData.is_internal?'①':'②' }} Pump / 油机</div>
                                 <div v-if="formData.photo_pump" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_pump)"><img :src="resolvePhotoSrc(formData.photo_pump)" class="w-full h-full object-cover"><button @click.stop="formData.photo_pump=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_pump')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="allowStaffGallery||currentUser.role==='01'?undefined:getCaptureMode" @change="e=>handleCam(e,'photo_pump')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                             <div class="flex flex-col gap-1">
                                 <div class="text-[9px] font-bold text-center uppercase" :class="formData.photo_odometer?'text-green-400':'text-orange-400'">{{ formData.is_internal?'②':'③' }} Odometer / 里程</div>
                                 <div v-if="formData.photo_odometer" class="relative aspect-square rounded-lg overflow-hidden border border-green-500/30 cursor-zoom-in" @click="previewPhoto(formData.photo_odometer)"><img :src="resolvePhotoSrc(formData.photo_odometer)" class="w-full h-full object-cover"><button @click.stop="formData.photo_odometer=null" class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center shadow"><i class="fa-solid fa-xmark"></i></button></div>
-                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="getCaptureMode" @change="e=>handleCam(e,'photo_odometer')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
+                                <div v-else class="aspect-square relative rounded-lg border-2 border-dashed border-orange-500/30 bg-orange-500/5 flex flex-col items-center justify-center cursor-pointer hover:border-orange-400 transition"><input type="file" accept="image/*" :capture="allowStaffGallery||currentUser.role==='01'?undefined:getCaptureMode" @change="e=>handleCam(e,'photo_odometer')" class="absolute inset-0 opacity-0 cursor-pointer z-10"><i class="fa-solid fa-camera text-orange-400 text-xl mb-1"></i><span class="text-[9px] text-orange-400 font-bold">Upload</span></div>
                             </div>
                         </div>
                     </div>
@@ -553,8 +553,22 @@
         </div>
     </div>
     <div class="grid grid-cols-2 gap-4" v-if="isStaff">
-        <div class="kmc-card p-5 text-center"><div class="text-[10px] text-kmc-muted uppercase font-bold">Tasks Done / 完成</div><div class="text-4xl font-bold text-white mt-2">{{ $root.myStats.total }}</div></div>
-        <div class="kmc-card p-5 text-center"><div class="text-[10px] text-green-500 uppercase font-bold">Excellence / 优秀率</div><div class="text-4xl font-bold text-green-400 mt-2">{{ $root.myStats.rate }}%</div></div>
+        <!-- 已判决任务数，与优秀率基数完全对齐 -->
+        <div class="kmc-card p-5 text-center relative">
+            <div class="text-[10px] text-kmc-muted uppercase font-bold">Reviewed / 已判决</div>
+            <div class="text-4xl font-bold text-white mt-2">{{ $root.myStats.rated }}</div>
+            <!-- Pending 角标：有待审任务时显示黄色提示 -->
+            <div v-if="$root.myStats.pending>0"
+                 class="absolute top-2 right-2 bg-yellow-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <i class="fa-solid fa-clock text-[8px]"></i>{{ $root.myStats.pending }}
+            </div>
+        </div>
+        <!-- 优秀率：基数 = rated，数字语义完全一致 -->
+        <div class="kmc-card p-5 text-center">
+            <div class="text-[10px] text-green-500 uppercase font-bold">Excellence / 优秀率</div>
+            <div class="text-4xl font-bold text-green-400 mt-2">{{ $root.myStats.rate }}%</div>
+            <div class="text-[10px] text-kmc-muted mt-1">of {{ $root.myStats.rated }} judged</div>
+        </div>
     </div>
     <div v-if="isStaff" class="kmc-card p-5 border-l-4 border-l-emerald-500">
         <h3 class="font-bold text-white mb-4 flex items-center gap-2 text-sm"><i class="fa-solid fa-calendar-day text-emerald-400"></i> My Pending Tasks / 我的待办</h3>
@@ -583,6 +597,7 @@
                 <img v-if="(v.archive_photos||[]).length>0" 
                      :src="$root.resolvePhotoSrc(v.archive_photos[0])" 
                      class="w-full h-full object-cover transition duration-700 group-hover:scale-110 relative z-10"
+                     style="opacity:0"
                      @error="$event.target.style.opacity='0'" 
                      @load="$event.target.style.opacity='1'">
                 <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1 z-20" :class="v.status==='Active'?'text-green-400':v.status==='Maintenance'?'text-orange-400':'text-red-400'"><span class="w-1.5 h-1.5 rounded-full" :class="v.status==='Active'?'bg-green-400':v.status==='Maintenance'?'bg-orange-400':'bg-red-400'"></span>{{ v.status==='Active'?'Active/运营':v.status==='Maintenance'?'Maint/维修':'Scraped/报废' }}</div>
@@ -802,10 +817,29 @@
         </div>
         <div v-if="$root.statsTab==='performance'" class="space-y-4 animate-fade-in">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="kmc-card p-3"><div class="text-[9px] text-emerald-400 uppercase font-bold mb-1">Total / 总计</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.length }}</div></div>
-                <div class="kmc-card p-3"><div class="text-[9px] text-green-400 uppercase font-bold mb-1">Approved / 通过</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>l.rating==='green').length }}</div></div>
-                <div class="kmc-card p-3"><div class="text-[9px] text-red-400 uppercase font-bold mb-1">Rejected / 驳回</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>l.rating==='red').length }}</div></div>
-                <div class="kmc-card p-3"><div class="text-[9px] text-yellow-400 uppercase font-bold mb-1">Pending / 待审</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>!l.rating).length }}</div></div>
+                <!-- Total -->
+                <div class="kmc-card p-3">
+                    <div class="text-[9px] text-emerald-400 uppercase font-bold mb-1">Total / 总计</div>
+                    <div class="text-xl font-bold text-white">{{ filteredTaskLogs.length }}</div>
+                </div>
+                <!-- Approved -->
+                <div class="kmc-card p-3 border-green-500/30">
+                    <div class="text-[9px] text-green-400 uppercase font-bold mb-1">Approved / 通过</div>
+                    <div class="text-xl font-bold text-green-400">{{ filteredTaskLogs.filter(l=>l.rating==='green').length }}</div>
+                </div>
+                <!-- Rejected -->
+                <div class="kmc-card p-3 border-red-500/30">
+                    <div class="text-[9px] text-red-400 uppercase font-bold mb-1">Rejected / 驳回</div>
+                    <div class="text-xl font-bold text-red-400">{{ filteredTaskLogs.filter(l=>l.rating==='red').length }}</div>
+                </div>
+                <!-- Pending —— 黄色高亮，有待审时加脉冲提示 -->
+                <div class="kmc-card p-3 bg-yellow-900/20 border-yellow-500/40"
+                     :class="filteredTaskLogs.filter(l=>!l.rating).length>0?'animate-pulse-slow':''">
+                    <div class="text-[9px] text-yellow-400 uppercase font-bold mb-1 flex items-center gap-1">
+                        <i class="fa-solid fa-clock"></i> Pending / 待审
+                    </div>
+                    <div class="text-xl font-bold text-yellow-400">{{ filteredTaskLogs.filter(l=>!l.rating).length }}</div>
+                </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div v-for="d in driverPerformanceStats" :key="d.name" class="kmc-card p-4 border-l-4" :class="d.rate>=90?'border-green-500':d.rate>=70?'border-yellow-500':'border-red-500'">
@@ -891,7 +925,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.3
+//  KMC Vehicle Management System V35.4
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -1592,15 +1626,17 @@ const app = createApp({
         const pendingReviews = computed(() => logs.value.filter(l=>l.category==='task_exec'&&!l.rating).length);
         const globalFuel = computed(() => { const fl=logs.value.filter(l=>l.category==='fuel'); return { liters:fl.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1), cost:fl.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(2) }; });
         
-        // 【修正 1】：修正员工界面的仪表盘个人优秀率逻辑
+        // 【修正 1 + 隐患修复4】：修正员工界面的仪表盘个人优秀率逻辑，补充 rated/pending 字段消除语义矛盾
         const myStats = computed(() => { 
-            if(!currentUser.value) return {total:0,rate:0}; 
+            if(!currentUser.value) return {total:0,rated:0,pending:0,rate:0}; 
             const ml=logs.value.filter(l=>l.category==='task_exec'&&l.user_name===currentUser.value.name); 
             const total=ml.length;
             const passed=ml.filter(l=>l.rating==='green').length;
             const rejected=ml.filter(l=>l.rating==='red').length;
+            const pending=ml.filter(l=>!l.rating).length;
             const rated=passed+rejected; 
-            return {total,rate:rated?Math.round(passed/rated*100):0}; 
+            // rate 只基于已判决任务，与 Stats 组件算法完全一致
+            return {total,rated,pending,rate:rated?Math.round(passed/rated*100):0}; 
         });
         
         const myNextTasks = computed(() => { if(!currentUser.value) return []; return tasks.value.filter(t=>parseAssignees(t.assigned_to).includes(currentUser.value.name)); });
