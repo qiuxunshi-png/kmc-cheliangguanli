@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.2</title>
+    <title>KMC Vehicle Management V35.3</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.2</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.3</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -801,15 +801,16 @@
             </div>
         </div>
         <div v-if="$root.statsTab==='performance'" class="space-y-4 animate-fade-in">
-            <div class="grid grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div class="kmc-card p-3"><div class="text-[9px] text-emerald-400 uppercase font-bold mb-1">Total / 总计</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.length }}</div></div>
                 <div class="kmc-card p-3"><div class="text-[9px] text-green-400 uppercase font-bold mb-1">Approved / 通过</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>l.rating==='green').length }}</div></div>
                 <div class="kmc-card p-3"><div class="text-[9px] text-red-400 uppercase font-bold mb-1">Rejected / 驳回</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>l.rating==='red').length }}</div></div>
+                <div class="kmc-card p-3"><div class="text-[9px] text-yellow-400 uppercase font-bold mb-1">Pending / 待审</div><div class="text-xl font-bold text-white">{{ filteredTaskLogs.filter(l=>!l.rating).length }}</div></div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div v-for="d in driverPerformanceStats" :key="d.name" class="kmc-card p-4 border-l-4" :class="d.rate>=90?'border-green-500':d.rate>=70?'border-yellow-500':'border-red-500'">
                     <div class="flex justify-between items-center mb-1"><div class="font-bold text-white text-sm">{{ d.name }}</div><div class="text-xl font-bold" :class="d.rate>=90?'text-green-400':d.rate>=70?'text-yellow-400':'text-red-400'">{{ d.rate }}%</div></div>
-                    <div class="flex justify-between text-[10px] text-kmc-muted"><span>Total: {{ d.total }}</span><span>Pass: {{ d.approved }}</span><span>Fail: {{ d.rejected }}</span></div>
+                    <div class="flex justify-between text-[10px] text-kmc-muted"><span>Total: {{ d.total }}</span><span>Pass: {{ d.approved }}</span><span>Fail: {{ d.rejected }}</span><span>Wait: {{ d.pending }}</span></div>
                 </div>
             </div>
         </div>
@@ -890,7 +891,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.2
+//  KMC Vehicle Management System V35.3
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -1245,12 +1246,17 @@ const Stats      = {
         driverPerformanceStats() {
             const map = {};
             this.filteredTaskLogs.forEach(l => {
-                if (!map[l.user_name]) map[l.user_name] = { name: l.user_name, total: 0, approved: 0, rejected: 0 };
+                if (!map[l.user_name]) map[l.user_name] = { name: l.user_name, total: 0, approved: 0, rejected: 0, pending: 0 };
                 map[l.user_name].total++;
                 if (l.rating === 'green') map[l.user_name].approved++;
-                if (l.rating === 'red')   map[l.user_name].rejected++;
+                else if (l.rating === 'red') map[l.user_name].rejected++;
+                else map[l.user_name].pending++;
             });
-            return Object.values(map).map(d => ({ ...d, rate: d.total ? Math.round((d.approved / d.total) * 100) : 0 })).sort((a, b) => b.rate - a.rate);
+            // 剥离未审批项的优秀率计算公式
+            return Object.values(map).map(d => {
+                const ratedTotal = d.approved + d.rejected;
+                return { ...d, rate: ratedTotal > 0 ? Math.round((d.approved / ratedTotal) * 100) : 0 };
+            }).sort((a, b) => b.rate - a.rate);
         }
     }
 };
@@ -1585,7 +1591,18 @@ const app = createApp({
         const todaysShifts = computed(() => { const t=new Date().toISOString().split('T')[0]; return shifts.value.filter(s=>s.type==='fixed'||s.date===t); });
         const pendingReviews = computed(() => logs.value.filter(l=>l.category==='task_exec'&&!l.rating).length);
         const globalFuel = computed(() => { const fl=logs.value.filter(l=>l.category==='fuel'); return { liters:fl.reduce((a,b)=>a+(parseFloat(b.liters)||0),0).toFixed(1), cost:fl.reduce((a,b)=>a+(parseFloat(b.price)||0),0).toFixed(2) }; });
-        const myStats = computed(() => { if(!currentUser.value) return {total:0,rate:0}; const ml=logs.value.filter(l=>l.category==='task_exec'&&l.user_name===currentUser.value.name); const total=ml.length,passed=ml.filter(l=>l.rating==='green').length; return {total,rate:total?Math.round(passed/total*100):0}; });
+        
+        // 【修正 1】：修正员工界面的仪表盘个人优秀率逻辑
+        const myStats = computed(() => { 
+            if(!currentUser.value) return {total:0,rate:0}; 
+            const ml=logs.value.filter(l=>l.category==='task_exec'&&l.user_name===currentUser.value.name); 
+            const total=ml.length;
+            const passed=ml.filter(l=>l.rating==='green').length;
+            const rejected=ml.filter(l=>l.rating==='red').length;
+            const rated=passed+rejected; 
+            return {total,rate:rated?Math.round(passed/rated*100):0}; 
+        });
+        
         const myNextTasks = computed(() => { if(!currentUser.value) return []; return tasks.value.filter(t=>parseAssignees(t.assigned_to).includes(currentUser.value.name)); });
 
         const getTaskStatus = (task, name) => {
@@ -1625,16 +1642,10 @@ const app = createApp({
                 if (taskContext.value.req_signature&&!formData.value.signature) return {locked:true,msg:'Signature required / 需要签字'};
                 return {locked:false,msg:'Submit / 提交任务'};
             }
-            // 已移除车辆档案照片必填限制
-            // if (t==='vehicle'&&formData.value.id&&!(formData.value.archive_photos?.length>0)) return {locked:true,msg:'Photo required / 必须拍照'};
             if (t==='fuel') {
                 if (!formData.value.entity_id) return {locked:true,msg:'Select vehicle / 选择车辆'};
                 if (!(parseFloat(formData.value.liters)>0)) return {locked:true,msg:'Enter liters / 输入油量'};
                 if (!(parseFloat(formData.value.mileage)>0)) return {locked:true,msg:'Enter mileage / 输入里程'};
-                // 已移除加油票据、油机、里程表的强制拍照限制
-                // if (!formData.value.is_internal&&!formData.value.photo_receipt) return {locked:true,msg:'Receipt photo missing / 缺少票据'};
-                // if (!formData.value.photo_pump) return {locked:true,msg:'Pump photo missing / 缺少油机照片'};
-                // if (!formData.value.photo_odometer) return {locked:true,msg:'Odometer missing / 缺少里程照片'};
                 return {locked:false,msg:'Submit Fuel / 提交加油记录'};
             }
             return {locked:false,msg:'Save Changes / 保存更改'};
@@ -1776,9 +1787,10 @@ const app = createApp({
                 const rows=data.map((log,idx)=>`<tr style="background:${idx%2===0?'#fff':'#f9fafb'};page-break-inside:avoid"><td style="padding:8px;border:1px solid #e5e7eb;font-size:10px;font-family:monospace">${(log.timestamp||'').split('T')[0]}<br><span style="color:#9ca3af;font-size:9px">${(log.timestamp||'').split('T')[1]?.slice(0,5)||''}</span></td><td style="padding:8px;border:1px solid #e5e7eb;font-size:11px;font-weight:700">${getPlate(log.entity_id)}</td><td style="padding:8px;border:1px solid #e5e7eb;font-size:10px">${log.handler||log.user_name}${log.is_internal?'<br><span style="font-size:8px;background:#d1fae5;color:#065f46;padding:1px 4px;border-radius:3px">INTERNAL</span>':''}</td><td style="padding:8px;border:1px solid #e5e7eb;font-size:11px;font-weight:700;color:#ea580c;text-align:right">${log.liters} L</td><td style="padding:8px;border:1px solid #e5e7eb;font-size:11px;color:#059669;text-align:right">${log.price&&!log.is_internal?'$ '+log.price:'—'}</td><td style="padding:8px;border:1px solid #e5e7eb;font-size:11px;font-weight:700;text-align:right;color:${log.fuelEconomy>15?'#dc2626':log.fuelEconomy>10?'#d97706':'#059669'}">${log.fuelEconomy>0?log.fuelEconomy+' L/100':'—'}</td><td style="padding:6px;border:1px solid #e5e7eb;text-align:center"><div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap">${(log.photos||[]).slice(0,3).map(p=>it(p,'width:52px;height:52px;object-fit:cover;border:1px solid #d1d5db;border-radius:3px')).join('')}</div></td></tr>`).join('');
                 return `${hdr}${boxes}<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:24px"><thead><tr style="background:#1f2937;color:#fff"><th style="padding:8px;border:1px solid #374151;text-align:left">Date/日期</th><th style="padding:8px;border:1px solid #374151">Vehicle/车辆</th><th style="padding:8px;border:1px solid #374151">Handler/经手人</th><th style="padding:8px;border:1px solid #374151;text-align:right">Liters/升数</th><th style="padding:8px;border:1px solid #374151;text-align:right">Cost/费用</th><th style="padding:8px;border:1px solid #374151;text-align:right">Economy/油耗</th><th style="padding:8px;border:1px solid #374151;text-align:center">Photos/凭证</th></tr></thead><tbody>${rows}</tbody></table>${ftr}`;
             } else {
-                const total=data.length,approved=data.filter(l=>l.rating==='green').length,rejected=data.filter(l=>l.rating==='red').length;
-                const boxes=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">${[['Total/总计',total,'#374151'],['Approved/通过',approved,'#059669'],['Rejected/驳回',rejected,'#dc2626']].map(([l,v,c])=>`<div style="padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb"><div style="font-size:9px;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:4px">${l}</div><div style="font-size:22px;font-weight:800;color:${c}">${v}</div></div>`).join('')}</div>`;
-                const driverTbl=driverStats.length>0?`<h3 style="font-size:13px;font-weight:800;color:#059669;text-transform:uppercase;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px">1. Driver Summary / 司机汇总</h3><table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:24px"><thead><tr style="background:#1f2937;color:#fff"><th style="padding:7px;border:1px solid #374151">Rank</th><th style="padding:7px;border:1px solid #374151">Driver/司机</th><th style="padding:7px;border:1px solid #374151;text-align:center">Total</th><th style="padding:7px;border:1px solid #374151;text-align:center">Passed</th><th style="padding:7px;border:1px solid #374151;text-align:center">Rejected</th><th style="padding:7px;border:1px solid #374151;text-align:right">Rate/通过率</th></tr></thead><tbody>${driverStats.map((d,i)=>`<tr style="background:${i%2===0?'#fff':'#f9fafb'}"><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;font-weight:700">${i+1}</td><td style="padding:7px;border:1px solid #e5e7eb;font-weight:700">${d.name}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center">${d.total}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;color:#059669;font-weight:700">${d.approved}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;color:#dc2626">${d.rejected}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:right;font-weight:700;color:${d.rate>=90?'#059669':d.rate>=70?'#d97706':'#dc2626'}">${d.rate}%</td></tr>`).join('')}</tbody></table>`:'';
+                // 【修正 3】：修正 PDF 导出文件中的汇总卡片和表格
+                const total=data.length,approved=data.filter(l=>l.rating==='green').length,rejected=data.filter(l=>l.rating==='red').length,pending=data.filter(l=>!l.rating).length;
+                const boxes=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">${[['Total/总计',total,'#374151'],['Approved/通过',approved,'#059669'],['Rejected/驳回',rejected,'#dc2626'],['Pending/待审',pending,'#d97706']].map(([l,v,c])=>`<div style="padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#f9fafb"><div style="font-size:9px;color:#6b7280;text-transform:uppercase;font-weight:700;margin-bottom:4px">${l}</div><div style="font-size:22px;font-weight:800;color:${c}">${v}</div></div>`).join('')}</div>`;
+                const driverTbl=driverStats.length>0?`<h3 style="font-size:13px;font-weight:800;color:#059669;text-transform:uppercase;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px">1. Driver Summary / 司机汇总</h3><table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:24px"><thead><tr style="background:#1f2937;color:#fff"><th style="padding:7px;border:1px solid #374151">Rank</th><th style="padding:7px;border:1px solid #374151">Driver/司机</th><th style="padding:7px;border:1px solid #374151;text-align:center">Total</th><th style="padding:7px;border:1px solid #374151;text-align:center">Passed</th><th style="padding:7px;border:1px solid #374151;text-align:center">Rejected</th><th style="padding:7px;border:1px solid #374151;text-align:center">Pending</th><th style="padding:7px;border:1px solid #374151;text-align:right">Rate/通过率</th></tr></thead><tbody>${driverStats.map((d,i)=>`<tr style="background:${i%2===0?'#fff':'#f9fafb'}"><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;font-weight:700">${i+1}</td><td style="padding:7px;border:1px solid #e5e7eb;font-weight:700">${d.name}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center">${d.total}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;color:#059669;font-weight:700">${d.approved}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;color:#dc2626">${d.rejected}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:center;color:#d97706">${d.pending}</td><td style="padding:7px;border:1px solid #e5e7eb;text-align:right;font-weight:700;color:${d.rate>=90?'#059669':d.rate>=70?'#d97706':'#dc2626'}">${d.rate}%</td></tr>`).join('')}</tbody></table>`:'';
                 const cards=data.map(t=>{const sc=t.rating==='green'?'#059669':t.rating==='red'?'#dc2626':'#d97706',st=t.rating==='green'?'✓ PASSED':t.rating==='red'?'✗ REJECTED':'⏳ PENDING',ph=(t.photos||[]).length>0?`<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">${(t.photos||[]).slice(0,4).map(p=>it(p,'width:90px;height:90px;object-fit:cover;border:1px solid #e5e7eb;border-radius:4px')).join('')}</div>`:'',sg=t.signature?`<div style="margin-top:8px;border:1px solid #e5e7eb;background:#fff;border-radius:4px;padding:4px;display:inline-block"><img src="${t.signature}" style="height:60px;object-fit:contain;max-width:160px" onerror="this.style.display='none'"><br><span style="font-size:9px;color:#6b7280">Signature / 签字</span></div>`:'';return `<div style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:12px;overflow:hidden;page-break-inside:avoid"><div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-bottom:1px solid #e5e7eb"><div><div style="font-size:12px;font-weight:800;color:#111">${t.title_en}</div><div style="font-size:10px;color:#6b7280;margin-top:2px">${new Date(t.timestamp).toLocaleString()} · <strong style="color:#059669">${t.user_name}</strong></div></div><span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:12px;background:${sc}18;color:${sc};border:1px solid ${sc}40">${st}</span></div><div style="padding:10px 12px">${t.content?`<div style="font-size:11px;color:#374151;margin-bottom:8px">${t.content}</div>`:''}${t.rating==='red'&&t.feedback?`<div style="background:#fef2f2;border-left:3px solid #dc2626;padding:6px 8px;font-size:10px;color:#991b1b;margin-bottom:8px"><strong>Rejection reason / 驳回理由:</strong> ${t.feedback}</div>`:''}${ph}${sg}</div></div>`;}).join('');
                 return `${hdr}${boxes}${driverTbl}<h3 style="font-size:13px;font-weight:800;color:#059669;text-transform:uppercase;border-bottom:2px solid #e5e7eb;padding-bottom:6px;margin:0 0 12px">${driverStats.length>0?'2.':'1.'} Execution Log / 执行流水 (${data.length})</h3>${cards}${ftr}`;
             }
@@ -1790,7 +1802,23 @@ const app = createApp({
                 const applyF=(arr,cat)=>{const f=statsFilters;let l=arr.filter(x=>x.category===cat);if(f.start)l=l.filter(x=>x.timestamp>=f.start);if(f.end)l=l.filter(x=>x.timestamp<=f.end+'T23:59:59');if(f.driver)l=l.filter(x=>x.user_name===f.driver||x.handler===f.driver);if(f.vehicle_id&&cat==='fuel')l=l.filter(x=>x.entity_id===f.vehicle_id);if(f.status==='approved'&&cat==='task_exec')l=l.filter(x=>x.rating==='green');if(f.status==='rejected'&&cat==='task_exec')l=l.filter(x=>x.rating==='red');if(f.status==='pending'&&cat==='task_exec')l=l.filter(x=>!x.rating);return l.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));};
                 const type=statsTab.value;
                 const fd=type==='fuel'?applyF(logs.value,'fuel'):applyF(logs.value,'task_exec');
-                const ds=type!=='fuel'?(()=>{const m={};fd.forEach(l=>{if(!m[l.user_name])m[l.user_name]={name:l.user_name,total:0,approved:0,rejected:0};m[l.user_name].total++;if(l.rating==='green')m[l.user_name].approved++;if(l.rating==='red')m[l.user_name].rejected++;});return Object.values(m).map(d=>({...d,rate:d.total?Math.round(d.approved/d.total*100):0})).sort((a,b)=>b.rate-a.rate);})():[];
+                
+                // 【修正 4】：修正 PDF 导出前的数据组织逻辑，剥离 pending 并支持新的表格列
+                const ds=type!=='fuel'?(()=>{
+                    const m={};
+                    fd.forEach(l=>{
+                        if(!m[l.user_name]) m[l.user_name]={name:l.user_name,total:0,approved:0,rejected:0,pending:0};
+                        m[l.user_name].total++;
+                        if(l.rating==='green') m[l.user_name].approved++;
+                        else if(l.rating==='red') m[l.user_name].rejected++;
+                        else m[l.user_name].pending++;
+                    });
+                    return Object.values(m).map(d=>{
+                        const rated=d.approved+d.rejected;
+                        return({...d,rate:rated>0?Math.round(d.approved/rated*100):0})
+                    }).sort((a,b)=>b.rate-a.rate);
+                })():[];
+                
                 pdfContent.value=await buildPdfHtml(type,fd,ds);
                 showPdfModal.value=true;
             } catch(err){showToast('PDF Error',err.message,'error');}
