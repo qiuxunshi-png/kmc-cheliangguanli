@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.1</title>
+    <title>KMC Vehicle Management V35.2</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.1</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.2</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -579,9 +579,13 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <div v-for="v in $root.filteredVehicles" :key="v.id" class="kmc-card overflow-hidden group relative">
             <div class="h-36 bg-black/40 relative flex items-center justify-center overflow-hidden cursor-pointer" @click="$root.openVehicleGallery(v)">
-                <img v-if="(v.archive_photos||[]).length>0" :src="$root.resolvePhotoSrc(v.archive_photos[0])" class="w-full h-full object-cover transition duration-700 group-hover:scale-110">
-                <i v-else class="fa-solid fa-car text-5xl text-[#27272a] group-hover:text-[#3f3f46] transition"></i>
-                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1" :class="v.status==='Active'?'text-green-400':v.status==='Maintenance'?'text-orange-400':'text-red-400'"><span class="w-1.5 h-1.5 rounded-full" :class="v.status==='Active'?'bg-green-400':v.status==='Maintenance'?'bg-orange-400':'bg-red-400'"></span>{{ v.status==='Active'?'Active/运营':v.status==='Maintenance'?'Maint/维修':'Scraped/报废' }}</div>
+                <i class="fa-solid fa-car text-5xl text-[#27272a] group-hover:text-[#3f3f46] transition absolute z-0"></i>
+                <img v-if="(v.archive_photos||[]).length>0" 
+                     :src="$root.resolvePhotoSrc(v.archive_photos[0])" 
+                     class="w-full h-full object-cover transition duration-700 group-hover:scale-110 relative z-10"
+                     @error="$event.target.style.opacity='0'" 
+                     @load="$event.target.style.opacity='1'">
+                <div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-[10px] font-bold uppercase flex items-center gap-1 z-20" :class="v.status==='Active'?'text-green-400':v.status==='Maintenance'?'text-orange-400':'text-red-400'"><span class="w-1.5 h-1.5 rounded-full" :class="v.status==='Active'?'bg-green-400':v.status==='Maintenance'?'bg-orange-400':'bg-red-400'"></span>{{ v.status==='Active'?'Active/运营':v.status==='Maintenance'?'Maint/维修':'Scraped/报废' }}</div>
             </div>
             <div class="p-4">
                 <h3 class="font-bold text-white text-base tracking-tight">{{ v.plate }}</h3>
@@ -886,7 +890,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.1
+//  KMC Vehicle Management System V35.2
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -897,7 +901,7 @@
 const CFG = {
     SUPABASE_URL: 'https://asizrzuuwcgrygkdttgt.supabase.co',
     SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzaXpyenV1d2Nncnlna2R0dGd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3MTA0NDEsImV4cCI6MjA4NzI4NjQ0MX0.tirvZUOw7Ci99qr_llOtaPtPHg6_vrJwtiIqy0cSpZc',
-    STORAGE_BUCKET: 'kmc-photos',
+    STORAGE_BUCKET: 'kmc-media',
     DB_NAME: 'kmc_v35',
     DB_VERSION: 2,
     SYNC_INTERVAL_MS: 30000,
@@ -1621,14 +1625,16 @@ const app = createApp({
                 if (taskContext.value.req_signature&&!formData.value.signature) return {locked:true,msg:'Signature required / 需要签字'};
                 return {locked:false,msg:'Submit / 提交任务'};
             }
-            // 移除了车辆档案强制拍照限制
+            // 已移除车辆档案照片必填限制
+            // if (t==='vehicle'&&formData.value.id&&!(formData.value.archive_photos?.length>0)) return {locked:true,msg:'Photo required / 必须拍照'};
             if (t==='fuel') {
                 if (!formData.value.entity_id) return {locked:true,msg:'Select vehicle / 选择车辆'};
                 if (!(parseFloat(formData.value.liters)>0)) return {locked:true,msg:'Enter liters / 输入油量'};
                 if (!(parseFloat(formData.value.mileage)>0)) return {locked:true,msg:'Enter mileage / 输入里程'};
-                if (!formData.value.is_internal&&!formData.value.photo_receipt) return {locked:true,msg:'Receipt photo missing / 缺少票据'};
-                if (!formData.value.photo_pump) return {locked:true,msg:'Pump photo missing / 缺少油机照片'};
-                if (!formData.value.photo_odometer) return {locked:true,msg:'Odometer missing / 缺少里程照片'};
+                // 已移除加油票据、油机、里程表的强制拍照限制
+                // if (!formData.value.is_internal&&!formData.value.photo_receipt) return {locked:true,msg:'Receipt photo missing / 缺少票据'};
+                // if (!formData.value.photo_pump) return {locked:true,msg:'Pump photo missing / 缺少油机照片'};
+                // if (!formData.value.photo_odometer) return {locked:true,msg:'Odometer missing / 缺少里程照片'};
                 return {locked:false,msg:'Submit Fuel / 提交加油记录'};
             }
             return {locked:false,msg:'Save Changes / 保存更改'};
