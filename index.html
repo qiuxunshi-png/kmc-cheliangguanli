@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#050505">
-    <title>KMC Vehicle Management V35.5</title>
+    <title>KMC Vehicle Management V35.6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -129,7 +129,7 @@
                 </div>
                 <h1 class="text-2xl font-bold text-white tracking-tight">KMC Vehicle Management</h1>
                 <p class="text-emerald-400 text-sm font-medium mt-1">KMC 车辆管理系统</p>
-                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.5</p>
+                <p class="text-kmc-muted text-[10px] font-mono uppercase tracking-[.2em] mt-2 opacity-60">Offline-First Edition V35.6</p>
             </div>
             <form @submit.prevent="handleLogin" class="space-y-5">
                 <div><label class="block text-[10px] font-bold text-kmc-muted uppercase mb-2 ml-1">Name / 姓名</label>
@@ -904,7 +904,7 @@
 
 <script>
 // ══════════════════════════════════════════════════════════════════════════
-//  KMC Vehicle Management System V35.5
+//  KMC Vehicle Management System V35.6
 //  Architecture: Offline-First | IndexedDB Photos | Supabase Auto-Sync
 //  © KMC Engineering – Production Build
 // ══════════════════════════════════════════════════════════════════════════
@@ -1056,23 +1056,6 @@ const PhotoSys = {
         const id = 'idb__' + genUUID();
         await KDB.savePhoto(id, { base64, uploaded: false, ts: Date.now(), user: userName });
         return id;
-    },
-
-    // Resolve a photo key to a displayable src
-    // - If key is an HTTPS URL: return as-is
-    // - If key starts with "idb__": fetch from IDB, return base64
-    async resolve(key) {
-        if (!key) return '';
-        if (key.startsWith('http')) return key;
-        if (key.startsWith('idb__')) {
-            try {
-                const rec = await KDB.getPhoto(key);
-                return rec?.base64 || '';
-            } catch { return ''; }
-        }
-        // Legacy: was already base64
-        if (key.startsWith('data:')) return key;
-        return key;
     },
 
     // Upload all unsynced photos to Supabase Storage
@@ -1864,14 +1847,31 @@ const app = createApp({
         // ── View component ───────────────────────────────────────────
         const currentViewComponent = computed(() => ({dashboard:Dashboard,vehicles:Vehicles,fuel:Fuel,tasks:Tasks,reports:Reports,staff:Staff,statistics:Stats,shifts:Shifts,my_tasks:MyTasks})[currentView.value]||Dashboard);
 
-        // ── Lifecycle ────────────────────────────────────────────────
+        // ── Lifecycle & Sync Mechanics ──────────────────────────────────
         onMounted(async () => {
             await KDB.init(); await updateQueueCount();
             try { const s=localStorage.getItem('kmc_session'); if(s) currentUser.value=JSON.parse(s); } catch{}
             await loadFromCache();
             if (isOnline.value) { await fetchCloudData(false); await flushQueue(); }
+            
+            // 1. 定时后台同步 (30秒)
             const interval=setInterval(async()=>{if(isOnline.value&&!isLocalMode.value){await fetchCloudData(false);await flushQueue();}},CFG.SYNC_INTERVAL_MS);
-            onUnmounted(()=>clearInterval(interval));
+            
+            // 2. 切屏秒同步 (Focus-to-Sync) - 解决跨设备显示延迟
+            const handleVisibility = () => {
+                if (document.visibilityState === 'visible' && isOnline.value && !isLocalMode.value) {
+                    L.info('Window focused, triggering rapid sync');
+                    fetchCloudData(false); flushQueue();
+                }
+            };
+            window.addEventListener('visibilitychange', handleVisibility);
+            window.addEventListener('focus', handleVisibility);
+            
+            onUnmounted(() => {
+                clearInterval(interval);
+                window.removeEventListener('visibilitychange', handleVisibility);
+                window.removeEventListener('focus', handleVisibility);
+            });
             window._kmcRoot={translate_text,openPdfPreview};
         });
 
